@@ -1,0 +1,3296 @@
+{
+  "sha": "b35d583443a81361e6d62502842d32d1dc4400f3",
+  "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/b35d583443a81361e6d62502842d32d1dc4400f3",
+  "tree": [
+    {
+      "path": ".dotnet",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8f406933da846c7f9535b25dbe47165e374c30b9",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/8f406933da846c7f9535b25dbe47165e374c30b9"
+    },
+    {
+      "path": ".dotnet/.workloadAdvertisingManifestSentinel10.0.200",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": ".dotnet/10.0.201.aspNetCertificateSentinel",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": ".dotnet/10.0.201.dotnetFirstUseSentinel",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": ".dotnet/10.0.201.toolpath.sentinel",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5a18deed8813c6c817c9090bf0443d7fad48a9d",
+      "size": 7454,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d5a18deed8813c6c817c9090bf0443d7fad48a9d"
+    },
+    {
+      "path": "Dockerfile",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2ddf068ba8c8b33fdd078aeba9e66f0b73ce18ec",
+      "size": 351,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2ddf068ba8c8b33fdd078aeba9e66f0b73ce18ec"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "99ac8bcd6987b0b332eff9771edb03781e6a8855",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/99ac8bcd6987b0b332eff9771edb03781e6a8855"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c025adef0e794af589a4909b21e00e06b8a55fef",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/c025adef0e794af589a4909b21e00e06b8a55fef"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "585599ac14bf5e3cb6879acf6db1049ba64466f7",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/585599ac14bf5e3cb6879acf6db1049ba64466f7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Auth",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fb046b10331793daea18976ecf4313af991afc40",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/fb046b10331793daea18976ecf4313af991afc40"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Auth/AuthController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "960f1e7278867fa7e0b1922657366abdbe9a85ac",
+      "size": 4085,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/960f1e7278867fa7e0b1922657366abdbe9a85ac"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "88be42cc02805f3a6dc89689c4122b564058d051",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/88be42cc02805f3a6dc89689c4122b564058d051"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/AtraccionesController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "398dc79be3a491a71351b819e74cf103605fbaf2",
+      "size": 4952,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/398dc79be3a491a71351b819e74cf103605fbaf2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/ClientesController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4775da412fbc10cdfb21fdd9d4af8df2814185b1",
+      "size": 2971,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/4775da412fbc10cdfb21fdd9d4af8df2814185b1"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/ClientesPerfilController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "46ae3e03761711bc3d0ac16b362d338084d276cc",
+      "size": 1942,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/46ae3e03761711bc3d0ac16b362d338084d276cc"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/FacturasController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d1b6e61b44843a69a7ba86229e25fce49e57279b",
+      "size": 2511,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d1b6e61b44843a69a7ba86229e25fce49e57279b"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/FacturasPublicController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "765a54ab9eda72a049a7c8e0c761670914994eb9",
+      "size": 1799,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/765a54ab9eda72a049a7c8e0c761670914994eb9"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/ReservasAdminController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "93fb063e3c7f071d4413872cf0f21824ec4bf574",
+      "size": 3751,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/93fb063e3c7f071d4413872cf0f21824ec4bf574"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/ReservasController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0c8763ed05cfb120b92d63b002557af15614d89",
+      "size": 4716,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c0c8763ed05cfb120b92d63b002557af15614d89"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c28f5314bc1cef52eb918f1b7cf1b7b541958444",
+      "size": 7135,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c28f5314bc1cef52eb918f1b7cf1b7b541958444"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsPublicController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e733c772897a1e7927528420fe747bc001edf662",
+      "size": 1166,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e733c772897a1e7927528420fe747bc001edf662"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Internal",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "712a6da8d91db54579971fec64cebb68afe0e2ef",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/712a6da8d91db54579971fec64cebb68afe0e2ef"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Internal/AtraccionesAdminController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "009e61cebec703f89bcd26443e8e5b471c7022c7",
+      "size": 3559,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/009e61cebec703f89bcd26443e8e5b471c7022c7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Internal/CatalogosAdminController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60064a6964cf9129cbc30b42744c712c41da6896",
+      "size": 6403,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/60064a6964cf9129cbc30b42744c712c41da6896"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Internal/DestinosController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f9070f845fa2b69ece23773a7af2733a9c63a7c4",
+      "size": 2720,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f9070f845fa2b69ece23773a7af2733a9c63a7c4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Internal/ImagenesController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cfc70ff8ecc5e24bb5d49ff3bfe58eb12384f6f7",
+      "size": 2830,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cfc70ff8ecc5e24bb5d49ff3bfe58eb12384f6f7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasAdminController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "011ebf417a89e94ee946ccaf853c07584a9060c3",
+      "size": 2834,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/011ebf417a89e94ee946ccaf853c07584a9060c3"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb946038700879902266f63a693aee0dc99b96fa",
+      "size": 3264,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cb946038700879902266f63a693aee0dc99b96fa"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Controllers/V1/Internal/UsuariosController.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c91235fb715b1381f5ffa97c288c2fad71daade3",
+      "size": 2720,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c91235fb715b1381f5ffa97c288c2fad71daade3"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "14f5e2c7d2b465b2dcf70f419fffa6fdf0acca62",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/14f5e2c7d2b465b2dcf70f419fffa6fdf0acca62"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions/ApiVersioningExtensions.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d375b55b2642ffe0a2f3b8e1004740d8a4943af",
+      "size": 553,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2d375b55b2642ffe0a2f3b8e1004740d8a4943af"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions/AuthenticationExtensions.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "67bbd376388d6821fc97fec4879f899078459a5e",
+      "size": 2793,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/67bbd376388d6821fc97fec4879f899078459a5e"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions/AuthorizationExtensions.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc1e582b18ad5e5241063ef8808008a141eb4195",
+      "size": 597,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/dc1e582b18ad5e5241063ef8808008a141eb4195"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions/AuthorizeOperationFilter.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88b3066d96d9fdbdfd387ce27e1b1dc683f2bcad",
+      "size": 1262,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/88b3066d96d9fdbdfd387ce27e1b1dc683f2bcad"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions/CorsExtensions.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2c6d2d851ed68ede7e982f9c068e1774614eb42e",
+      "size": 1110,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2c6d2d851ed68ede7e982f9c068e1774614eb42e"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions/ResponseCachingExtensions.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f84b2660edb86c802aaeea48d8028921993b7d2e",
+      "size": 1981,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f84b2660edb86c802aaeea48d8028921993b7d2e"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions/ServiceCollectionExtensions.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2f5451e8aad6d4f65a5d5295145f8b2d267e9b25",
+      "size": 6077,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2f5451e8aad6d4f65a5d5295145f8b2d267e9b25"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Extensions/SwaggerExtensions.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e9ea5e70aab6572c07acf4222be3c00017084168",
+      "size": 1853,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e9ea5e70aab6572c07acf4222be3c00017084168"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Filters",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2bf7c8be7137204a63282d8dbdd0dadf3a3f5869",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/2bf7c8be7137204a63282d8dbdd0dadf3a3f5869"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Filters/ValidateModelFilter.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7c997b2c983de988654a0be2d15277b97fb68702",
+      "size": 1308,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/7c997b2c983de988654a0be2d15277b97fb68702"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Helpers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "86cadfdcefcdbb0802267fa8fb2dcb03401a820f",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/86cadfdcefcdbb0802267fa8fb2dcb03401a820f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Helpers/CacheProfileNames.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "19b055927e29ab9fe2e5348986bf12a156f554d8",
+      "size": 308,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/19b055927e29ab9fe2e5348986bf12a156f554d8"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Helpers/EndpointNames.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cdee2c3fa0a9f3aa6d708af8611d254f294f6a88",
+      "size": 544,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cdee2c3fa0a9f3aa6d708af8611d254f294f6a88"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Helpers/LinkBuilder.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "486ce55697d4dc69fd0b98fa2b2f109840aec7c7",
+      "size": 2487,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/486ce55697d4dc69fd0b98fa2b2f109840aec7c7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Helpers/SorterFactory.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "45c91d96d2cbf2b49aa7928b148db21bf5418f64",
+      "size": 641,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/45c91d96d2cbf2b49aa7928b148db21bf5418f64"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ce73a5a26aa422d4ffb253f76ed0b376c2c59a86",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/ce73a5a26aa422d4ffb253f76ed0b376c2c59a86"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "812cb9d4449c24b80642da5746c61a427214edcf",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/812cb9d4449c24b80642da5746c61a427214edcf"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/AtraccionesAdminApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd9bcf82eb827b4990f467d5870618987addbe88",
+      "size": 1049,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cd9bcf82eb827b4990f467d5870618987addbe88"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/AuthApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "85d40756b6d4d53e9feb88d06cfaef0c67978e26",
+      "size": 389,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/85d40756b6d4d53e9feb88d06cfaef0c67978e26"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/ClientesApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3d704eb31e6fbdc53a2ad03e066c22e5129da251",
+      "size": 1010,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3d704eb31e6fbdc53a2ad03e066c22e5129da251"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/DestinosApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d17e23a45a9f1c5c3bc7dd8c766dd6d30dbcf98",
+      "size": 602,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6d17e23a45a9f1c5c3bc7dd8c766dd6d30dbcf98"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/FacturasApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "458552e0fcb8b06e7b266d5a10bc5536405cfc21",
+      "size": 1010,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/458552e0fcb8b06e7b266d5a10bc5536405cfc21"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/ReseniasAdminApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "326bf14f5e86d62584c214c5cd520d0d1744d168",
+      "size": 640,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/326bf14f5e86d62584c214c5cd520d0d1744d168"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/ReservasAdminApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5e8d53d227378c0796ff11b9b9d6321672b36c7",
+      "size": 1031,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d5e8d53d227378c0796ff11b9b9d6321672b36c7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/TicketsApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "01db01a02d03316fc5a92373579fa393250603e2",
+      "size": 393,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/01db01a02d03316fc5a92373579fa393250603e2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Admin/UsuariosApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b69f7e6a11875776ffb23a89e089bf5217517dc2",
+      "size": 602,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b69f7e6a11875776ffb23a89e089bf5217517dc2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "aae38c6d0b0fe7ab578b59070e1a15aa4780d089",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/aae38c6d0b0fe7ab578b59070e1a15aa4780d089"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Public/AtraccionesApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f30e8f751fc663e411d0f3f9f98b62ac6607c2c",
+      "size": 2842,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9f30e8f751fc663e411d0f3f9f98b62ac6607c2c"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Public/ReseniasApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "023c1c2f1a4f40f6bbde9b05bce1bce817f9e9e3",
+      "size": 978,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/023c1c2f1a4f40f6bbde9b05bce1bce817f9e9e3"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Mappers/Public/ReservasApiMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b0ab4c4fa943488283dc8662d1f44037f96dc66c",
+      "size": 890,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b0ab4c4fa943488283dc8662d1f44037f96dc66c"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Microservicio.Atracciones.Api.csproj",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e8179b9f9d03b09697cceececb5cec845a03a8b1",
+      "size": 1059,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e8179b9f9d03b09697cceececb5cec845a03a8b1"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Microservicio.Atracciones.Api.http",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ebbe021aba9d581bf908b68e877dbaadec2aaa10",
+      "size": 165,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ebbe021aba9d581bf908b68e877dbaadec2aaa10"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Middleware",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3df812ccab5fb9fc61c3c4c7f7c420a3c74f91d9",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/3df812ccab5fb9fc61c3c4c7f7c420a3c74f91d9"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Middleware/ExceptionHandlingMiddleware.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "51152efc2439b4289210d46953ec5e585cf3d7a4",
+      "size": 6010,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/51152efc2439b4289210d46953ec5e585cf3d7a4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7c39e22ea3a7886cbd619f9a65fbb35267b3d5eb",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/7c39e22ea3a7886cbd619f9a65fbb35267b3d5eb"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Common",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "48d4189fa38213eaa2ff00a31679c298515ba633",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/48d4189fa38213eaa2ff00a31679c298515ba633"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Common/ApiErrorResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "44a9165b679ebb9878305f72bd87304b9cfac037",
+      "size": 433,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/44a9165b679ebb9878305f72bd87304b9cfac037"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Common/ApiItemResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a45098c2eed9b5e35a8ac65ab373bec05c6e6303",
+      "size": 758,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a45098c2eed9b5e35a8ac65ab373bec05c6e6303"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Common/ApiListResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f09ac6b09c46ccc0320f414efd19d8c30fc298a2",
+      "size": 986,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f09ac6b09c46ccc0320f414efd19d8c30fc298a2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Common/FilterStatsResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7d99320c89074b669d9bff52c0858f486581e8c6",
+      "size": 220,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/7d99320c89074b669d9bff52c0858f486581e8c6"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Common/LinksResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e2ea3e04cbb456f1d358f89563227ba555213569",
+      "size": 321,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e2ea3e04cbb456f1d358f89563227ba555213569"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Common/PaginationResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8b83cf92a6afa5726f9795e4a3e3540c4964138d",
+      "size": 269,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8b83cf92a6afa5726f9795e4a3e3540c4964138d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Common/SorterResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6787383d1b5f2abbe40bf6b51b858a6a745c7e30",
+      "size": 220,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6787383d1b5f2abbe40bf6b51b858a6a745c7e30"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Settings",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "17f05cdbf8747aa594c6247b9dd7fa83a45c465f",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/17f05cdbf8747aa594c6247b9dd7fa83a45c465f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Settings/ApiSettings.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "91e7f1b00965d924ab0dddb921b045e2e06261fa",
+      "size": 370,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/91e7f1b00965d924ab0dddb921b045e2e06261fa"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Settings/CacheSettings.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eebd1d5167be78d00a1b1497d2235e5ec674e990",
+      "size": 285,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/eebd1d5167be78d00a1b1497d2235e5ec674e990"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Settings/CorsSettings.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e378dbb8e381adcb86936166bd4e7cfeddf87d7c",
+      "size": 253,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e378dbb8e381adcb86936166bd4e7cfeddf87d7c"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Models/Settings/JwtSettings.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "369698d38c4922c55b5f1b1242dae1995b2e10c2",
+      "size": 310,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/369698d38c4922c55b5f1b1242dae1995b2e10c2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Program.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c39063e6ebba3cdd4240db5d96f29c011b8026c",
+      "size": 1464,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3c39063e6ebba3cdd4240db5d96f29c011b8026c"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Properties",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b75df81a3d162ca1022dc77a55441de2eae5373c",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/b75df81a3d162ca1022dc77a55441de2eae5373c"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Properties/launchSettings.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d75186f7e93d3d7a4f407d11de14cb2fc0b5571",
+      "size": 621,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6d75186f7e93d3d7a4f407d11de14cb2fc0b5571"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Services",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "efd5ce5dffd62aeb720be3513e05b2cfd659d7a0",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/efd5ce5dffd62aeb720be3513e05b2cfd659d7a0"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Services/BcryptPasswordHasher.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff600996a48127f6e247773772b907662f9d2e10",
+      "size": 724,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ff600996a48127f6e247773772b907662f9d2e10"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Services/JwtTokenService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9fc4e3232db659a3fc3c73cc70c6a0134ef93bdb",
+      "size": 2072,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9fc4e3232db659a3fc3c73cc70c6a0134ef93bdb"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/Services/TokenService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "439148e419cb15d20b715abf5ef8367045cd7c07",
+      "size": 248,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/439148e419cb15d20b715abf5ef8367045cd7c07"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/appsettings.Development.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0083ca12b31aa510faf878d54db291d14a0af7e2",
+      "size": 709,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0083ca12b31aa510faf878d54db291d14a0af7e2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Api/appsettings.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b20be9015494189f5f75d9661cbf3d4823afdab0",
+      "size": 1141,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b20be9015494189f5f75d9661cbf3d4823afdab0"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "09103e7b4405879c78e55581cdd6cd40ca54d61e",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/09103e7b4405879c78e55581cdd6cd40ca54d61e"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ac6e9d75bad111db621f764e4a9e95cfb9620aa9",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/ac6e9d75bad111db621f764e4a9e95cfb9620aa9"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "11c237750df1dada19bc1469bd622a6c51c529b5",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/11c237750df1dada19bc1469bd622a6c51c529b5"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Atracciones",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "353882900e5149aa095d1dae30d178503cb8dda6",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/353882900e5149aa095d1dae30d178503cb8dda6"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Atracciones/ActualizarAtraccionRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "967b350f8d4173d2543cfdeb5c47e25868530375",
+      "size": 1049,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/967b350f8d4173d2543cfdeb5c47e25868530375"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Atracciones/AtraccionAdminFiltroRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fc95bf9410052def385358145e32b87e232cff99",
+      "size": 510,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/fc95bf9410052def385358145e32b87e232cff99"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Atracciones/AtraccionAdminResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24bd623c3bde3811ba92077a891a1a0c133d9c27",
+      "size": 1648,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/24bd623c3bde3811ba92077a891a1a0c133d9c27"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Atracciones/CrearAtraccionRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b1e4550cca1a4bdf6de1fe16fc1ed71b4a0b62a6",
+      "size": 1354,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b1e4550cca1a4bdf6de1fe16fc1ed71b4a0b62a6"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Catalogos",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "56e36802f8fdfb5371f256ba592e2fe94f0a46d9",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/56e36802f8fdfb5371f256ba592e2fe94f0a46d9"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Catalogos/CatalogoRequests.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b9ae85735c902ff42018fad61f57c40d5f30bf4",
+      "size": 1162,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3b9ae85735c902ff42018fad61f57c40d5f30bf4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Catalogos/CategoriaResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5cbb013f426d246deeb587ced83d66f4d620e62a",
+      "size": 333,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5cbb013f426d246deeb587ced83d66f4d620e62a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Catalogos/IdiomaResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb7c87cab30c5e08d99ac4ac521cac896b660ffa",
+      "size": 236,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cb7c87cab30c5e08d99ac4ac521cac896b660ffa"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Catalogos/IncluyeResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4e3e316456c329a70e309ec38748498e492b48f",
+      "size": 242,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b4e3e316456c329a70e309ec38748498e492b48f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Clientes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "50400a891aca4714ffc256b53fe363d3c357feda",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/50400a891aca4714ffc256b53fe363d3c357feda"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Clientes/ActualizarClienteRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2711ce21642ac66b8e0645d92883ee770de4815f",
+      "size": 632,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2711ce21642ac66b8e0645d92883ee770de4815f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Clientes/ClienteFiltroRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b002e4ee1521771db81147d54148a9bdf2259133",
+      "size": 512,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b002e4ee1521771db81147d54148a9bdf2259133"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Clientes/ClienteResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "643120c462859ad266a0bc126ff997fe515edbe4",
+      "size": 774,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/643120c462859ad266a0bc126ff997fe515edbe4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Clientes/CrearClienteRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "555fe8a735a0a4af441a64b98040c1a37e95756b",
+      "size": 1132,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/555fe8a735a0a4af441a64b98040c1a37e95756b"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Destinos",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5de3e8babbe26b808ae3f30de6593285c825a32a",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/5de3e8babbe26b808ae3f30de6593285c825a32a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Destinos/ActualizarDestinoRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b9267689c56f38342a954b0d83ce6b8b8588455",
+      "size": 423,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5b9267689c56f38342a954b0d83ce6b8b8588455"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Destinos/CrearDestinoRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b0a329e117340b44d09a6bfdbbdb54c8f5d00419",
+      "size": 468,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b0a329e117340b44d09a6bfdbbdb54c8f5d00419"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Destinos/DestinoResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c70a10f6a18121d6694600b14e7517fe69e7145b",
+      "size": 450,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c70a10f6a18121d6694600b14e7517fe69e7145b"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Facturas",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "15c491b749a40c95e9c59d984142edd25e063157",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/15c491b749a40c95e9c59d984142edd25e063157"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Facturas/FacturaResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c1eb033d22ecf7b12a987acdc883d389e70c3be",
+      "size": 690,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0c1eb033d22ecf7b12a987acdc883d389e70c3be"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Facturas/GenerarFacturaRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "65cbce8050e992cfaf20c3d3be242907e212f0d5",
+      "size": 698,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/65cbce8050e992cfaf20c3d3be242907e212f0d5"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Imagenes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "64c7414f3852dc981227758714538a40b1037a47",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/64c7414f3852dc981227758714538a40b1037a47"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Imagenes/ImagenRequests.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e1442363c0837ec5eebfa47c61ddcf8ac31016fa",
+      "size": 863,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e1442363c0837ec5eebfa47c61ddcf8ac31016fa"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Resenias",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c1daf69b734fa929fd8bcb46f2b5e387c6b32a43",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/c1daf69b734fa929fd8bcb46f2b5e387c6b32a43"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Resenias/ActualizarReseniaRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d2440d8ce7840ebe4f3b0aa0596cd7b764c9d91",
+      "size": 404,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/1d2440d8ce7840ebe4f3b0aa0596cd7b764c9d91"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Resenias/ReseniaAdminResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b8630d3e3615b2479890c4543a6269fa682e5876",
+      "size": 568,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b8630d3e3615b2479890c4543a6269fa682e5876"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Reservas",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "72a97ae4433928ff8e53745eec4392fe015c1e76",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/72a97ae4433928ff8e53745eec4392fe015c1e76"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Reservas/ActualizarEstadoReservaRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "750cf139f627b28502aa91f914fc3519e5dede7c",
+      "size": 460,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/750cf139f627b28502aa91f914fc3519e5dede7c"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Reservas/ReservaAdminFiltroRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41b414f69c1123bdda3b55e7c9ac070b6fa89acc",
+      "size": 595,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/41b414f69c1123bdda3b55e7c9ac070b6fa89acc"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Reservas/ReservaAdminResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c065afb4769627877db366cf16f1a11fee93783",
+      "size": 829,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0c065afb4769627877db366cf16f1a11fee93783"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Reservas/ReservaDetalleAdminResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d6f0712d8f555b3fde9daad7372647ad9201ce3",
+      "size": 402,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/1d6f0712d8f555b3fde9daad7372647ad9201ce3"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Tickets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0fca09df9ca016c0c210cc2730e31389be1906ba",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/0fca09df9ca016c0c210cc2730e31389be1906ba"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Tickets/ActualizarHorarioRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1afbbcac2e69436f2929bf8717e86d5fa8110a87",
+      "size": 524,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/1afbbcac2e69436f2929bf8717e86d5fa8110a87"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Tickets/ActualizarTicketRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d83ba4f97e6a5ae37ba3604bb6f1696dc8f803d0",
+      "size": 489,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d83ba4f97e6a5ae37ba3604bb6f1696dc8f803d0"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Tickets/CrearHorarioRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a9ad6b9ab53be6e4d306a6eeaad8af853c18e56d",
+      "size": 523,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a9ad6b9ab53be6e4d306a6eeaad8af853c18e56d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Tickets/CrearTicketRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d304d741306c7016e8a3d2aab27254f0e3934f94",
+      "size": 784,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d304d741306c7016e8a3d2aab27254f0e3934f94"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Tickets/HorarioResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dd280f5e05eec12ad84034173034d4155d67f63a",
+      "size": 829,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/dd280f5e05eec12ad84034173034d4155d67f63a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Tickets/TicketResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6c3018e1ac218e8e1d2d1883971baf73eaa0a591",
+      "size": 832,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6c3018e1ac218e8e1d2d1883971baf73eaa0a591"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Usuarios",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6ad874e18e94d66f76764ee6c96f2a61f475cc87",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/6ad874e18e94d66f76764ee6c96f2a61f475cc87"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Usuarios/ActualizarUsuarioRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2953f04a5bf197db242180d1be833dcf7d05b8fa",
+      "size": 358,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2953f04a5bf197db242180d1be833dcf7d05b8fa"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Usuarios/CrearUsuarioRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a6574a47cfef995cb7da52365c12b888a7f36d6",
+      "size": 479,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5a6574a47cfef995cb7da52365c12b888a7f36d6"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Admin/Usuarios/UsuarioResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "85020513fb88e09a5523d0b73772345d5270961d",
+      "size": 467,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/85020513fb88e09a5523d0b73772345d5270961d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Auth",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1bb2d7966cd4c02f75472c507b52934ebffd8bcd",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/1bb2d7966cd4c02f75472c507b52934ebffd8bcd"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Auth/LoginRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e54237c945633f2284f8d9047f15a5d36f571a0a",
+      "size": 517,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e54237c945633f2284f8d9047f15a5d36f571a0a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Auth/LoginResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e139b7c043a17795ef827391fa5f97124711dc1f",
+      "size": 342,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e139b7c043a17795ef827391fa5f97124711dc1f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Auth/RegistroClienteRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "23c85d215aee74d2cff5924dbd4a716eb5f50fb1",
+      "size": 1095,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/23c85d215aee74d2cff5924dbd4a716eb5f50fb1"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Auth/UsuarioAutenticadoDto.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f257d8ed5ca88f45235d018fd35536689b8ec23",
+      "size": 370,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0f257d8ed5ca88f45235d018fd35536689b8ec23"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c445a9829287020e77e54d436eb104aa6e1e4383",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/c445a9829287020e77e54d436eb104aa6e1e4383"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Atracciones",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "697becddddf1634077dd4dbc4eba39c2945e38cf",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/697becddddf1634077dd4dbc4eba39c2945e38cf"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Atracciones/AtraccionDetalleResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "48225a7100cd3efc7405abf97c4fea095812d83f",
+      "size": 1124,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/48225a7100cd3efc7405abf97c4fea095812d83f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Atracciones/AtraccionFiltroRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "398606bc2c1dda7973621206243de5e72d0d5329",
+      "size": 1110,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/398606bc2c1dda7973621206243de5e72d0d5329"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Atracciones/AtraccionListadoResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "09db76692c86e64c40e1508b01b5464ac6e967c8",
+      "size": 1711,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/09db76692c86e64c40e1508b01b5464ac6e967c8"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Atracciones/DisponibilidadResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ddf7f72bf0aa8dddf4cb0413dd2597d17fda8b7",
+      "size": 420,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/7ddf7f72bf0aa8dddf4cb0413dd2597d17fda8b7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Atracciones/FiltrosAtraccionResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5dde8583b53686b8d11761bfe4dfcba20d83a18d",
+      "size": 1417,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5dde8583b53686b8d11761bfe4dfcba20d83a18d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Atracciones/HorarioProximoResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a60eb38be6b6f3b538cf0f00bdc4c868780ddeba",
+      "size": 698,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a60eb38be6b6f3b538cf0f00bdc4c868780ddeba"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Atracciones/TicketDisponibleResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6a7640c8f3b2bc81e33eb4a9a1dde9ee472dacbc",
+      "size": 637,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6a7640c8f3b2bc81e33eb4a9a1dde9ee472dacbc"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Clientes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3fb808aa301f26c00951606eda719bba85eae890",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/3fb808aa301f26c00951606eda719bba85eae890"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Clientes/ActualizarPerfilClienteRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "323a3ce3f84d01c9369bd2d4230a194e1b8c4058",
+      "size": 439,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/323a3ce3f84d01c9369bd2d4230a194e1b8c4058"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Clientes/PerfilClienteResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d7f175f485ec05a50da4406b4237a104c0554e7b",
+      "size": 504,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d7f175f485ec05a50da4406b4237a104c0554e7b"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Resenias",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "801cb3071ec0a825c2418b67a72d55f9cc052adb",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/801cb3071ec0a825c2418b67a72d55f9cc052adb"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Resenias/CrearReseniaRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "35a92acd053f7de5ead6976dbe2982b52f49a3a5",
+      "size": 610,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/35a92acd053f7de5ead6976dbe2982b52f49a3a5"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Resenias/ReseniaResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8578c255e19c53bb3ad5d9627d508d551e40213f",
+      "size": 470,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8578c255e19c53bb3ad5d9627d508d551e40213f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Reservas",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a19ede9f3ec2d7772b360a98dd42a22ef3e8ef0a",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/a19ede9f3ec2d7772b360a98dd42a22ef3e8ef0a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Reservas/CancelarReservaRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e8bd2e491c85b29cd0fbc9329c63ae856bc08c4",
+      "size": 181,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9e8bd2e491c85b29cd0fbc9329c63ae856bc08c4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Reservas/CrearReservaRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dbe84ae5f2c388a3bc6d0af15418add91c8985b4",
+      "size": 1587,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/dbe84ae5f2c388a3bc6d0af15418add91c8985b4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Reservas/ReservaDetalleRequest.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b578072b39cdc3f92a5f48456d18c6487730847",
+      "size": 477,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/7b578072b39cdc3f92a5f48456d18c6487730847"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Reservas/ReservaDetalleResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b0da784033b9e6768a97a85fc18c0cca0dc1fbe1",
+      "size": 401,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b0da784033b9e6768a97a85fc18c0cca0dc1fbe1"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/DTOs/Public/Reservas/ReservaResponse.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4634a54e2006e2edf028a6e730582e8bf833cd56",
+      "size": 1044,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/4634a54e2006e2edf028a6e730582e8bf833cd56"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Exceptions",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1c1c02a58965083a44a7eb6327e0abf85e485679",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/1c1c02a58965083a44a7eb6327e0abf85e485679"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Exceptions/BusinessException.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c444560fdb5ead71e141f3734e953c50dc237a42",
+      "size": 402,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c444560fdb5ead71e141f3734e953c50dc237a42"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Exceptions/ConflictException.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3102d34a82b785f0914fcbcbd2618a014b6dd5ad",
+      "size": 300,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3102d34a82b785f0914fcbcbd2618a014b6dd5ad"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Exceptions/ForbiddenBusinessException.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "88626aa35c6bb785d4ec0deabeb235abae425a5d",
+      "size": 369,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/88626aa35c6bb785d4ec0deabeb235abae425a5d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Exceptions/NotFoundException.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b5c31f09d655024adc29c5570434c6fe24e2d481",
+      "size": 399,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b5c31f09d655024adc29c5570434c6fe24e2d481"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Exceptions/UnauthorizedBusinessException.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f2104074777169d679a6179c23d83de07ef5109f",
+      "size": 306,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f2104074777169d679a6179c23d83de07ef5109f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Exceptions/ValidationException.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a0063d17a63318bddd15314701cbf384fce957c1",
+      "size": 554,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a0063d17a63318bddd15314701cbf384fce957c1"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "28914fc78bc115dc14fd3f28a45dd74cee0a265c",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/28914fc78bc115dc14fd3f28a45dd74cee0a265c"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1f1e517bd6d889e870df803ab2ff0c422d407a81",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/1f1e517bd6d889e870df803ab2ff0c422d407a81"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/IAtraccionAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "957bf2a245a7422aa9ee76d0fa91277a0e54adf0",
+      "size": 750,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/957bf2a245a7422aa9ee76d0fa91277a0e54adf0"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/ICatalogoAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc7c03c6dcc5a089ae11eeb36c4ae8ff108c0f8a",
+      "size": 1282,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/dc7c03c6dcc5a089ae11eeb36c4ae8ff108c0f8a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/IClienteAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "33cec1b7d7219a86a06c89dc3fee1a721a9271e4",
+      "size": 709,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/33cec1b7d7219a86a06c89dc3fee1a721a9271e4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/IDestinoAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e933d8c02c95faa99c1b397b5727f31adf5b9b6d",
+      "size": 553,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e933d8c02c95faa99c1b397b5727f31adf5b9b6d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/IFacturaAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3eb78215508bb1df531494f9ca57dd6e842cf6c2",
+      "size": 502,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3eb78215508bb1df531494f9ca57dd6e842cf6c2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/IImagenAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ee851f0f3f072555233ee597112bf268e17aee29",
+      "size": 544,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ee851f0f3f072555233ee597112bf268e17aee29"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/IReseniaAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d883728855cf5940aab161636cd6f605d6def4b6",
+      "size": 552,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d883728855cf5940aab161636cd6f605d6def4b6"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/IReservaAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ec0f645e4d434e368535c92f1996584a484db98",
+      "size": 540,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/7ec0f645e4d434e368535c92f1996584a484db98"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/ITicketAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e54b8c0fbbf0d2c8f22fd2f26aa897957caf2644",
+      "size": 1375,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e54b8c0fbbf0d2c8f22fd2f26aa897957caf2644"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Admin/IUsuarioAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c967dcf3a7aff9844e30cc6e28fd78097a7c43b",
+      "size": 553,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9c967dcf3a7aff9844e30cc6e28fd78097a7c43b"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Auth",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f530227faf9903dc5180065f2823e09405b4de76",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/f530227faf9903dc5180065f2823e09405b4de76"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Auth/IAuthService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8615e01149255220b1a5c12857ebb0dff1e53319",
+      "size": 981,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8615e01149255220b1a5c12857ebb0dff1e53319"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7e31d3466aa118e5ecab1d6dc8aa153e1f653c50",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/7e31d3466aa118e5ecab1d6dc8aa153e1f653c50"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Public/IAtraccionPublicService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b66315ae6a0339c74ae953ade6379e6fd4798064",
+      "size": 805,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b66315ae6a0339c74ae953ade6379e6fd4798064"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Public/IClientePerfilService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c400052df8a9f8d539a14f85ab3ac5a2cee21ea7",
+      "size": 357,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c400052df8a9f8d539a14f85ab3ac5a2cee21ea7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Public/IFacturaPublicService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dfd5728b5c04c17c48969d020890810e2da54648",
+      "size": 353,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/dfd5728b5c04c17c48969d020890810e2da54648"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Public/IReseniaPublicService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7742d488416c13584ee39d2f2b66b83cc3bde35f",
+      "size": 390,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/7742d488416c13584ee39d2f2b66b83cc3bde35f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Interfaces/Public/IReservaPublicService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4ebf885308a5905b92073c0da23e71cd2461c7fc",
+      "size": 672,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/4ebf885308a5905b92073c0da23e71cd2461c7fc"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a2950315f08ba18d82bf134b32aaabcf5557fbb9",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/a2950315f08ba18d82bf134b32aaabcf5557fbb9"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f36c143d89ec4353bb960be551b36da6fcff690f",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/f36c143d89ec4353bb960be551b36da6fcff690f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin/AtraccionAdminMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6ca572f6752cf2858a20e896fcfb701b8003fc09",
+      "size": 1948,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6ca572f6752cf2858a20e896fcfb701b8003fc09"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin/ClienteAdminMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6af7286f7257fad7007defb5ff8257acf47a6dd9",
+      "size": 935,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6af7286f7257fad7007defb5ff8257acf47a6dd9"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin/DestinoAdminMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f15ae6a1b3cac85b5f316a2a2f9e6476f1e892fb",
+      "size": 593,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f15ae6a1b3cac85b5f316a2a2f9e6476f1e892fb"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin/FacturaAdminMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "14c3eaa7334d5b41e615a1776d989f69a988a017",
+      "size": 865,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/14c3eaa7334d5b41e615a1776d989f69a988a017"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin/ReseniaAdminMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8753007fdd9c696a5fa7b311f7e3e21f832401e7",
+      "size": 761,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8753007fdd9c696a5fa7b311f7e3e21f832401e7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin/ReservaAdminMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41276355c45cf2d210bea4fd5d4ecd8f69a49886",
+      "size": 1491,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/41276355c45cf2d210bea4fd5d4ecd8f69a49886"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin/TicketAdminMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "678a028eeaffc32b0dee3b0d810164368411ff35",
+      "size": 2133,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/678a028eeaffc32b0dee3b0d810164368411ff35"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Admin/UsuarioAdminMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fdd8b3e1336ed10667dde50dcb1cac8f6199acf2",
+      "size": 638,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/fdd8b3e1336ed10667dde50dcb1cac8f6199acf2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/AuthBusinessMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b97ecbee620e9f4dd3f41bb5b75868cdd2d46f7d",
+      "size": 488,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b97ecbee620e9f4dd3f41bb5b75868cdd2d46f7d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ec10e9e7cc03c32c4ac225132d2da0f35b3447b7",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/ec10e9e7cc03c32c4ac225132d2da0f35b3447b7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Public/AtraccionPublicMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bf13b5f64f99a7eb7e47762a614a0018f90a0508",
+      "size": 7987,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/bf13b5f64f99a7eb7e47762a614a0018f90a0508"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Public/ReseniaPublicMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bc4a5f49a38d0faf426dbd449d6d1935d1539ca1",
+      "size": 681,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/bc4a5f49a38d0faf426dbd449d6d1935d1539ca1"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Mappers/Public/ReservaPublicMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9de47851d17080a27750744f2129d1595bec8818",
+      "size": 1407,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9de47851d17080a27750744f2129d1595bec8818"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Microservicio.Atracciones.Business.csproj",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f480423a804871a5838062f49afcb948ee610a1f",
+      "size": 392,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f480423a804871a5838062f49afcb948ee610a1f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "747353442e7dc9233381658679da5b0e4ac9db7b",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/747353442e7dc9233381658679da5b0e4ac9db7b"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules/Admin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bb239f6e0af820c38c324fe5e60d0c9fcc69d7eb",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/bb239f6e0af820c38c324fe5e60d0c9fcc69d7eb"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules/Admin/AtraccionRules.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2bf55228bf471fbcf783c92fb3b8746121a2a4f",
+      "size": 1351,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a2bf55228bf471fbcf783c92fb3b8746121a2a4f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules/Admin/FacturaRules.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fa5204749a6f208976ce951a5635df47f3269c15",
+      "size": 1468,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/fa5204749a6f208976ce951a5635df47f3269c15"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules/Admin/ReservaAdminRules.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ddde206682ea9a9c1ea7b61a5cc6a7bcb3ed02a",
+      "size": 1144,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9ddde206682ea9a9c1ea7b61a5cc6a7bcb3ed02a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules/Admin/TicketRules.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fe83d018f701e7d101a2cc649f26cf529f2aae4f",
+      "size": 1659,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/fe83d018f701e7d101a2cc649f26cf529f2aae4f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules/Public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9920cbaa727286889e06cbf68136025e2a4a95fc",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/9920cbaa727286889e06cbf68136025e2a4a95fc"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules/Public/ReseniaRules.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6190d77a9996d6887080921b7403c03d19e09d5d",
+      "size": 1681,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6190d77a9996d6887080921b7403c03d19e09d5d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Rules/Public/ReservaRules.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f79966728359c9dac08de87bd5fee9f193e56487",
+      "size": 3858,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f79966728359c9dac08de87bd5fee9f193e56487"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2c542c2d45fa21c72f90742be68786c91ed72d43",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/2c542c2d45fa21c72f90742be68786c91ed72d43"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b2fa72eb7c4ebe81bc0429582e26dbffb864f845",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/b2fa72eb7c4ebe81bc0429582e26dbffb864f845"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/AtraccionAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2274cd82a884314a90fe2d3fd2d9f710c9b214de",
+      "size": 6815,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2274cd82a884314a90fe2d3fd2d9f710c9b214de"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/CatalogoAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c231595260fc55a27b8c9959baf0a21516e185af",
+      "size": 7520,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c231595260fc55a27b8c9959baf0a21516e185af"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/ClienteAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ff5b3aed1441f5ed28e4fb60b750960d3dbe6df7",
+      "size": 7293,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ff5b3aed1441f5ed28e4fb60b750960d3dbe6df7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/DestinoAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9d826dd7da2b4ef259aa2a9d7a1e23026a2b4fe1",
+      "size": 2655,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9d826dd7da2b4ef259aa2a9d7a1e23026a2b4fe1"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/FacturaAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2aa9bae6de9a9695825ed748279a1dab6eb9af97",
+      "size": 3372,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2aa9bae6de9a9695825ed748279a1dab6eb9af97"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/ImagenAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "944e41263368c536e37f4a5b6423c1e01cf94b8c",
+      "size": 3607,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/944e41263368c536e37f4a5b6423c1e01cf94b8c"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/ReseniaAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d93ff0a5cb48f077cbdc8d54ce544551c7652ed7",
+      "size": 3063,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d93ff0a5cb48f077cbdc8d54ce544551c7652ed7"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/ReservaAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3bc70566cc6d56f88637461d51f88657a5144ead",
+      "size": 2571,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3bc70566cc6d56f88637461d51f88657a5144ead"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/TicketAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9a2661f1b63dbb1230119f06ceed1d3076e53b5e",
+      "size": 9663,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9a2661f1b63dbb1230119f06ceed1d3076e53b5e"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Admin/UsuarioAdminService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cfd8fb3d5b0abf4df82a5b9894c22460af15d32a",
+      "size": 3459,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cfd8fb3d5b0abf4df82a5b9894c22460af15d32a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Auth",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "aa08d0cbc0ef9b3e889c16b5c8570334ade010b2",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/aa08d0cbc0ef9b3e889c16b5c8570334ade010b2"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Auth/AuthService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "03ab1120198fb9ea63c039bb03c70d888767c70a",
+      "size": 2210,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/03ab1120198fb9ea63c039bb03c70d888767c70a"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "268eae53132ba92534f253ea0c9c66774a9a5875",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/268eae53132ba92534f253ea0c9c66774a9a5875"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Public/AtraccionPublicService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "afd67e3ffa2a215fad9385ef95fedca6cd53aa84",
+      "size": 12749,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/afd67e3ffa2a215fad9385ef95fedca6cd53aa84"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Public/ClientePerfilService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "096708e0be336bdc7e417fd4f47c0d64501dcf2e",
+      "size": 2613,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/096708e0be336bdc7e417fd4f47c0d64501dcf2e"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Public/FacturaPublicService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4681c289157f897fc7f0cbc37d624a24f1214c0d",
+      "size": 2227,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/4681c289157f897fc7f0cbc37d624a24f1214c0d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Public/ReseniaPublicService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6300c72d117185da8fa04fcad2c3e8efb2ac2af0",
+      "size": 4251,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6300c72d117185da8fa04fcad2c3e8efb2ac2af0"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Services/Public/ReservaPublicService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2872d7f5d7abf924924232c40f3583c0bbf758a4",
+      "size": 13726,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2872d7f5d7abf924924232c40f3583c0bbf758a4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f64b490f6866b28cd3f452b9a79c30eea20c3669",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/f64b490f6866b28cd3f452b9a79c30eea20c3669"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4873924485707272636bf6626543215d32994d39",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/4873924485707272636bf6626543215d32994d39"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin/AtraccionAdminValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5716e188ea5202617281fce0daeec174e53f30b4",
+      "size": 4097,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5716e188ea5202617281fce0daeec174e53f30b4"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin/ClienteAdminValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6cfe9a8a274e191682e59340f516d6f20d4c4bf9",
+      "size": 1923,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6cfe9a8a274e191682e59340f516d6f20d4c4bf9"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin/DestinoAdminValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9dbaa00dcb30b1bab06efb854a885b6118c5354f",
+      "size": 938,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9dbaa00dcb30b1bab06efb854a885b6118c5354f"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin/FacturaAdminValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80bcdc38bf83864de3a25c1afc4699703eccd0f5",
+      "size": 866,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/80bcdc38bf83864de3a25c1afc4699703eccd0f5"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin/ReseniaAdminValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aea8ae46962cffa9eda07b050f3f6aa52c19ecc6",
+      "size": 929,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/aea8ae46962cffa9eda07b050f3f6aa52c19ecc6"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin/ReservaAdminValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "802c042e174aacb9bd6523db8eaaf47347468e19",
+      "size": 876,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/802c042e174aacb9bd6523db8eaaf47347468e19"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin/TicketAdminValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ab12931f2fa3ccc162cbc589c348c2f52733a1e",
+      "size": 2218,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/7ab12931f2fa3ccc162cbc589c348c2f52733a1e"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Admin/UsuarioAdminValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "620ce2ed4df27a5c1555b34b540c13b4ff6ab728",
+      "size": 882,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/620ce2ed4df27a5c1555b34b540c13b4ff6ab728"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/AuthValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "985c5653bc8a383f5ba40cb948e8cc4f31b7507d",
+      "size": 671,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/985c5653bc8a383f5ba40cb948e8cc4f31b7507d"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Public",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5c4dd3ad73ca7d238b37cb9bc0b23dcb50718ae9",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/5c4dd3ad73ca7d238b37cb9bc0b23dcb50718ae9"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Public/AtraccionPublicValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c97619c5e09ea5f0347ff06ef3ed2c43ca7d7c61",
+      "size": 2317,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c97619c5e09ea5f0347ff06ef3ed2c43ca7d7c61"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Public/ReseniaPublicValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2621ac67344b884c41f37b4750484e6a12682258",
+      "size": 840,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2621ac67344b884c41f37b4750484e6a12682258"
+    },
+    {
+      "path": "Microservicio.Atracciones.Business/Validators/Public/ReservaPublicValidator.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1cd7949a002015bccf782e7db0765d96bc679ef9",
+      "size": 1561,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/1cd7949a002015bccf782e7db0765d96bc679ef9"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "59fc05278b4c213001fa6cc2c92b19ab2b8e7b3a",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/59fc05278b4c213001fa6cc2c92b19ab2b8e7b3a"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Common",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fafea78b5513c87cb2be315dfefdab508da06efe",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/fafea78b5513c87cb2be315dfefdab508da06efe"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Common/PagedResult.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ef4c13936abf330f25c576ddd8ae1c653056074a",
+      "size": 882,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ef4c13936abf330f25c576ddd8ae1c653056074a"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Common/RepositoryBase.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "057cb82ab9726bbb7509962b9f24bd9326ec3885",
+      "size": 488,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/057cb82ab9726bbb7509962b9f24bd9326ec3885"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e50880ba19be2dc7db780ed45c70b567e9240f29",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/e50880ba19be2dc7db780ed45c70b567e9240f29"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/AtraccionConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2124c1dac583397688d628bf084aa1f31a8d2cff",
+      "size": 3461,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2124c1dac583397688d628bf084aa1f31a8d2cff"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/AtraccionIncluyeConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "be50f60d62d870ca6a5a15b5b7a0993758ae2e0a",
+      "size": 1729,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/be50f60d62d870ca6a5a15b5b7a0993758ae2e0a"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/AuditoriaLogConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3c7856c43a25a568e1fee274a329bd290aec202c",
+      "size": 2118,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3c7856c43a25a568e1fee274a329bd290aec202c"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/CategoriaAtraccionConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8cfff228178e3a01317ccf1a4da13b0f1363a266",
+      "size": 1743,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8cfff228178e3a01317ccf1a4da13b0f1363a266"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/CategoriaConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cff9fdef8a0f004736c258b2ec456913bb534312",
+      "size": 2414,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cff9fdef8a0f004736c258b2ec456913bb534312"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/ClienteConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38dda9cdf8c77d97eaf4a37163e0b3f26de1ba22",
+      "size": 3590,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/38dda9cdf8c77d97eaf4a37163e0b3f26de1ba22"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/DatosFacturacionConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0c71f54242c0073ffbb6a4853664b20d9695f4e",
+      "size": 1734,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e0c71f54242c0073ffbb6a4853664b20d9695f4e"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/DestinoConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db38e215308e17296dacc2d021c8566c731d6967",
+      "size": 2252,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/db38e215308e17296dacc2d021c8566c731d6967"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/FacturaConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "02a740b64e99ba1572fca888dd0a69520c892d44",
+      "size": 3013,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/02a740b64e99ba1572fca888dd0a69520c892d44"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/HorarioConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0a75f3a51cc7b11ef618d58b539b30bbd7f82d0",
+      "size": 2912,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e0a75f3a51cc7b11ef618d58b539b30bbd7f82d0"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/IdiomaAtraccionConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce652268d08364986d99c757472136b0c90db1a7",
+      "size": 1716,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ce652268d08364986d99c757472136b0c90db1a7"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/IdiomaConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2eeff336626157db2b7f36f61034b4e340e2aeae",
+      "size": 2128,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2eeff336626157db2b7f36f61034b4e340e2aeae"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/ImagenAtraccionConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e36fff5974d8afec53099e0110333ef9d6b0e25b",
+      "size": 1733,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e36fff5974d8afec53099e0110333ef9d6b0e25b"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/ImagenConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "56643b32a4437383b2a0814381bd9ff40dacccf8",
+      "size": 2141,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/56643b32a4437383b2a0814381bd9ff40dacccf8"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/IncluyeConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "00427cfaf7a0cc82fbaa6a59ae95009a545e18a8",
+      "size": 1068,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/00427cfaf7a0cc82fbaa6a59ae95009a545e18a8"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/ReseniaConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3e55aa54bf234ec0a3cdda2fcae0105fb0c38dba",
+      "size": 2898,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3e55aa54bf234ec0a3cdda2fcae0105fb0c38dba"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/ReservaConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "063898a28c5dd19f3eda03e6336ea4ca0fe392b6",
+      "size": 3406,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/063898a28c5dd19f3eda03e6336ea4ca0fe392b6"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/ReservaDetalleConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a6f83f5f88aec15e7639bff578481a5dc4d2e21",
+      "size": 2787,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/7a6f83f5f88aec15e7639bff578481a5dc4d2e21"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/RolConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6444205158d2387afee748a6811620247c7281a8",
+      "size": 2246,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6444205158d2387afee748a6811620247c7281a8"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/TicketConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8065db2277d00d81b67257a7b1ef696682c3fe2",
+      "size": 2803,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f8065db2277d00d81b67257a7b1ef696682c3fe2"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/UsuarioConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b4b5ec563ca327bc846e672781a66f3c690f5cf",
+      "size": 2679,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3b4b5ec563ca327bc846e672781a66f3c690f5cf"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Configurations/UsuarioRolConfiguration.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72fe5215b103a01e1760b5cf2d5480cc591ceb5e",
+      "size": 1580,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/72fe5215b103a01e1760b5cf2d5480cc591ceb5e"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Context",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0b157fcab3802ad7e2676c0140d68b9aa40c0f96",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/0b157fcab3802ad7e2676c0140d68b9aa40c0f96"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Context/AtraccionesDbContext.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "749cfbd84f8ee9b2d55d16883d1d7150768e5812",
+      "size": 6558,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/749cfbd84f8ee9b2d55d16883d1d7150768e5812"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ebeb0b4f6ce367e1f8878f6c04501a7f530934af",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/ebeb0b4f6ce367e1f8878f6c04501a7f530934af"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Atracciones",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0555d4c15d497064632d94b4974d6278888254c6",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/0555d4c15d497064632d94b4974d6278888254c6"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Atracciones/AtraccionEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "136ceb46aab8ce535a6cfeafd8fd38ccee667808",
+      "size": 2628,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/136ceb46aab8ce535a6cfeafd8fd38ccee667808"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Atracciones/AtraccionIncluyeEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ca7e50f5458b2596415b05ec674683a4f2557992",
+      "size": 794,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ca7e50f5458b2596415b05ec674683a4f2557992"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Atracciones/CategoriaAtraccionEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c8f923db55ea69087f48dba2ebe7811bf45cdf5e",
+      "size": 800,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c8f923db55ea69087f48dba2ebe7811bf45cdf5e"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Atracciones/IdiomaAtraccionEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f9ab091289207018c64f07b12f0419b709e11000",
+      "size": 791,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f9ab091289207018c64f07b12f0419b709e11000"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Atracciones/ImagenAtraccionEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b013a9a6210968314411913d3ba8e22305a4b29a",
+      "size": 796,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b013a9a6210968314411913d3ba8e22305a4b29a"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Auditoria",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "53501ad6ac5718d5e7ce54edaf7d15a0b66e9949",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/53501ad6ac5718d5e7ce54edaf7d15a0b66e9949"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Auditoria/AuditoriaLogEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3eb829e3e74b397bec1577ee1ba4c7ab81b4289c",
+      "size": 994,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3eb829e3e74b397bec1577ee1ba4c7ab81b4289c"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Catalogos",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "49773ad14b470ba8fef6d3beb88d94d50a597818",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/49773ad14b470ba8fef6d3beb88d94d50a597818"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Catalogos/CategoriaEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "22f906aab3854c6c6d8b174ddf8f9b99f8971399",
+      "size": 1460,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/22f906aab3854c6c6d8b174ddf8f9b99f8971399"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Catalogos/DestinoEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9345aeb564919e1a6e7e780d8ded8a9638710fea",
+      "size": 1300,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9345aeb564919e1a6e7e780d8ded8a9638710fea"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Catalogos/IdiomaEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e696c9eb53165634d630c9388e71efe077bc5453",
+      "size": 1201,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e696c9eb53165634d630c9388e71efe077bc5453"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Catalogos/ImagenEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e0cfdef6f474d5c738a4ff30fa76d0ab28436b2",
+      "size": 1258,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5e0cfdef6f474d5c738a4ff30fa76d0ab28436b2"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Catalogos/IncluyeEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0da31fb2d5f570f8410af65f8bcc76a266efa5df",
+      "size": 595,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0da31fb2d5f570f8410af65f8bcc76a266efa5df"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Clientes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0e4446a867bfc001a4c8d0ff8acd5622458d82ed",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/0e4446a867bfc001a4c8d0ff8acd5622458d82ed"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Clientes/ClienteEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "123bcfa990ff4261095891d977f289cc6ba0f18f",
+      "size": 1909,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/123bcfa990ff4261095891d977f289cc6ba0f18f"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Facturacion",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "dd508dd02ac04d568118c0493e39bec9890327bd",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/dd508dd02ac04d568118c0493e39bec9890327bd"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Facturacion/DatosFacturacionEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "de01933b9810f3c33bbc6daf3e79b73d1442c058",
+      "size": 627,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/de01933b9810f3c33bbc6daf3e79b73d1442c058"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Facturacion/FacturaEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f3619b21242e4140961e0b4332cf2c4e97a919ba",
+      "size": 1496,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f3619b21242e4140961e0b4332cf2c4e97a919ba"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Reservas",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "cec8cdb7ec951ac78b830536480efba38c79fdf7",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/cec8cdb7ec951ac78b830536480efba38c79fdf7"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Reservas/HorarioEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dd44fbf27877cd66c3b4ce9e4dca2bd60513940d",
+      "size": 1354,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/dd44fbf27877cd66c3b4ce9e4dca2bd60513940d"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Reservas/ReseniaEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d64c8f6e71a19261eb24cbd5f109c47b424d5e86",
+      "size": 1358,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d64c8f6e71a19261eb24cbd5f109c47b424d5e86"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Reservas/ReservaDetalleEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0df8ab133bf870202afba5272fd1f5d4b58bfbc9",
+      "size": 1251,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0df8ab133bf870202afba5272fd1f5d4b58bfbc9"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Reservas/ReservaEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "03cb801b60a2cc909573aa620afa841fca6cc482",
+      "size": 1913,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/03cb801b60a2cc909573aa620afa841fca6cc482"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Reservas/TicketEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e78cb8d74d658802e5561f6e172451a1a677eadd",
+      "size": 1667,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e78cb8d74d658802e5561f6e172451a1a677eadd"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Seguridad",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1155f731eed591a7b82ad8c5a66c46deb7ecd808",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/1155f731eed591a7b82ad8c5a66c46deb7ecd808"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Seguridad/RolEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3b46df1cda13251cdb56d272b5f8d5a93f5faedf",
+      "size": 1147,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3b46df1cda13251cdb56d272b5f8d5a93f5faedf"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Seguridad/UsuarioEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0c2ef20001f3358d92b098ab08217625b8e94fd9",
+      "size": 1516,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0c2ef20001f3358d92b098ab08217625b8e94fd9"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Entities/Seguridad/UsuarioRolEntity.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "36a1ba7021b146b03646b3a4b3a4d8cb12a7a7aa",
+      "size": 659,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/36a1ba7021b146b03646b3a4b3a4d8cb12a7a7aa"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Microservicio.Atracciones.DataAccess.csproj",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb97dfc3dcce2d281ade3c0cfd8dda54d1a82ef3",
+      "size": 612,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/bb97dfc3dcce2d281ade3c0cfd8dda54d1a82ef3"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Queries",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f4b188164177d7e48b5a68bbfcf0f2808b3831d2",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/f4b188164177d7e48b5a68bbfcf0f2808b3831d2"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Queries/AtraccionQueryRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fb2fb1801a5a962d959fd27fd8829769cb2d3a67",
+      "size": 8324,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/fb2fb1801a5a962d959fd27fd8829769cb2d3a67"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Queries/FacturaQueryRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5276875cea384abbfafbdcecb041c9a12fe49b17",
+      "size": 4342,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5276875cea384abbfafbdcecb041c9a12fe49b17"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Queries/ReservaQueryRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cedf9cc4091d56f772822d8fc6de3b89a00cce1d",
+      "size": 4650,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cedf9cc4091d56f772822d8fc6de3b89a00cce1d"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Queries/TicketQueryRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1bc17c36f36f9d0555777bfcdef04615085864a7",
+      "size": 6954,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/1bc17c36f36f9d0555777bfcdef04615085864a7"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "06f4395ec3afbb4711c336b10e323c2ad900b29e",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/06f4395ec3afbb4711c336b10e323c2ad900b29e"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/AtraccionRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a5d698c29992f12cfb20b0cecea1e9b637224fd2",
+      "size": 3475,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a5d698c29992f12cfb20b0cecea1e9b637224fd2"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/ClienteRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aefa2d3b3deee787745b498039fdde4c254c0b94",
+      "size": 2351,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/aefa2d3b3deee787745b498039fdde4c254c0b94"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/DestinoRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "498418d1e77257e093e4ef8dd2cdf03289d84c30",
+      "size": 2042,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/498418d1e77257e093e4ef8dd2cdf03289d84c30"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/FacturaRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "111481f6d60a49a407d3093677ea616326ab4c07",
+      "size": 1977,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/111481f6d60a49a407d3093677ea616326ab4c07"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "96f3fa0de9c969017e83701c64924525ba233614",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/96f3fa0de9c969017e83701c64924525ba233614"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces/IAtraccionRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "941c32c8e33828d9842e008b6c45297f7cf69785",
+      "size": 1166,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/941c32c8e33828d9842e008b6c45297f7cf69785"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces/IClienteRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2b7fc36be88b2a7516a23bd530c67d56493abba0",
+      "size": 633,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2b7fc36be88b2a7516a23bd530c67d56493abba0"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces/IDestinoRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a31f9d75506769c682168aae8588a31568886424",
+      "size": 544,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a31f9d75506769c682168aae8588a31568886424"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces/IFacturaRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "49afd7acd5915174cb196d70ac75f4022a61dfa4",
+      "size": 554,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/49afd7acd5915174cb196d70ac75f4022a61dfa4"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces/IReseniaRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ced47049e7c5c9945f1eaa8e97eca054ef25d3df",
+      "size": 629,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ced47049e7c5c9945f1eaa8e97eca054ef25d3df"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces/IReservaRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "66d8d9fa2d26ca5611842773d888a3f9de59b162",
+      "size": 675,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/66d8d9fa2d26ca5611842773d888a3f9de59b162"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces/ITicketRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6e7d455aef2c06c5ffb9d3d540979cc286d7982",
+      "size": 1004,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b6e7d455aef2c06c5ffb9d3d540979cc286d7982"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/Interfaces/IUsuarioRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4ddae4f6a218e08e946cd4ffda64e5f6de6337de",
+      "size": 535,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/4ddae4f6a218e08e946cd4ffda64e5f6de6337de"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/ReseniaRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78e4ac43a8f1b5ad68b181a9050ab40889152e55",
+      "size": 2262,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/78e4ac43a8f1b5ad68b181a9050ab40889152e55"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/ReservaRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "325f19ef1776faf1785606d4e35de55f288caa21",
+      "size": 2608,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/325f19ef1776faf1785606d4e35de55f288caa21"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/TicketRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "717a549ee134f38f5382489f63548774729117ee",
+      "size": 4017,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/717a549ee134f38f5382489f63548774729117ee"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataAccess/Repositories/UsuarioRepository.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "84d22eb1bdd9061433e19b720b9a94ff60a0f9be",
+      "size": 2510,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/84d22eb1bdd9061433e19b720b9a94ff60a0f9be"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c2368bccb350f1d20fd51d712aac21eaa1a7e9f6",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/c2368bccb350f1d20fd51d712aac21eaa1a7e9f6"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Common",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a5295c0c4d67c472630905b01090728431788f1d",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/a5295c0c4d67c472630905b01090728431788f1d"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Common/Constants",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "afb07660761de882cefe63bd7c16ce8b1ec86396",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/afb07660761de882cefe63bd7c16ce8b1ec86396"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Common/Constants/DataManagementConstants.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a6233abfe113132ecafa4ca0d146a7d6646c9d46",
+      "size": 3572,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a6233abfe113132ecafa4ca0d146a7d6646c9d46"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "431f639c3b0a4abb81c708949c142a162cde6fb1",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/431f639c3b0a4abb81c708949c142a162cde6fb1"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IAtraccionDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6814eed1404a4b1415d6bd9b17fc4cce36fe49a5",
+      "size": 2328,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6814eed1404a4b1415d6bd9b17fc4cce36fe49a5"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IAuditoriaLogDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ca1df96c59c5e68ca88ed2cd3815a45a7e74c19d",
+      "size": 318,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ca1df96c59c5e68ca88ed2cd3815a45a7e74c19d"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/ICategoriaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "735a78b3ec8b4099cb9de36f3c6e20c3eb42facd",
+      "size": 640,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/735a78b3ec8b4099cb9de36f3c6e20c3eb42facd"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IClienteDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e4946ba3aae5a223134ae762f3b7e8d22c559d64",
+      "size": 839,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e4946ba3aae5a223134ae762f3b7e8d22c559d64"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IDestinoDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c7a5854622df0eeb18e91e9d2aef5e5043f5d1b4",
+      "size": 633,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c7a5854622df0eeb18e91e9d2aef5e5043f5d1b4"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IFacturaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f27ecffd1e2ecd33e9299da1d7ae941a91669c2b",
+      "size": 925,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f27ecffd1e2ecd33e9299da1d7ae941a91669c2b"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IIdiomaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f598954bdf9a5f43006b6d63abf0a069439ad245",
+      "size": 709,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f598954bdf9a5f43006b6d63abf0a069439ad245"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IImagenDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "62dfd00a84b93e89d0383f4d60b77049ef9aa0fb",
+      "size": 625,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/62dfd00a84b93e89d0383f4d60b77049ef9aa0fb"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IIncluyeDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0db16e6a6135f08d05aa29fed75e6daf721861a7",
+      "size": 531,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0db16e6a6135f08d05aa29fed75e6daf721861a7"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IReseniaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d0fce6aab3d46b8bf9234b5623424a31da618e78",
+      "size": 837,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d0fce6aab3d46b8bf9234b5623424a31da618e78"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IReservaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "042e0c5b140a568c8c19e6f012ad3034187b3445",
+      "size": 861,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/042e0c5b140a568c8c19e6f012ad3034187b3445"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/ITicketDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b87aa8ca0e0e91b58250a9243eba4ef41b18a801",
+      "size": 1994,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b87aa8ca0e0e91b58250a9243eba4ef41b18a801"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IUnitOfWork.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc9d4fceac31f54ec1dec43e50809aa155110600",
+      "size": 1142,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/dc9d4fceac31f54ec1dec43e50809aa155110600"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Interfaces/IUsuarioDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3824411e22bc404f0be5120dd1916c1211970249",
+      "size": 824,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3824411e22bc404f0be5120dd1916c1211970249"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4e39eab6a3eaa7fb7d6ec1826794f65be329210e",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/4e39eab6a3eaa7fb7d6ec1826794f65be329210e"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Atracciones",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f2c52fadeca48d9cf163dcd071b6c0e13127e621",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/f2c52fadeca48d9cf163dcd071b6c0e13127e621"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Atracciones/AtraccionDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "97ff0cda6d8ef71f995640268caa049adb9e2f78",
+      "size": 7012,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/97ff0cda6d8ef71f995640268caa049adb9e2f78"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Auditoria",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c885f5eaf5d813ead20a33b5e4db136f203a15c0",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/c885f5eaf5d813ead20a33b5e4db136f203a15c0"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Auditoria/AuditoriaLogDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6969cb9917caff1ef8ef1844ae41c8e96f85f4d",
+      "size": 986,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e6969cb9917caff1ef8ef1844ae41c8e96f85f4d"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Catalogos",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e91292f0345c86e7dd7e120767e1df4a19fc93b6",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/e91292f0345c86e7dd7e120767e1df4a19fc93b6"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Catalogos/DestinoDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ed52a190feaf68f943aa136ac3d325e97aeb9ce",
+      "size": 2237,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8ed52a190feaf68f943aa136ac3d325e97aeb9ce"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Clientes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5270d6d153d9a4dfaa2cda29a9db45722c9adefa",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/5270d6d153d9a4dfaa2cda29a9db45722c9adefa"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Clientes/ClienteDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "800530f8931b79d5e6cb8fbc4324f2832d38d8ad",
+      "size": 3106,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/800530f8931b79d5e6cb8fbc4324f2832d38d8ad"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Facturacion",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "810ffd01d78a26dcac29265597408aaca10028ec",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/810ffd01d78a26dcac29265597408aaca10028ec"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Facturacion/FacturaDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8491d49499c0b11843085151e873a7ae702df92b",
+      "size": 3214,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8491d49499c0b11843085151e873a7ae702df92b"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Reservas",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "35e9dc3ea31779e598b966db38027048c96da957",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/35e9dc3ea31779e598b966db38027048c96da957"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Reservas/ReseniaDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "feea5463f6ad5e6b398c4d941f1c51f0aa789f66",
+      "size": 2270,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/feea5463f6ad5e6b398c4d941f1c51f0aa789f66"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Reservas/ReservaDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8bf4d9b2f3ddf524283c998744f76055e27b823c",
+      "size": 4973,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8bf4d9b2f3ddf524283c998744f76055e27b823c"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Reservas/TicketDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b4fdd8b523c9b462b68c508cbd8ce84e0655fa4e",
+      "size": 5326,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b4fdd8b523c9b462b68c508cbd8ce84e0655fa4e"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Seguridad",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6c075f0e32ce110e91553a6eeff6c9aea41c9eb2",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/6c075f0e32ce110e91553a6eeff6c9aea41c9eb2"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Seguridad/RolDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e25958036775cf0149323da5def669b1cd9cb47",
+      "size": 634,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5e25958036775cf0149323da5def669b1cd9cb47"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Mappers/Seguridad/UsuarioDataMapper.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8560d5cd31aec4271aa202a0a02ddb8f688801d2",
+      "size": 3382,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8560d5cd31aec4271aa202a0a02ddb8f688801d2"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Microservicio.Atracciones.DataManagement.csproj",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "083bf2c3d39691556999f7b2b6bdb0c0e46a5c95",
+      "size": 384,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/083bf2c3d39691556999f7b2b6bdb0c0e46a5c95"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "032b4b0ed1f9991aa505ae8ff30261b5dc8964e3",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/032b4b0ed1f9991aa505ae8ff30261b5dc8964e3"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Atracciones",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ee5d51b6eacc74d662842e928d7af3f09304eb1c",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/ee5d51b6eacc74d662842e928d7af3f09304eb1c"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Atracciones/AtraccionDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "03931873819fcab2663afce09cdb174c8b4fb90c",
+      "size": 2382,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/03931873819fcab2663afce09cdb174c8b4fb90c"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Atracciones/AtraccionFiltroDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "67b76912fb7afc19b6ec09758634bbd374ae361b",
+      "size": 747,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/67b76912fb7afc19b6ec09758634bbd374ae361b"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Atracciones/AtraccionIncluyeDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ab78d300349265e71b4bbd282d25867e3bde9b25",
+      "size": 386,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ab78d300349265e71b4bbd282d25867e3bde9b25"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Atracciones/CategoriaAtraccionDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0044a7865c2657c7eb83c12be1efecaa6b00bcdd",
+      "size": 388,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0044a7865c2657c7eb83c12be1efecaa6b00bcdd"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Atracciones/IdiomaAtraccionDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0dd3e0626f6198020517a6f4a8a3a55210ecd676",
+      "size": 384,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0dd3e0626f6198020517a6f4a8a3a55210ecd676"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Atracciones/ImagenAtraccionDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "46d4cb0f8c09de48981833a52c3e19fb89fefb70",
+      "size": 388,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/46d4cb0f8c09de48981833a52c3e19fb89fefb70"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Auditoria",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1a9dde8027537b6f5d86a0de933b613065d67e55",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/1a9dde8027537b6f5d86a0de933b613065d67e55"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Auditoria/AuditoriaLogDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a295cf88c00795f30f9c11c524620b798595ddea",
+      "size": 769,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/a295cf88c00795f30f9c11c524620b798595ddea"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Catalogos",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "354c2d0a3842d80a485698c04a885b4d23110d54",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/354c2d0a3842d80a485698c04a885b4d23110d54"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Catalogos/CategoriaDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c0808fe41d097b7d5beca5b51db1547130ac5d5",
+      "size": 623,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/5c0808fe41d097b7d5beca5b51db1547130ac5d5"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Catalogos/DestinoDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db744ce26a39bf412977779d4ed1b3141df31181",
+      "size": 951,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/db744ce26a39bf412977779d4ed1b3141df31181"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Catalogos/IdiomaDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2661966144f3607ed3cae6c3dfde72c34d9b9270",
+      "size": 310,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2661966144f3607ed3cae6c3dfde72c34d9b9270"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Catalogos/ImagenDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24382e4ef6cb2b06fe932518fb752e83f3845372",
+      "size": 412,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/24382e4ef6cb2b06fe932518fb752e83f3845372"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Catalogos/IncluyeDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "920c92233926c900d8374399e233463a6b7c4a83",
+      "size": 314,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/920c92233926c900d8374399e233463a6b7c4a83"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Clientes",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c7c24e77fb1c2715273684167a749c72471f242c",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/c7c24e77fb1c2715273684167a749c72471f242c"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Clientes/ClienteDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9295b78cfa299c1f3304a7c7fba606673b2fae6",
+      "size": 1355,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d9295b78cfa299c1f3304a7c7fba606673b2fae6"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Common",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5b35f63dac0266bb4f869b911214c01448238e48",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/5b35f63dac0266bb4f869b911214c01448238e48"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Common/DataPagedResult.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d07f9113544a25edf0f2d660e06168b260673d2",
+      "size": 901,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/1d07f9113544a25edf0f2d660e06168b260673d2"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Facturacion",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5d163d2505e29181bb4b9b62eb66557e5fd2a985",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/5d163d2505e29181bb4b9b62eb66557e5fd2a985"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Facturacion/DatosFacturacionDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b57d4132e9bed2d87bb0269d8fa52179e22be434",
+      "size": 549,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/b57d4132e9bed2d87bb0269d8fa52179e22be434"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Facturacion/FacturaDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8bb40be89a7ddf60d0f0b98fe32cc3c952a32504",
+      "size": 1264,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/8bb40be89a7ddf60d0f0b98fe32cc3c952a32504"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Reservas",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "e13471a1403632d336e9805928ead6a0de724ca9",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/e13471a1403632d336e9805928ead6a0de724ca9"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Reservas/HorarioDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3e2013cb79bf3935704d7cead6fbaf18bd762273",
+      "size": 1382,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/3e2013cb79bf3935704d7cead6fbaf18bd762273"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Reservas/ReseniaDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6e5c8cfc8ad73187efa89c3c78a36ccb71f64bff",
+      "size": 1021,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/6e5c8cfc8ad73187efa89c3c78a36ccb71f64bff"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Reservas/ReservaDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e45300a057a5c229d02a6a845d75b02fb951af05",
+      "size": 1705,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e45300a057a5c229d02a6a845d75b02fb951af05"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Reservas/ReservaDetalleDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9237eeacb8372461a0bcd6dc1c4d0ff121717b6f",
+      "size": 1105,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/9237eeacb8372461a0bcd6dc1c4d0ff121717b6f"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Reservas/ReservaFiltroDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "66afe0c9294f43ad7455ad15b7ee2ad11f723bff",
+      "size": 503,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/66afe0c9294f43ad7455ad15b7ee2ad11f723bff"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Reservas/TicketDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4615e5c3bc979f8496172c8f089516e99c0005de",
+      "size": 1373,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/4615e5c3bc979f8496172c8f089516e99c0005de"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Seguridad",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "66b6792aebcf7e7cca31b85632d6c9b10145f2da",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/66b6792aebcf7e7cca31b85632d6c9b10145f2da"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Seguridad/LoginDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc1cf64689973a2115d2a1abeb9eec76d427f81f",
+      "size": 622,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cc1cf64689973a2115d2a1abeb9eec76d427f81f"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Seguridad/RolDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f2ca5866a984d760a6b8a641039d5dba38034ea4",
+      "size": 377,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/f2ca5866a984d760a6b8a641039d5dba38034ea4"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Models/Seguridad/UsuarioDataModel.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e6baeec98a80663db1079c97eeed8ac240a0d8d7",
+      "size": 1036,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e6baeec98a80663db1079c97eeed8ac240a0d8d7"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c691d41738182ab3154393de26f36533c13f1371",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/c691d41738182ab3154393de26f36533c13f1371"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/AtraccionDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bef6f33e4776935a4650a5462baa3ba68a6bb963",
+      "size": 20940,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/bef6f33e4776935a4650a5462baa3ba68a6bb963"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/AuditoriaLogDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "900f0c21b6bf43454c7a601d145a3714fb3e8dca",
+      "size": 870,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/900f0c21b6bf43454c7a601d145a3714fb3e8dca"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/CategoriaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d541877ea6279ae6c88e59c2585a8b527816e4c",
+      "size": 5044,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0d541877ea6279ae6c88e59c2585a8b527816e4c"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/ClienteDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2d7a5819a18121013d3d0a0cb4a9a80335223178",
+      "size": 3221,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2d7a5819a18121013d3d0a0cb4a9a80335223178"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/DestinoDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ac7a2171eee98a7c2c9cca829eb3e7a26372b4f0",
+      "size": 2992,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/ac7a2171eee98a7c2c9cca829eb3e7a26372b4f0"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/FacturaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4944f2a066084d903b1ddc76f2d6163d63bb3190",
+      "size": 3826,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/4944f2a066084d903b1ddc76f2d6163d63bb3190"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/IdiomaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "972e6d4eba58ae83d2dcca6c27738950015ea1a5",
+      "size": 3798,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/972e6d4eba58ae83d2dcca6c27738950015ea1a5"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/ImagenDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "170ffc641fbe8930cbbf431653921ad2c6cb2361",
+      "size": 3881,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/170ffc641fbe8930cbbf431653921ad2c6cb2361"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/IncluyeDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0c064877d06286201cccc354bd65d96e07703bc",
+      "size": 2935,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/c0c064877d06286201cccc354bd65d96e07703bc"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/ReseniaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc30fd735128cb7364c0fbca1fb768bfba47a654",
+      "size": 2892,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/cc30fd735128cb7364c0fbca1fb768bfba47a654"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/ReservaDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4908915410b676db1db1f42820a2654ef54cbd54",
+      "size": 4340,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/4908915410b676db1db1f42820a2654ef54cbd54"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/TicketDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2a8ffc48152e5897ba910cbfce88009e192c1520",
+      "size": 7095,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/2a8ffc48152e5897ba910cbfce88009e192c1520"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/UnitOfWork.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "76dacac4d7b4542a2340bb799babcdda736f9360",
+      "size": 2476,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/76dacac4d7b4542a2340bb799babcdda736f9360"
+    },
+    {
+      "path": "Microservicio.Atracciones.DataManagement/Services/UsuarioDataService.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "92e168a2977c8f5ff75b382f5acb9b1a5e3a3802",
+      "size": 4860,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/92e168a2977c8f5ff75b382f5acb9b1a5e3a3802"
+    },
+    {
+      "path": "Microservicio.Atracciones.slnx",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0894769be11f8e5c717b31dd906defd7cf28d09b",
+      "size": 493,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/0894769be11f8e5c717b31dd906defd7cf28d09b"
+    },
+    {
+      "path": "docs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c65c94aff3eed1a1ded2af9b58a23a2a0cbb7f17",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/c65c94aff3eed1a1ded2af9b58a23a2a0cbb7f17"
+    },
+    {
+      "path": "docs/api",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d02651feb40750388c185a6dbf9b2ec0c01a5717",
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/trees/d02651feb40750388c185a6dbf9b2ec0c01a5717"
+    },
+    {
+      "path": "docs/api/openapi-v2-booking-public.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d87f20a37b4231eb63ebdecfa8b48289c392e927",
+      "size": 20840,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/d87f20a37b4231eb63ebdecfa8b48289c392e927"
+    },
+    {
+      "path": "files.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "size": 0,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "inspect.cs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "734ae70adf32177701b6038af56494139d90f4a3",
+      "size": 414,
+      "url": "https://api.github.com/repos/NicKy-105/MicroservicioAtracionesAPI/git/blobs/734ae70adf32177701b6038af56494139d90f4a3"
+    }
+  ],
+  "truncated": false
+}

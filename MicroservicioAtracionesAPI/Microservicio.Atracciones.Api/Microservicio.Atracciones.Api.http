@@ -1,0 +1,6 @@
+@Microservicio.Atracciones.Api_HostAddress = http://localhost:5031
+
+GET {{Microservicio.Atracciones.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
