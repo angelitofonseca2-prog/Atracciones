@@ -60,7 +60,7 @@ Igual que antes: orígenes Vite en `gateway/appsettings.Development.json` o vari
 ## Railway (build fallido / monorepo)
 
 1. **Raíz del servicio (Root Directory):** déjala **vacía** (raíz del repositorio). Si la pones en `platform/gateway` o `frontend-atracciones`, los `COPY platform/...` o `COPY frontend-atracciones/...` del Dockerfile **fallan** porque el contexto ya no incluye esas rutas.
-2. **Dockerfile:** en el servicio, define **`RAILWAY_DOCKERFILE_PATH`** (o `build.dockerfilePath` en `railway.toml`) con ruta desde la raíz, por ejemplo `platform/gateway/Dockerfile` o `services/ms-identidad/Dockerfile`.
+2. **Dockerfile / Railpack:** en la raíz del repo hay **`railway.json`** que fuerza el builder **Dockerfile** y apunta al monolito (`MicroservicioAtracionesAPI/Dockerfile`). Así Railway no intenta Railpack al importar el repo. Si añades **otro** servicio (gateway, `ms-identidad`, etc.), en ese servicio configura **`RAILWAY_DOCKERFILE_PATH`** (p. ej. `platform/gateway/Dockerfile`) y, si Railway aplica el `railway.json` de la raíz a todos los servicios, usa **config as code por servicio** según [monorepo](https://docs.railway.com/deployments/monorepo) o anula en el panel el Dockerfile de ese servicio.
 3. **Build logs:** si sigue fallando, abre la pestaña **Build Logs** del despliegue; suele verse `COPY failed` (contexto) o error de `dotnet publish`.
 4. En la raíz del repo hay **`.dockerignore`** para que `COPY . .` no suba `node_modules`, `.git`, `bin/obj`, etc. (evita timeouts en Railway).
 
