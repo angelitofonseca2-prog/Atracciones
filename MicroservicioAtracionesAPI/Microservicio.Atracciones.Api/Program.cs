@@ -1,6 +1,9 @@
+using Microservicio.Atracciones.Api.Configuration;
 using Microservicio.Atracciones.Api.Extensions;
 using Microservicio.Atracciones.Api.Filters;
 using Microservicio.Atracciones.Api.Middleware;
+
+RailwayDatabaseUrlMapper.Apply();
 
 var builder = WebApplication.CreateBuilder(args);
 
