@@ -1,0 +1,28 @@
+# Contexto de build: raíz del repositorio (Railway / docker build -f ... .)
+# Reduce tamaño del contexto y evita timeouts en COPY . .
+
+.git
+.github
+
+# IDEs y basura local
+**/.vs/
+**/.idea/
+**/*.user
+**/*.suo
+
+# Compilados y restauraciones NuGet (no deben entrar al contexto)
+**/bin/
+**/obj/
+
+# JavaScript (no hace falta para imágenes .NET que solo publican API)
+**/node_modules/
+**/dist/
+
+# Secretos locales
+.env
+.env.local
+platform/.env
+platform/secrets/
+
+# Opcional: acelera si no necesitas documentación dentro de la imagen
+# docs/

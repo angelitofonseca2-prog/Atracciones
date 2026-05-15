@@ -57,6 +57,13 @@ Levanta Postgres (5433), ms-identidad (5101), gateway en el host (**http://local
 
 Igual que antes: orígenes Vite en `gateway/appsettings.Development.json` o variables `Cors__*`.
 
+## Railway (build fallido / monorepo)
+
+1. **Raíz del servicio (Root Directory):** déjala **vacía** (raíz del repositorio). Si la pones en `platform/gateway` o `frontend-atracciones`, los `COPY platform/...` o `COPY frontend-atracciones/...` del Dockerfile **fallan** porque el contexto ya no incluye esas rutas.
+2. **Dockerfile:** en el servicio, define **`RAILWAY_DOCKERFILE_PATH`** (o `build.dockerfilePath` en `railway.toml`) con ruta desde la raíz, por ejemplo `platform/gateway/Dockerfile` o `services/ms-identidad/Dockerfile`.
+3. **Build logs:** si sigue fallando, abre la pestaña **Build Logs** del despliegue; suele verse `COPY failed` (contexto) o error de `dotnet publish`.
+4. En la raíz del repo hay **`.dockerignore`** para que `COPY . .` no suba `node_modules`, `.git`, `bin/obj`, etc. (evita timeouts en Railway).
+
 ## Siguiente fase
 
 [Fase 2 en AGENTS.md](../AGENTS.md) — `ms-clientes`.
