@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "Atracciones.Contracts.Auditoria.V1";
+
+package atracciones.auditoria.v1;
+
+// Eventos append-only (ms-auditoria). Consumido por ms-orquestador y otros servicios.
+service AuditoriaService {
+  rpc RegistrarEvento (RegistrarEventoRequest) returns (RegistrarEventoReply);
+}
+
+message RegistrarEventoRequest {
+  string tipo = 1;
+  string correlation_id = 2;
+  string payload_json = 3;
+}
+
+message RegistrarEventoReply {
+  bool ok = 1;
+}

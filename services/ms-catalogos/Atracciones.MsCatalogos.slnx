@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Atracciones.MsCatalogos.Api/Atracciones.MsCatalogos.Api.csproj" />
+    <Project Path="src/Atracciones.MsCatalogos.Business/Atracciones.MsCatalogos.Business.csproj" />
+    <Project Path="src/Atracciones.MsCatalogos.DataAccess/Atracciones.MsCatalogos.DataAccess.csproj" />
+    <Project Path="src/Atracciones.MsCatalogos.DataManagement/Atracciones.MsCatalogos.DataManagement.csproj" />
+  </Folder>
+</Solution>

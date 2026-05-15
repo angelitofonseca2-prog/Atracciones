@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+option csharp_namespace = "Atracciones.Contracts.Clientes.V1";
+
+package atracciones.clientes.v1;
+
+service ClienteService {
+  rpc CrearCliente (CrearClienteRequest) returns (ClienteReply);
+  rpc EliminarCliente (EliminarClienteRequest) returns (EliminarClienteReply);
+  rpc ObtenerClientePorGuid (ObtenerClienteRequest) returns (ClienteReply);
+  rpc ObtenerClientePorNumeroIdentificacion (ObtenerClientePorDocRequest) returns (ClienteReply);
+  rpc ActualizarCliente (ActualizarClienteRequest) returns (ClienteReply);
+}
+
+message CrearClienteRequest {
+  string usu_guid = 1;
+  string tipo_identificacion = 2;
+  string numero_identificacion = 3;
+  string nombres = 4;
+  string apellidos = 5;
+  string razon_social = 6;
+  string correo = 7;
+  string telefono = 8;
+  string direccion = 9;
+  string creado_por = 10;
+  string ip_creador = 11;
+}
+
+message ActualizarClienteRequest {
+  string cli_guid = 1;
+  string tipo_identificacion = 2;
+  string numero_identificacion = 3;
+  string nombres = 4;
+  string apellidos = 5;
+  string razon_social = 6;
+  string correo = 7;
+  string telefono = 8;
+  string direccion = 9;
+  string modificado_por = 10;
+  string ip_mod = 11;
+}
+
+message ClienteReply {
+  string cli_guid = 1;
+  string tipo_identificacion = 2;
+  string numero_identificacion = 3;
+  string nombres = 4;
+  string apellidos = 5;
+  string razon_social = 6;
+  string correo = 7;
+  string telefono = 8;
+  string direccion = 9;
+}
+
+message EliminarClienteRequest {
+  string cli_guid = 1;
+}
+
+message EliminarClienteReply {
+  bool ok = 1;
+}
+
+message ObtenerClienteRequest {
+  string cli_guid = 1;
+}
+
+message ObtenerClientePorDocRequest {
+  string numero_identificacion = 1;
+}

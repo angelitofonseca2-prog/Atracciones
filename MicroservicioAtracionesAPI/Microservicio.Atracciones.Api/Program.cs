@@ -27,6 +27,8 @@ builder.Services.AddApiVersioningConfig();
 
 var app = builder.Build();
 
+await app.EnsureEssentialRolesAsync();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseSwagger();

@@ -13,12 +13,13 @@ import {
   mensajeTelefono,
   mensajeNombre,
 } from '../../utils/validaciones'
+import { mensajeErrorRespuesta } from '../../utils/apiErrors'
 
 /**
- * Tipos aceptados por el backend (RegistroClienteRequest.TipoIdentificacion ≤ 20 chars).
- * Coincide con catalogo de personas (CEDULA, RUC, PASAPORTE, OTRO).
+ * Tipos para registro público (ClienteAdminValidator).
+ * RUC no se ofrece aquí: el alta con RUC exige razón social y no viene en RegistroClienteRequest.
  */
-const TIPOS_ID = ['CEDULA', 'RUC', 'PASAPORTE', 'OTRO']
+const TIPOS_ID = ['CEDULA', 'PASAPORTE', 'OTRO']
 
 function RegistroPage() {
   const navigate = useNavigate()
@@ -59,7 +60,10 @@ function RegistroPage() {
     if (form.telefono && !esTelefonoValido(form.telefono)) {
       e.telefono = mensajeTelefono()
     }
-    if (form.password.length < 6) e.password = 'La contraseña debe tener al menos 6 caracteres'
+    // Debe coincidir con ClienteAdminValidator (backend): mínimo 8 caracteres
+    if (form.password.length < 8) {
+      e.password = 'La contraseña debe tener al menos 8 caracteres'
+    }
     if (form.password !== form.confirmar_password) {
       e.confirmar_password = 'Las contraseñas no coinciden'
     }
@@ -96,11 +100,9 @@ function RegistroPage() {
       emitirToast('Cuenta creada correctamente. ¡Bienvenido!', 'success')
       navigate(destino, { replace: true })
     } catch (err) {
-      const mensaje =
-        err?.response?.data?.details?.[0] ||
-        err?.response?.data?.message ||
-        'No se pudo completar el registro. Intenta de nuevo.'
-      setErrorGlobal(mensaje)
+      setErrorGlobal(
+        mensajeErrorRespuesta(err, 'No se pudo completar el registro. Intenta de nuevo.'),
+      )
     } finally {
       setCargando(false)
     }

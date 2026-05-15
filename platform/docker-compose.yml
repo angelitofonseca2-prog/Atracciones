@@ -1,0 +1,260 @@
+# Fase 0-7 completo (consolidado). Gateway + Jaeger + Postgres + frontend (Vite) + microservicios.
+#
+# Arranque solo el frontend (backend ya arriba): docker compose up -d --build frontend-atracciones
+# Limpiar contenedores viejos de otro compose: docker compose down --remove-orphans
+#
+# Topología consolidada:
+#   auth_db        → ms-identidad  (puerto Postgres 5433, app 5101, gRPC :9090 interno)
+#   atracciones_db → ms-atracciones (5436, 5401, 9090) — incluye esquemas inventario + catalogos
+#   reservas_db    → ms-reservas   (5437, 5601, 9090) — incluye esquemas ventas + crm
+#   facturacion_db → ms-facturacion(5439, 5701, 9090)
+#   orquestador_db → ms-orquestador(5438, 5501)
+#   audit_db       → ms-auditoria  (5440, 5801, 9090)
+#   gateway YARP   → http://localhost:5050
+#   Jaeger UI      → http://localhost:16686  | OTLP gRPC :4317
+#
+# Si /admin/usuarios devuelve 404: reconstruir gateway + identidad y levantar de nuevo:
+#   docker compose build --no-cache gateway ms-identidad && docker compose up -d gateway ms-identidad
+
+services:
+
+  # ── Identidad ────────────────────────────────────────────
+  postgres-identidad:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: identidad
+      POSTGRES_PASSWORD: identidad
+      POSTGRES_DB: auth_db
+    ports:
+      - "5433:5432"
+
+  ms-identidad:
+    build:
+      context: ..
+      dockerfile: services/ms-identidad/Dockerfile
+    ports:
+      - "5101:8080"
+    volumes:
+      - ./secrets/dev-rsa-private.pem:/app/keys/dev-rsa-private.pem:ro
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      GrpcPort: "9090"
+      ConnectionStrings__IdentidadDb: Host=postgres-identidad;Port=5432;Database=auth_db;Username=identidad;Password=identidad
+      Jwt__Issuer: microservicio-atracciones-dev
+      Jwt__Audience: booking-prototipo-dev
+      Jwt__ExpirationHours: "24"
+      Jwt__KeyId: atracciones-identidad-dev
+      # Clave RSA estable (montada desde platform/secrets/) — evita invalidar tokens al reiniciar
+      Jwt__RsaPrivateKeyPath: /app/keys/dev-rsa-private.pem
+      InternalSync__MonolithApiKey: dev-monolith-sync-key
+      # Solo Development: usuario devadmin / DevAdmin123! (rol ADMIN) para /admin/usuarios
+    depends_on:
+      - postgres-identidad
+
+  # ── Atracciones (fusiona inventario + catalogos) ─────────
+  postgres-atracciones:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: inventario
+      POSTGRES_PASSWORD: inventario
+      POSTGRES_DB: atracciones_db
+    ports:
+      - "5436:5432"
+
+  ms-atracciones:
+    build:
+      context: ..
+      dockerfile: services/ms-atracciones/Dockerfile
+    ports:
+      - "5401:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      GrpcPort: "9090"
+      ConnectionStrings__InventarioDb: Host=postgres-atracciones;Port=5432;Database=atracciones_db;Username=inventario;Password=inventario
+      ConnectionStrings__CatalogosDb: Host=postgres-atracciones;Port=5432;Database=atracciones_db;Username=inventario;Password=inventario
+      Jwt__Issuer: microservicio-atracciones-dev
+      Jwt__Audience: booking-prototipo-dev
+      Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
+    depends_on:
+      - postgres-atracciones
+      - ms-identidad
+
+  # ── Reservas (fusiona ventas + crm) ──────────────────────
+  postgres-reservas:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ventas
+      POSTGRES_PASSWORD: ventas
+      POSTGRES_DB: reservas_db
+    ports:
+      - "5437:5432"
+
+  ms-reservas:
+    build:
+      context: ..
+      dockerfile: services/ms-reservas/Dockerfile
+    ports:
+      - "5601:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      GrpcPort: "9090"
+      ConnectionStrings__VentasDb: Host=postgres-reservas;Port=5432;Database=reservas_db;Username=ventas;Password=ventas
+      ConnectionStrings__CrmDb: Host=postgres-reservas;Port=5432;Database=reservas_db;Username=ventas;Password=ventas
+      Jwt__Issuer: microservicio-atracciones-dev
+      Jwt__Audience: booking-prototipo-dev
+      Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
+      ClientesMirror__MonolithApiKey: dev-monolith-sync-key
+    depends_on:
+      - postgres-reservas
+      - ms-identidad
+
+  # ── Orquestador ───────────────────────────────────────────
+  postgres-orquestador:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: orquestador
+      POSTGRES_PASSWORD: orquestador
+      POSTGRES_DB: orquestador_db
+    ports:
+      - "5438:5432"
+
+  ms-orquestador:
+    build:
+      context: ..
+      dockerfile: services/ms-orquestador/Dockerfile
+    ports:
+      - "5501:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__OrquestadorDb: Host=postgres-orquestador;Port=5432;Database=orquestador_db;Username=orquestador;Password=orquestador
+      Jwt__Issuer: microservicio-atracciones-dev
+      Jwt__Audience: booking-prototipo-dev
+      Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
+      # Clientes gRPC apuntan a ms-reservas (absorbe ms-clientes)
+      GrpcClients__Identidad: http://ms-identidad:9090
+      GrpcClients__IdentidadHttp: http://ms-identidad:8080
+      GrpcClients__Clientes: http://ms-reservas:9090
+      GrpcClients__Atracciones: http://ms-atracciones:9090
+      GrpcClients__Reservas: http://ms-reservas:9090
+      GrpcClients__Facturacion: http://ms-facturacion:9090
+      GrpcClients__Auditoria: http://ms-auditoria:9090
+      Otlp__Endpoint: http://jaeger:4317
+      Otlp__ServiceName: atracciones-orquestador
+      # PayPal: definir en .env junto al compose o aquí (no dejar comillas vacías en YAML)
+      PayPal__BaseUrl: ${PAYPAL_BASE_URL:-https://api-m.sandbox.paypal.com}
+      PayPal__ClientId: ${PAYPAL_CLIENT_ID:-}
+      PayPal__ClientSecret: ${PAYPAL_CLIENT_SECRET:-}
+      PayPal__WebhookId: ${PAYPAL_WEBHOOK_ID:-}
+    depends_on:
+      - postgres-orquestador
+      - ms-identidad
+      - ms-atracciones
+      - ms-reservas
+      - ms-facturacion
+      - ms-auditoria
+
+  # ── Facturación ───────────────────────────────────────────
+  postgres-facturacion:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: billing
+      POSTGRES_PASSWORD: billing
+      POSTGRES_DB: facturacion_db
+    ports:
+      - "5439:5432"
+
+  ms-facturacion:
+    build:
+      context: ..
+      dockerfile: services/ms-facturacion/Dockerfile
+    ports:
+      - "5701:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      GrpcPort: "9090"
+      ConnectionStrings__BillingDb: Host=postgres-facturacion;Port=5432;Database=facturacion_db;Username=billing;Password=billing
+      Jwt__Issuer: microservicio-atracciones-dev
+      Jwt__Audience: booking-prototipo-dev
+      Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
+    depends_on:
+      - postgres-facturacion
+      - ms-identidad
+
+  # ── Auditoría ─────────────────────────────────────────────
+  postgres-auditoria:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: audit
+      POSTGRES_PASSWORD: audit
+      POSTGRES_DB: audit_db
+    ports:
+      - "5440:5432"
+
+  ms-auditoria:
+    build:
+      context: ..
+      dockerfile: services/ms-auditoria/Dockerfile
+    ports:
+      - "5801:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      GrpcPort: "9090"
+      ConnectionStrings__AuditoriaDb: Host=postgres-auditoria;Port=5432;Database=audit_db;Username=audit;Password=audit
+      Otlp__Endpoint: http://jaeger:4317
+      Otlp__ServiceName: atracciones-auditoria
+    depends_on:
+      - postgres-auditoria
+      - jaeger
+
+  # ── Gateway YARP ─────────────────────────────────────────
+  gateway:
+    build:
+      context: ..
+      dockerfile: platform/gateway/Dockerfile
+    ports:
+      - "5050:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      # Rutas: clientes y catalogos ahora sirven ms-reservas y ms-atracciones respectivamente
+      ReverseProxy__Clusters__identidad__Destinations__d1__Address: http://ms-identidad:8080
+      ReverseProxy__Clusters__atracciones__Destinations__d1__Address: http://ms-atracciones:8080
+      ReverseProxy__Clusters__reservas__Destinations__d1__Address: http://ms-reservas:8080
+      ReverseProxy__Clusters__orquestador__Destinations__d1__Address: http://ms-orquestador:8080
+      ReverseProxy__Clusters__facturacion__Destinations__d1__Address: http://ms-facturacion:8080
+      Cors__0: http://localhost:5173
+      Cors__1: http://localhost:5174
+      Cors__2: http://localhost:5175
+      Cors__3: http://127.0.0.1:5173
+      Cors__4: http://127.0.0.1:5174
+      Cors__5: http://127.0.0.1:5175
+      Otlp__Endpoint: http://jaeger:4317
+    depends_on:
+      - jaeger
+      - ms-identidad
+      - ms-atracciones
+      - ms-reservas
+      - ms-orquestador
+      - ms-facturacion
+      - ms-auditoria
+
+  # ── Frontend (Vite) ──────────────────────────────────────
+  frontend-atracciones:
+    build:
+      context: ..
+      dockerfile: frontend-atracciones/Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      # El navegador en tu PC llama al gateway publicado en localhost:5050
+      VITE_API_URL: http://localhost:5050/api/v1
+      VITE_PAYPAL_CLIENT_ID: ${VITE_PAYPAL_CLIENT_ID:-}
+    depends_on:
+      - gateway
+
+  # ── Jaeger ────────────────────────────────────────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    ports:
+      - "16686:16686"
+      - "4317:4317"

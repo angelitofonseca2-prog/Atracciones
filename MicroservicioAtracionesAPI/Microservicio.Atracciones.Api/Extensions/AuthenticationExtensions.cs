@@ -1,20 +1,28 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json;
 using Microservicio.Atracciones.Api.Models.Common;
 using Microservicio.Atracciones.Api.Models.Settings;
-using System.Text.Json;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
-namespace Microservicio.Atracciones.Api.Extensions
+namespace Microservicio.Atracciones.Api.Extensions;
+
+public static class AuthenticationExtensions
 {
-    public static class AuthenticationExtensions
+    public static IServiceCollection AddJwtAuthentication(
+        this IServiceCollection services, IConfiguration config)
     {
-        public static IServiceCollection AddJwtAuthentication(
-            this IServiceCollection services, IConfiguration config)
-        {
-            var jwt = config.GetSection("JwtSettings").Get<JwtSettings>()!;
+        var jwt = config.GetSection("JwtSettings").Get<JwtSettings>()!;
 
-            services.AddAuthentication(options =>
+        JsonWebKeySet? jwks = null;
+        if (!string.IsNullOrWhiteSpace(jwt.JwksUrl))
+        {
+            using var hc = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            var json = hc.GetStringAsync(jwt.JwksUrl).GetAwaiter().GetResult();
+            jwks = new JsonWebKeySet(json);
+        }
+
+        services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -29,13 +37,25 @@ namespace Microservicio.Atracciones.Api.Extensions
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwt.Issuer,
                     ValidAudience = jwt.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                                                   Encoding.UTF8.GetBytes(jwt.SecretKey)),
                     ClockSkew = TimeSpan.Zero,
-                    RoleClaimType = System.Security.Claims.ClaimTypes.Role
+                    RoleClaimType = System.Security.Claims.ClaimTypes.Role,
                 };
 
-                // Respuesta 401 en formato estándar del contrato
+                if (jwks is not null)
+                {
+                    options.TokenValidationParameters.IssuerSigningKeyResolver = (_, _, kid, _) =>
+                    {
+                        if (string.IsNullOrEmpty(kid))
+                            return jwks.GetSigningKeys();
+                        return jwks.GetSigningKeys().Where(k => k.KeyId == kid);
+                    };
+                }
+                else
+                {
+                    options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwt.SecretKey));
+                }
+
                 options.Events = new JwtBearerEvents
                 {
                     OnChallenge = async context =>
@@ -49,17 +69,16 @@ namespace Microservicio.Atracciones.Api.Extensions
                             Error = "No autorizado",
                             Details = new List<string> { "Token inválido o expirado." },
                             Timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                            Path = context.Request.Path.ToString()
+                            Path = context.Request.Path.ToString(),
                         };
                         var json = JsonSerializer.Serialize(
                             errorBody,
                             new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });
                         await context.Response.WriteAsync(json);
-                    }
+                    },
                 };
             });
 
-            return services;
-        }
+        return services;
     }
 }

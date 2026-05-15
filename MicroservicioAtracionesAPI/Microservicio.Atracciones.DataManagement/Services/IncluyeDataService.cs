@@ -44,7 +44,7 @@ namespace Microservicio.Atracciones.DataManagement.Services
         {
             var entity = new IncluyeEntity
             {
-                IncGuid = Guid.NewGuid(),
+                IncGuid = model.IncGuid != Guid.Empty ? model.IncGuid : Guid.NewGuid(),
                 IncDescripcion = model.IncDescripcion,
                 IncEstado = 'A'
             };

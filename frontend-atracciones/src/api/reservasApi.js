@@ -4,8 +4,15 @@ import { apiClient } from './atraccionesApi'
  * POST /api/v1/reservas
  * Acepta cliente autenticado (token) o invitado (body.cliente_invitado).
  */
+const nuevaIdempotencyKey = () =>
+  typeof crypto !== 'undefined' && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+
 export const crearReserva = async (body) => {
-  const response = await apiClient.post('/reservas', body)
+  const response = await apiClient.post('/reservas', body, {
+    headers: { 'Idempotency-Key': nuevaIdempotencyKey() },
+  })
   return response.data
 }
 
@@ -36,11 +43,19 @@ export const cancelarReserva = async (guid, motivo) => {
 }
 
 /**
- * POST /api/v1/reservas/{guid}/confirmar-pago
- * Body: { nombre_receptor, apellido_receptor?, correo_receptor, telefono_receptor?, observacion? }
- * Respuesta: FacturaResponse con fac_guid, fac_numero, rev_codigo, total, etc.
+ * POST /api/v1/pagos/paypal/orders — crea orden PayPal (servidor).
  */
-export const confirmarPago = async (revGuid, body) => {
-  const response = await apiClient.post(`/reservas/${revGuid}/confirmar-pago`, body)
+export const crearOrdenPayPal = async (body) => {
+  const response = await apiClient.post('/pagos/paypal/orders', body)
+  return response.data
+}
+
+/**
+ * POST /api/v1/pagos/paypal/orders/capture — captura y confirma reserva + factura.
+ */
+export const capturarOrdenPayPal = async (body) => {
+  const response = await apiClient.post('/pagos/paypal/orders/capture', body, {
+    headers: { 'Idempotency-Key': nuevaIdempotencyKey() },
+  })
   return response.data
 }

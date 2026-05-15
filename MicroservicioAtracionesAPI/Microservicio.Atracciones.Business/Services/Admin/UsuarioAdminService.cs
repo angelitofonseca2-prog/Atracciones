@@ -2,6 +2,7 @@ using Microservicio.Atracciones.Business.DTOs.Admin.Usuarios;
 using Microservicio.Atracciones.Business.Exceptions;
 using Microservicio.Atracciones.Business.Interfaces.Admin;
 using Microservicio.Atracciones.Business.Interfaces.Auth;
+using Microservicio.Atracciones.Business.Interfaces.Integration;
 using Microservicio.Atracciones.Business.Mappers.Admin;
 using Microservicio.Atracciones.Business.Validators.Admin;
 using Microservicio.Atracciones.DataManagement.Interfaces;
@@ -13,11 +14,16 @@ namespace Microservicio.Atracciones.Business.Services.Admin
     {
         private readonly IUsuarioDataService _usuarioService;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IIdentidadUsuarioSyncPublisher _identidadSync;
 
-        public UsuarioAdminService(IUsuarioDataService usuarioService, IPasswordHasher passwordHasher)
+        public UsuarioAdminService(
+            IUsuarioDataService usuarioService,
+            IPasswordHasher passwordHasher,
+            IIdentidadUsuarioSyncPublisher identidadSync)
         {
             _usuarioService = usuarioService;
             _passwordHasher = passwordHasher;
+            _identidadSync = identidadSync;
         }
 
         public async Task<UsuarioResponse> CrearAsync(CrearUsuarioRequest request, string usuarioAccion, string ip)
@@ -48,6 +54,8 @@ namespace Microservicio.Atracciones.Business.Services.Admin
                 throw new ConflictException(ex.Message);
             }
 
+            await MirrorIdentidadAsync(model);
+
             return UsuarioAdminMapper.ToResponse(model);
         }
 
@@ -63,6 +71,9 @@ namespace Microservicio.Atracciones.Business.Services.Admin
                 model.UsuIpMod = ip;
                 model.UsuFechaMod = DateTime.UtcNow;
                 await _usuarioService.ActualizarAsync(model);
+                var fresh = await _usuarioService.ObtenerPorGuidAsync(usuGuid)
+                    ?? throw new NotFoundException("Usuario", usuGuid);
+                await MirrorIdentidadAsync(fresh);
             }
 
             return UsuarioAdminMapper.ToResponse(model);
@@ -80,6 +91,19 @@ namespace Microservicio.Atracciones.Business.Services.Admin
         {
             var modelList = await _usuarioService.ListarAsync();
             return modelList.Select(UsuarioAdminMapper.ToResponse).ToList();
+        }
+
+        private async Task MirrorIdentidadAsync(UsuarioDataModel usuario)
+        {
+            var roles = usuario.Roles.Select(r => r.RolDescripcion.ToUpperInvariant()).ToList();
+            await _identidadSync.SincronizarYObtenerTokenAsync(
+                new IdentidadUsuarioEspejo(
+                    usuario.UsuId,
+                    usuario.UsuGuid,
+                    usuario.UsuLogin,
+                    usuario.UsuPasswordHash,
+                    usuario.CliId,
+                    roles));
         }
     }
 

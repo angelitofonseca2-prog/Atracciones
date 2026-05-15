@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Atracciones.MsOrquestador.Business</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Grpc.Net.Client" Version="2.67.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.29.3" />
+    <PackageReference Include="Grpc.Tools" Version="2.69.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
+  </ItemGroup>
+  <ItemGroup>
+    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\usuario_service.proto" GrpcServices="Client" Link="Protos\usuario_service.proto" />
+    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\cliente_service.proto" GrpcServices="Client" Link="Protos\cliente_service.proto" />
+    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\atraccion_inventario_service.proto" GrpcServices="Client" Link="Protos\atraccion_inventario_service.proto" />
+    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\reserva_service.proto" GrpcServices="Client" Link="Protos\reserva_service.proto" />
+    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\factura_service.proto" GrpcServices="Client" Link="Protos\factura_service.proto" />
+    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\auditoria_service.proto" GrpcServices="Client" Link="Protos\auditoria_service.proto" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Atracciones.MsOrquestador.DataManagement\Atracciones.MsOrquestador.DataManagement.csproj" />
+  </ItemGroup>
+</Project>

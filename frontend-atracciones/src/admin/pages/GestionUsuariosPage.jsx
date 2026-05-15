@@ -23,7 +23,25 @@ function GestionUsuariosPage() {
       const limit = pagination?.limit ?? LIMIT
       setTotalPages(Math.max(1, Math.ceil(total / limit)))
     } catch (err) {
-      setError(err?.response?.data?.message || 'No se pudieron cargar los usuarios.')
+      const status = err?.response?.status
+      const data = err?.response?.data
+      const details = Array.isArray(data?.details)
+        ? data.details.filter(Boolean).join(' ')
+        : ''
+      const base =
+        data?.error || data?.message || 'No se pudieron cargar los usuarios.'
+      let msg = [base, details].filter(Boolean).join(' ')
+      if (status === 404) {
+        msg =
+          'El gateway no encontró la ruta de usuarios (imagen antigua). En la carpeta platform ejecuta: docker compose build --no-cache gateway ms-identidad && docker compose up -d gateway ms-identidad'
+      } else if (status === 403) {
+        msg =
+          details ||
+          'Tu sesión no tiene rol ADMIN. Inicia con un usuario administrador (en Docker: devadmin / DevAdmin123!).'
+      } else if (status === 401) {
+        msg = details ? `${base} ${details}` : 'Sesión no válida o expirada. Vuelve a iniciar sesión.'
+      }
+      setError(msg)
     } finally {
       setCargando(false)
     }

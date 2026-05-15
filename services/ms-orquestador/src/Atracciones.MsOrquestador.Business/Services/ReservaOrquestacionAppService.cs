@@ -1,0 +1,522 @@
+using System.Globalization;
+using System.Net.Mail;
+using Atracciones.Contracts.Clientes.V1;
+using Atracciones.Contracts.Facturacion.V1;
+using Atracciones.Contracts.Inventario.V1;
+using Atracciones.Contracts.Reservas.V1;
+using Atracciones.MsOrquestador.Business.Exceptions;
+using Atracciones.MsOrquestador.Business.Integration;
+using Atracciones.MsOrquestador.Business.Models;
+using Atracciones.MsOrquestador.DataManagement.Interfaces;
+using Grpc.Core;
+using Microsoft.Extensions.Logging;
+
+namespace Atracciones.MsOrquestador.Business.Services;
+
+public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
+{
+    private readonly ClienteService.ClienteServiceClient _cli;
+    private readonly AtraccionInventarioService.AtraccionInventarioServiceClient _inv;
+    private readonly ReservaService.ReservaServiceClient _res;
+    private readonly FacturaService.FacturaServiceClient _fac;
+    private readonly AuditoriaBestEffortPublisher _audit;
+    private readonly ISagaRepository _saga;
+    private readonly ILogger<ReservaOrquestacionAppService> _logger;
+
+    public ReservaOrquestacionAppService(
+        ClienteService.ClienteServiceClient cli,
+        AtraccionInventarioService.AtraccionInventarioServiceClient inv,
+        ReservaService.ReservaServiceClient res,
+        FacturaService.FacturaServiceClient fac,
+        AuditoriaBestEffortPublisher audit,
+        ISagaRepository saga,
+        ILogger<ReservaOrquestacionAppService> logger)
+    {
+        _cli = cli;
+        _inv = inv;
+        _res = res;
+        _fac = fac;
+        _audit = audit;
+        _saga = saga;
+        _logger = logger;
+    }
+
+    public async Task<ReservaResponseDto> CrearReservaAsync(
+        CrearReservaOrquestadorDto request,
+        Guid? usuGuid,
+        string? authorizationBearer,
+        string usuarioAccion,
+        string ip,
+        string correlationId,
+        CancellationToken ct = default)
+    {
+        if (request.Lineas.Count == 0)
+            throw new ValidationOrchestadorException(new[] { "Debe incluir al menos una línea de ticket." });
+
+        var sagaId = await _saga.IniciarSagaAsync("CREAR_RESERVA", correlationId, ct);
+
+        Guid cliGuid;
+        try
+        {
+            cliGuid = await ResolverCliGuidAsync(request, usuGuid, authorizationBearer, usuarioAccion, ip, ct);
+            await _saga.RegistrarPasoAsync(sagaId, "CLIENTE", "OK", null, cliGuid.ToString(), null, ct);
+
+            var hor = await _inv.ObtenerHorarioParaReservaAsync(new ObtenerHorarioParaReservaRequest
+            {
+                HorGuid = request.HorGuid.ToString("D"),
+                AtGuid = request.AtGuid.ToString("D"),
+            }, cancellationToken: ct);
+
+            if (!hor.Ok)
+                throw new ConflictOrchestadorException(string.IsNullOrWhiteSpace(hor.Mensaje) ? "Horario no válido." : hor.Mensaje);
+
+            await _saga.RegistrarPasoAsync(sagaId, "HORARIO", "OK", null, hor.AtraccionNombre, null, ct);
+
+            var lineasGrpc = new List<LineaDetalleReserva>();
+            decimal subtotal = 0;
+            foreach (var ln in request.Lineas)
+            {
+                if (ln.Cantidad <= 0)
+                    throw new ValidationOrchestadorException(new[] { "La cantidad debe ser mayor a 0." });
+
+                var pr = await _inv.GetTicketPrecioAsync(new GetTicketPrecioRequest { TckGuid = ln.TckGuid.ToString("D") }, cancellationToken: ct);
+                if (!pr.Ok)
+                    throw new NotFoundOrchestadorException(string.IsNullOrWhiteSpace(pr.Mensaje) ? "Ticket no encontrado." : pr.Mensaje);
+
+                if (!string.Equals(pr.AtGuid, request.AtGuid.ToString("D"), StringComparison.OrdinalIgnoreCase))
+                    throw new ConflictOrchestadorException("Un ticket de las líneas no pertenece a la atracción indicada.");
+
+                var pu = (decimal)pr.Precio;
+                var subL = pu * ln.Cantidad;
+                subtotal += subL;
+                lineasGrpc.Add(new LineaDetalleReserva
+                {
+                    TckGuid = ln.TckGuid.ToString("D"),
+                    Cantidad = ln.Cantidad,
+                    PrecioUnit = (double)pu,
+                    SubtotalLinea = (double)subL,
+                    TipoParticipante = pr.TipoParticipante ?? "",
+                });
+            }
+
+            var iva = Math.Round(subtotal * 0.15m, 2);
+            var total = subtotal + iva;
+            var totalPersonas = request.Lineas.Sum(l => l.Cantidad);
+            var revGuid = Guid.NewGuid();
+
+            var cupo = await _inv.ValidarYReservarCupoAsync(new ValidarYReservarCupoRequest
+            {
+                HorGuid = request.HorGuid.ToString("D"),
+                CantidadPersonas = totalPersonas,
+                ReservaGuid = revGuid.ToString("D"),
+            }, cancellationToken: ct);
+
+            if (!cupo.Ok)
+            {
+                await _saga.RegistrarPasoAsync(sagaId, "CUPO", "FALLIDO", null, cupo.Mensaje, cupo.Mensaje, ct);
+                throw new ConflictOrchestadorException(string.IsNullOrWhiteSpace(cupo.Mensaje) ? "Sin cupos suficientes." : cupo.Mensaje);
+            }
+
+            await _saga.RegistrarPasoAsync(sagaId, "CUPO", "OK", null, cupo.CuposDisponiblesTrasOperacion.ToString(), null, ct);
+
+            try
+            {
+                var crea = new CrearReservaPendienteRequest
+                {
+                    RevGuid = revGuid.ToString("D"),
+                    CliGuid = cliGuid.ToString("D"),
+                    AtGuid = request.AtGuid.ToString("D"),
+                    HorGuid = request.HorGuid.ToString("D"),
+                    Subtotal = (double)subtotal,
+                    ValorIva = (double)iva,
+                    Total = (double)total,
+                    OrigenCanal = request.OrigenCanal ?? "",
+                    UsuarioIngreso = usuarioAccion,
+                    IpIngreso = ip,
+                    AtraccionNombreSnap = hor.AtraccionNombre,
+                    HorFechaSnap = hor.HorFecha,
+                    HorHoraInicioSnap = hor.HorHoraInicio,
+                    HorHoraFinSnap = hor.HorHoraFin ?? "",
+                };
+                foreach (var lg in lineasGrpc)
+                    crea.Lineas.Add(lg);
+
+                var reply = await _res.CrearReservaPendienteAsync(crea, cancellationToken: ct);
+                await _saga.RegistrarPasoAsync(sagaId, "RESERVA_DB", "OK", null, reply.RevGuid, null, ct);
+                await _saga.CompletarSagaAsync(sagaId, "COMPLETADA", ct);
+                _audit.Registrar("RESERVA_CREADA", correlationId,
+                    new { rev_guid = reply.RevGuid, rev_codigo = reply.RevCodigo, saga_id = sagaId.ToString() });
+                return MapReserva(reply);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Compensación LiberarCupo tras fallo CrearReservaPendiente");
+                await _inv.LiberarCupoAsync(new LiberarCupoRequest
+                {
+                    HorGuid = request.HorGuid.ToString("D"),
+                    CantidadPersonas = totalPersonas,
+                    ReservaGuid = revGuid.ToString("D"),
+                }, cancellationToken: ct);
+                await _saga.RegistrarPasoAsync(sagaId, "COMPENSACION", "OK", null, "LiberarCupo", null, ct);
+                await _saga.CompletarSagaAsync(sagaId, "COMPENSADA", ct);
+                _audit.Registrar("RESERVA_CREAR_COMPENSADA", correlationId,
+                    new { rev_guid = revGuid.ToString("D"), error = ex.Message });
+                throw;
+            }
+        }
+        catch (Exception ex) when (ex is not ValidationOrchestadorException && ex is not ConflictOrchestadorException && ex is not NotFoundOrchestadorException)
+        {
+            _logger.LogError(ex, "Error en SagaCrearReserva");
+            await _saga.CompletarSagaAsync(sagaId, "ERROR", ct);
+            throw;
+        }
+    }
+
+    public async Task<FacturaStubResponseDto> CompletarPagoReservaYFacturaAsync(
+        Guid revGuid,
+        ConfirmarPagoOrquestadorDto request,
+        string usuarioAccion,
+        string ip,
+        string correlationId,
+        bool compensarSiFallaFactura,
+        CancellationToken ct = default)
+    {
+        ValidarConfirmar(request);
+
+        var sagaId = await _saga.IniciarSagaAsync("CONFIRMAR_PAGO_PAYPAL", correlationId, ct);
+        var sagaTerminal = false;
+        try
+        {
+            var pendiente = await _res.ObtenerReservaAsync(new ObtenerReservaRequest { RevGuid = revGuid.ToString("D") }, cancellationToken: ct);
+            if (pendiente.Estado != "P")
+                throw new ConflictOrchestadorException("La reserva no está pendiente de pago o ya fue procesada.");
+
+            var horGuid = pendiente.HorGuid;
+            var totalPersonas = pendiente.Detalle.Sum(d => d.Cantidad);
+            var cliGuidStr = pendiente.CliGuid;
+
+            var nombreFull = string.Join(' ',
+                new[] { request.NombreReceptor.Trim(), request.ApellidoReceptor?.Trim() }
+                    .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+            var confirmada = await _res.ConfirmarReservaPagadaAsync(new ConfirmarReservaPagadaRequest
+            {
+                RevGuid = revGuid.ToString("D"),
+                UsuarioAccion = usuarioAccion,
+                IpAccion = ip,
+            }, cancellationToken: ct);
+
+            await _saga.RegistrarPasoAsync(sagaId, "CONFIRMAR_DB", "OK", null, confirmada.RevGuid, null, ct);
+
+            try
+            {
+                var emit = await _fac.EmitirFacturaAsync(new EmitirFacturaRequest
+                {
+                    RevGuid = revGuid.ToString("D"),
+                    CliGuid = cliGuidStr,
+                    Datos = new EmitirFacturaDatos
+                    {
+                        NombreReceptor = nombreFull,
+                        CorreoReceptor = request.CorreoReceptor.Trim(),
+                        TelefonoReceptor = request.TelefonoReceptor?.Trim() ?? string.Empty,
+                    },
+                    Total = confirmada.Total,
+                    Moneda = string.IsNullOrWhiteSpace(confirmada.Moneda) ? "USD" : confirmada.Moneda,
+                    RevCodigoSnap = confirmada.RevCodigo ?? string.Empty,
+                    UsuarioEmision = usuarioAccion,
+                    IpEmision = ip,
+                }, cancellationToken: ct);
+
+                await _saga.RegistrarPasoAsync(sagaId, "FACTURA", "OK", null, emit.FacGuid, null, ct);
+                await _saga.CompletarSagaAsync(sagaId, "COMPLETADA", ct);
+                sagaTerminal = true;
+
+                _audit.Registrar("PAGO_CONFIRMADO", correlationId,
+                    new { rev_guid = revGuid.ToString("D"), fac_guid = emit.FacGuid, fac_numero = emit.FacNumero });
+
+                var fechaEmision = DateTime.TryParse(emit.FechaEmisionUtc, CultureInfo.InvariantCulture,
+                    DateTimeStyles.RoundtripKind, out var fe)
+                    ? fe
+                    : DateTime.UtcNow;
+
+                return new FacturaStubResponseDto
+                {
+                    FacGuid = emit.FacGuid,
+                    FacNumero = emit.FacNumero,
+                    RevCodigo = string.IsNullOrWhiteSpace(emit.RevCodigoSnap)
+                        ? (confirmada.RevCodigo ?? string.Empty)
+                        : emit.RevCodigoSnap,
+                    Total = (decimal)emit.Total,
+                    Moneda = emit.Moneda,
+                    FechaEmision = fechaEmision,
+                    Estado = emit.Estado,
+                    NombreReceptor = string.IsNullOrWhiteSpace(emit.NombreReceptor) ? nombreFull : emit.NombreReceptor,
+                    CorreoReceptor = request.CorreoReceptor.Trim(),
+                };
+            }
+            catch (Exception ex)
+            {
+                if (compensarSiFallaFactura)
+                {
+                    _logger.LogWarning(ex, "Compensación tras fallo EmitirFactura");
+                    await _res.AnularReservaAsync(new AnularReservaRequest
+                    {
+                        RevGuid = revGuid.ToString("D"),
+                        Motivo = "Revertir confirmación: fallo al emitir factura.",
+                        UsuarioAccion = usuarioAccion,
+                        IpAccion = ip,
+                    }, cancellationToken: ct);
+
+                    await _inv.LiberarCupoAsync(new LiberarCupoRequest
+                    {
+                        HorGuid = horGuid,
+                        CantidadPersonas = totalPersonas,
+                        ReservaGuid = revGuid.ToString("D"),
+                    }, cancellationToken: ct);
+
+                    await _saga.RegistrarPasoAsync(sagaId, "COMPENSACION", "OK", null, "Anular+LiberarCupo", null, ct);
+                    await _saga.CompletarSagaAsync(sagaId, "COMPENSADA", ct);
+                    sagaTerminal = true;
+                    _audit.Registrar("PAGO_COMPENSADO", correlationId,
+                        new { rev_guid = revGuid.ToString("D"), error = ex.Message });
+                    throw;
+                }
+
+                await _saga.CompletarSagaAsync(sagaId, "FACTURA_ERROR", ct);
+                sagaTerminal = true;
+                _logger.LogError(ex, "EmitirFactura falló tras pago verificado; la reserva permanece confirmada.");
+                _audit.Registrar("FACTURA_POST_PAGO_FALLIDA", correlationId,
+                    new { rev_guid = revGuid.ToString("D"), error = ex.Message });
+                throw new ConflictOrchestadorException(
+                    "El pago quedó registrado pero no se pudo emitir la factura automáticamente. Contacte soporte con su código de reserva.");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!sagaTerminal)
+                await _saga.CompletarSagaAsync(sagaId, "ERROR", ct);
+            _logger.LogWarning(ex, "Fallo CompletarPagoReservaYFactura");
+            throw;
+        }
+    }
+
+    public async Task CancelarReservaAsync(
+        Guid revGuid,
+        string motivo,
+        Guid usuGuidCliente,
+        string usuarioAccion,
+        string ip,
+        string correlationId,
+        CancellationToken ct = default)
+    {
+        var sagaId = await _saga.IniciarSagaAsync("CANCELAR_RESERVA", correlationId, ct);
+        var r = await _res.ObtenerReservaAsync(new ObtenerReservaRequest { RevGuid = revGuid.ToString("D") }, cancellationToken: ct);
+        if (!string.Equals(r.CliGuid, usuGuidCliente.ToString("D"), StringComparison.OrdinalIgnoreCase))
+            throw new ForbiddenOrchestadorException("No puedes cancelar una reserva que no te pertenece.");
+
+        if (r.Estado != "P" && r.Estado != "A")
+            throw new ConflictOrchestadorException("La reserva no se puede cancelar en su estado actual.");
+
+        var totalPersonas = r.Detalle.Sum(d => d.Cantidad);
+        var m = string.IsNullOrWhiteSpace(motivo) ? "Cancelada por el cliente." : motivo.Trim();
+
+        await _res.AnularReservaAsync(new AnularReservaRequest
+        {
+            RevGuid = revGuid.ToString("D"),
+            Motivo = m,
+            UsuarioAccion = usuarioAccion,
+            IpAccion = ip,
+        }, cancellationToken: ct);
+
+        await _inv.LiberarCupoAsync(new LiberarCupoRequest
+        {
+            HorGuid = r.HorGuid,
+            CantidadPersonas = totalPersonas,
+            ReservaGuid = revGuid.ToString("D"),
+        }, cancellationToken: ct);
+
+        await _saga.CompletarSagaAsync(sagaId, "COMPLETADA", ct);
+        _audit.Registrar("RESERVA_CANCELADA", correlationId, new { rev_guid = revGuid.ToString("D"), motivo = m });
+    }
+
+    public async Task<ReservaResponseDto> ObtenerReservaAsync(Guid revGuid, Guid usuGuidCliente, CancellationToken ct = default)
+    {
+        var r = await _res.ObtenerReservaAsync(new ObtenerReservaRequest { RevGuid = revGuid.ToString("D") }, cancellationToken: ct);
+        if (!string.Equals(r.CliGuid, usuGuidCliente.ToString("D"), StringComparison.OrdinalIgnoreCase))
+            throw new ForbiddenOrchestadorException("No tienes acceso a esta reserva.");
+        return MapReserva(r);
+    }
+
+    public async Task<(IReadOnlyList<ReservaResponseDto> Items, int Total)> ListarMisReservasAsync(
+        Guid usuGuidCliente,
+        int page,
+        int limit,
+        CancellationToken ct = default)
+    {
+        var resp = await _res.ListarMisReservasAsync(new ListarMisReservasRequest
+        {
+            CliGuid = usuGuidCliente.ToString("D"),
+            Page = page,
+            Limit = limit,
+        }, cancellationToken: ct);
+
+        var items = resp.Items.Select(MapReserva).ToList();
+        return (items, resp.TotalFiltrado);
+    }
+
+    private async Task<Guid> ResolverCliGuidAsync(
+        CrearReservaOrquestadorDto request,
+        Guid? usuGuid,
+        string? authorizationBearer,
+        string usuarioAccion,
+        string ip,
+        CancellationToken ct)
+    {
+        if (usuGuid.HasValue)
+        {
+            var md = AuthMetadata(authorizationBearer);
+            try
+            {
+                await _cli.ObtenerClientePorGuidAsync(new ObtenerClienteRequest { CliGuid = usuGuid.Value.ToString("D") }, md, cancellationToken: ct);
+                return usuGuid.Value;
+            }
+            catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+            {
+                throw new NotFoundOrchestadorException("No existe perfil de cliente para este usuario.");
+            }
+        }
+
+        var inv = request.ClienteInvitado
+            ?? throw new ValidationOrchestadorException(new[] { "Debe enviar los datos del cliente invitado o autenticarse para reservar." });
+
+        ValidarInvitado(inv);
+
+        try
+        {
+            var existente = await _cli.ObtenerClientePorNumeroIdentificacionAsync(
+                new ObtenerClientePorDocRequest { NumeroIdentificacion = inv.NumeroIdentificacion.Trim() },
+                cancellationToken: ct);
+            return Guid.Parse(existente.CliGuid);
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            var nuevoGuid = Guid.NewGuid();
+            try
+            {
+                await _cli.CrearClienteAsync(new CrearClienteRequest
+                {
+                    UsuGuid = nuevoGuid.ToString("D"),
+                    TipoIdentificacion = inv.TipoIdentificacion.Trim(),
+                    NumeroIdentificacion = inv.NumeroIdentificacion.Trim(),
+                    Nombres = inv.Nombres?.Trim() ?? "",
+                    Apellidos = inv.Apellidos?.Trim() ?? "",
+                    RazonSocial = inv.RazonSocial?.Trim() ?? "",
+                    Correo = inv.Correo.Trim(),
+                    Telefono = inv.Telefono?.Trim() ?? "",
+                    Direccion = inv.Direccion?.Trim() ?? "",
+                    CreadoPor = usuarioAccion,
+                    IpCreador = ip,
+                }, cancellationToken: ct);
+                return nuevoGuid;
+            }
+            catch (RpcException ex2) when (ex2.StatusCode == StatusCode.AlreadyExists)
+            {
+                var existente2 = await _cli.ObtenerClientePorNumeroIdentificacionAsync(
+                    new ObtenerClientePorDocRequest { NumeroIdentificacion = inv.NumeroIdentificacion.Trim() },
+                    cancellationToken: ct);
+                return Guid.Parse(existente2.CliGuid);
+            }
+        }
+    }
+
+    private static void ValidarInvitado(ClienteInvitadoOrquestadorDto inv)
+    {
+        var errores = new List<string>();
+        if (string.IsNullOrWhiteSpace(inv.TipoIdentificacion))
+            errores.Add("El tipo de identificación del cliente invitado es obligatorio.");
+        if (string.IsNullOrWhiteSpace(inv.NumeroIdentificacion))
+            errores.Add("El número de identificación del cliente invitado es obligatorio.");
+        if (string.IsNullOrWhiteSpace(inv.Correo))
+            errores.Add("El correo del cliente invitado es obligatorio.");
+        if (string.IsNullOrWhiteSpace(inv.RazonSocial) &&
+            (string.IsNullOrWhiteSpace(inv.Nombres) || string.IsNullOrWhiteSpace(inv.Apellidos)))
+            errores.Add("Debe enviar nombres y apellidos, o razón social, para el cliente invitado.");
+        try
+        {
+            _ = new MailAddress(inv.Correo.Trim());
+        }
+        catch
+        {
+            errores.Add("El correo del invitado no es válido.");
+        }
+
+        if (errores.Count > 0)
+            throw new ValidationOrchestadorException(errores);
+    }
+
+    private static void ValidarConfirmar(ConfirmarPagoOrquestadorDto request)
+    {
+        var errores = new List<string>();
+        if (string.IsNullOrWhiteSpace(request.NombreReceptor))
+            errores.Add("El nombre del receptor es obligatorio.");
+        if (string.IsNullOrWhiteSpace(request.CorreoReceptor))
+            errores.Add("El correo del receptor es obligatorio.");
+        else
+        {
+            try
+            {
+                _ = new MailAddress(request.CorreoReceptor.Trim());
+            }
+            catch
+            {
+                errores.Add("El correo del receptor no tiene un formato válido.");
+            }
+        }
+
+        if (errores.Count > 0)
+            throw new ValidationOrchestadorException(errores);
+    }
+
+    private static Metadata AuthMetadata(string? bearer)
+    {
+        var md = new Metadata();
+        if (string.IsNullOrWhiteSpace(bearer))
+            return md;
+        var v = bearer.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) ? bearer.Trim() : "Bearer " + bearer.Trim();
+        md.Add("Authorization", v);
+        return md;
+    }
+
+    private static ReservaResponseDto MapReserva(ReservaReply r)
+    {
+        var dto = new ReservaResponseDto
+        {
+            RevGuid = r.RevGuid,
+            RevCodigo = r.RevCodigo,
+            HorFecha = r.HorFechaSnap,
+            HorHoraInicio = r.HorHoraInicioSnap,
+            HorHoraFin = string.IsNullOrWhiteSpace(r.HorHoraFinSnap) ? null : r.HorHoraFinSnap,
+            AtraccionNombre = r.AtraccionNombreSnap,
+            RevSubtotal = (decimal)r.Subtotal,
+            RevValorIva = (decimal)r.ValorIva,
+            RevTotal = (decimal)r.Total,
+            Moneda = string.IsNullOrWhiteSpace(r.Moneda) ? "USD" : r.Moneda,
+            RevEstado = r.Estado,
+            RevFechaReservaUtc = DateTime.TryParse(r.RevFechaReservaUtc, out var fecha) ? fecha : DateTime.UtcNow,
+            Links = new Dictionary<string, string?>(),
+        };
+
+        foreach (var d in r.Detalle)
+        {
+            dto.Detalle.Add(new ReservaDetalleResponseDto
+            {
+                TckTipoParticipante = d.TipoParticipante,
+                Cantidad = d.Cantidad,
+                PrecioUnit = (decimal)d.PrecioUnit,
+                Subtotal = (decimal)d.SubtotalLinea,
+            });
+        }
+
+        return dto;
+    }
+}

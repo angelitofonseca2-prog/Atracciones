@@ -53,7 +53,7 @@ namespace Microservicio.Atracciones.DataManagement.Services
         {
             var entity = new IdiomaEntity
             {
-                IdGuid = Guid.NewGuid(),
+                IdGuid = model.IdGuid != Guid.Empty ? model.IdGuid : Guid.NewGuid(),
                 IdDescripcion = model.IdDescripcion,
                 IdEstado = 'A',
                 IdFechaIngreso = DateTime.UtcNow,

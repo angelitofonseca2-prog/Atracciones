@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+option csharp_namespace = "Atracciones.Contracts.Catalogos.V1";
+
+package atracciones.catalogos.v1;
+
+// Lectura para ms-atracciones y otros consumidores internos (Fase 3).
+service CatalogoService {
+  rpc GetCatalogosPorGuids (GetCatalogosPorGuidsRequest) returns (GetCatalogosPorGuidsResponse);
+}
+
+message GetCatalogosPorGuidsRequest {
+  repeated string destino_guids = 1;
+  repeated string categoria_guids = 2;
+  repeated string idioma_guids = 3;
+  repeated string incluye_guids = 4;
+  repeated string imagen_guids = 5;
+}
+
+message GetCatalogosPorGuidsResponse {
+  repeated DestinoGrpc destinos = 1;
+  repeated CategoriaGrpc categorias = 2;
+  repeated IdiomaGrpc idiomas = 3;
+  repeated IncluyeGrpc incluye = 4;
+  repeated ImagenGrpc imagenes = 5;
+}
+
+message DestinoGrpc {
+  string des_guid = 1;
+  string nombre = 2;
+  string pais = 3;
+  string imagen_url = 4;
+  string estado = 5;
+}
+
+message CategoriaGrpc {
+  string cat_guid = 1;
+  string nombre = 2;
+  string parent_guid = 3;
+  string estado = 4;
+}
+
+message IdiomaGrpc {
+  string id_guid = 1;
+  string descripcion = 2;
+  string estado = 3;
+}
+
+message IncluyeGrpc {
+  string inc_guid = 1;
+  string descripcion = 2;
+  string estado = 3;
+}
+
+message ImagenGrpc {
+  string img_guid = 1;
+  string url = 2;
+  string descripcion = 3;
+  string estado = 4;
+}

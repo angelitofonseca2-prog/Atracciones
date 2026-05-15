@@ -2,6 +2,7 @@
 using Microservicio.Atracciones.Business.Exceptions;
 using Microservicio.Atracciones.Business.Interfaces.Admin;
 using Microservicio.Atracciones.Business.Interfaces.Auth;
+using Microservicio.Atracciones.Business.Interfaces.Integration;
 using Microservicio.Atracciones.Business.Mappers.Admin;
 using Microservicio.Atracciones.Business.Validators.Admin;
 using Microservicio.Atracciones.DataManagement.Interfaces;
@@ -17,17 +18,23 @@ namespace Microservicio.Atracciones.Business.Services.Admin
         private readonly IUsuarioDataService _usuarioService;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IIdentidadUsuarioSyncPublisher _identidadSync;
+        private readonly IClienteCrmSyncPublisher _crmSync;
 
         public ClienteAdminService(
             IClienteDataService clienteService,
             IUsuarioDataService usuarioService,
             IPasswordHasher passwordHasher,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IIdentidadUsuarioSyncPublisher identidadSync,
+            IClienteCrmSyncPublisher crmSync)
         {
             _clienteService = clienteService;
             _usuarioService = usuarioService;
             _passwordHasher = passwordHasher;
             _unitOfWork = unitOfWork;
+            _identidadSync = identidadSync;
+            _crmSync = crmSync;
         }
 
         public async Task<ClienteResponse> CrearAsync(CrearClienteRequest request, string usuarioAccion, string ip)
@@ -79,6 +86,8 @@ namespace Microservicio.Atracciones.Business.Services.Admin
 
                     await _clienteService.ActualizarAsync(clienteExistente);
                     await transaction.CommitAsync();
+                    await MirrorIdentidadSiAdminAsync(usuarioAccion, usuarioModel, clienteExistente.CliId);
+                    await MirrorCrmAsync(usuarioModel, clienteExistente, usuarioAccion, ip);
                     return ClienteAdminMapper.ToResponse(clienteExistente);
                 }
 
@@ -101,6 +110,8 @@ namespace Microservicio.Atracciones.Business.Services.Admin
                 await _clienteService.CrearAsync(clienteModel);
 
                 await transaction.CommitAsync();
+                await MirrorIdentidadSiAdminAsync(usuarioAccion, usuarioModel, clienteModel.CliId);
+                await MirrorCrmAsync(usuarioModel, clienteModel, usuarioAccion, ip);
                 return ClienteAdminMapper.ToResponse(clienteModel);
             }
             catch
@@ -109,6 +120,63 @@ namespace Microservicio.Atracciones.Business.Services.Admin
                 throw;
             }
         }
+
+        private async Task MirrorIdentidadSiAdminAsync(
+            string usuarioAccion,
+            UsuarioDataModel usuarioModel,
+            int? cliId)
+        {
+            if (string.Equals(usuarioAccion, "publico", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            var roles = usuarioModel.Roles.Select(r => r.RolDescripcion.ToUpperInvariant()).ToList();
+            await _identidadSync.SincronizarYObtenerTokenAsync(
+                new IdentidadUsuarioEspejo(
+                    usuarioModel.UsuId,
+                    usuarioModel.UsuGuid,
+                    usuarioModel.UsuLogin,
+                    usuarioModel.UsuPasswordHash,
+                    cliId,
+                    roles));
+        }
+
+        private Task MirrorCrmAsync(
+            UsuarioDataModel usuario,
+            ClienteDataModel cliente,
+            string usuarioAccion,
+            string ip)
+            => _crmSync.EspejarAsync(ToCrmEspejo(usuario, cliente, usuarioAccion, ip));
+
+        private async Task MirrorCrmSiUsuarioVinculadoAsync(
+            ClienteDataModel cliente,
+            string usuarioAccion,
+            string ip)
+        {
+            if (!cliente.UsuId.HasValue)
+                return;
+            var usuario = await _usuarioService.ObtenerPorIdAsync(cliente.UsuId.Value);
+            if (usuario is null)
+                return;
+            await MirrorCrmAsync(usuario, cliente, usuarioAccion, ip);
+        }
+
+        private static ClienteCrmEspejo ToCrmEspejo(
+            UsuarioDataModel usuario,
+            ClienteDataModel cliente,
+            string usuarioAccion,
+            string ip)
+            => new(
+                usuario.UsuGuid,
+                cliente.CliTipoIdentificacion,
+                cliente.CliNumeroIdentificacion,
+                cliente.CliNombres,
+                cliente.CliApellidos,
+                cliente.CliRazonSocial,
+                cliente.CliCorreo,
+                cliente.CliTelefono,
+                cliente.CliDireccion,
+                usuarioAccion,
+                ip);
 
         public async Task<ClienteResponse> ActualizarAsync(Guid cliGuid, ActualizarClienteRequest request, string usuarioAccion, string ip)
         {
@@ -123,6 +191,7 @@ namespace Microservicio.Atracciones.Business.Services.Admin
             if (request.RazonSocial is not null) model.CliRazonSocial = request.RazonSocial;
 
             await _clienteService.ActualizarAsync(model);
+            await MirrorCrmSiUsuarioVinculadoAsync(model, usuarioAccion, ip);
             return ClienteAdminMapper.ToResponse(model);
         }
 

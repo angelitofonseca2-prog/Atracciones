@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { obtenerHorariosDisponibles, obtenerTicketsAtraccion } from '../../api/atraccionesApi'
 import * as reservasApi from '../../api/reservasApi'
@@ -18,6 +18,32 @@ import { useAtracciones } from '../hooks/useAtracciones'
 import { useReserva } from '../hooks/useReserva'
 
 const TIPOS_IDENTIFICACION = ['CEDULA', 'PASAPORTE', 'RUC', 'OTRO']
+
+function loadPayPalScript(clientId, currency) {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') {
+      reject(new Error('Sin window'))
+      return
+    }
+    if (window.paypal) {
+      resolve()
+      return
+    }
+    const existing = document.querySelector('script[data-paypal-sdk]')
+    if (existing) {
+      existing.addEventListener('load', () => resolve(), { once: true })
+      existing.addEventListener('error', () => reject(new Error('PayPal SDK')), { once: true })
+      return
+    }
+    const s = document.createElement('script')
+    s.setAttribute('data-paypal-sdk', '1')
+    s.async = true
+    s.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(currency)}`
+    s.onload = () => resolve()
+    s.onerror = () => reject(new Error('No se pudo cargar el SDK de PayPal'))
+    document.body.appendChild(s)
+  })
+}
 
 // ─── Confirmación final con factura ──────────────────────────────────────────
 function ConfirmacionConFactura({ reserva, factura }) {
@@ -73,8 +99,8 @@ function ConfirmacionConFactura({ reserva, factura }) {
   )
 }
 
-// ─── Pantalla de pago simulado ────────────────────────────────────────────────
-function PantallaPago({ reserva, subtotal, iva, total, onConfirmar, errorPago, procesando }) {
+// ─── Pago con PayPal (orden y captura en servidor) ───────────────────────────
+function PantallaPago({ reserva, subtotal, iva, total, estaAutenticado, onPagoExitoso, errorPago, setErrorPago }) {
   const [form, setForm] = useState({
     nombre_receptor: '',
     apellido_receptor: '',
@@ -83,6 +109,9 @@ function PantallaPago({ reserva, subtotal, iva, total, onConfirmar, errorPago, p
     observacion: '',
   })
   const [errores, setErrores] = useState({})
+  const [procesandoCaptura, setProcesandoCaptura] = useState(false)
+  const formRef = useRef(form)
+  formRef.current = form
 
   const set = (campo) => (e) => {
     setForm((p) => ({ ...p, [campo]: e.target.value }))
@@ -90,26 +119,101 @@ function PantallaPago({ reserva, subtotal, iva, total, onConfirmar, errorPago, p
   }
 
   const validar = () => {
+    const f = formRef.current
     const e = {}
-    if (!form.nombre_receptor.trim()) e.nombre_receptor = 'El nombre es obligatorio'
-    if (!form.correo_receptor.trim()) e.correo_receptor = 'El correo electrónico es obligatorio'
-    else if (!esEmailValido(form.correo_receptor)) e.correo_receptor = 'Ingresa un correo electrónico válido'
+    if (!f.nombre_receptor.trim()) e.nombre_receptor = 'El nombre es obligatorio'
+    if (!f.correo_receptor.trim()) e.correo_receptor = 'El correo electrónico es obligatorio'
+    else if (!esEmailValido(f.correo_receptor)) e.correo_receptor = 'Ingresa un correo electrónico válido'
     return e
   }
 
-  const handleConfirmar = (e) => {
-    e.preventDefault()
-    const errs = validar()
-    if (Object.keys(errs).length) { setErrores(errs); return }
-    const payload = {
-      nombre_receptor: form.nombre_receptor.trim(),
-      correo_receptor: form.correo_receptor.trim(),
+  const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID
+  const moneda = (reserva?.moneda || 'USD').toString().toUpperCase()
+  const onPagoRef = useRef(onPagoExitoso)
+  onPagoRef.current = onPagoExitoso
+
+  useEffect(() => {
+    if (!clientId || !reserva?.rev_guid) return undefined
+    const el = document.getElementById('paypal-button-container')
+    if (!el) return undefined
+    let cancelled = false
+    ;(async () => {
+      try {
+        await loadPayPalScript(clientId, moneda)
+        if (cancelled || !window.paypal) return
+        el.innerHTML = ''
+        window.paypal
+          .Buttons({
+            createOrder: async () => {
+              const errs = validar()
+              if (Object.keys(errs).length) {
+                setErrores(errs)
+                throw new Error('Completa los datos de facturación antes de pagar.')
+              }
+              setErrorPago('')
+              const body = {
+                rev_guid: reserva.rev_guid,
+              }
+              if (!estaAutenticado && reserva.rev_codigo) {
+                body.rev_codigo = reserva.rev_codigo
+              }
+              const resp = await reservasApi.crearOrdenPayPal(body)
+              const orderId = resp?.data?.paypal_order_id
+              if (!orderId) throw new Error('No se recibió orden de PayPal.')
+              return orderId
+            },
+            onApprove: async (data) => {
+              const errs = validar()
+              if (Object.keys(errs).length) {
+                setErrores(errs)
+                throw new Error('Datos de facturación incompletos.')
+              }
+              const f = formRef.current
+              const payload = {
+                rev_guid: reserva.rev_guid,
+                paypal_order_id: data.orderID,
+                nombre_receptor: f.nombre_receptor.trim(),
+                correo_receptor: f.correo_receptor.trim(),
+              }
+              if (!estaAutenticado && reserva.rev_codigo) {
+                payload.rev_codigo = reserva.rev_codigo
+              }
+              if (f.apellido_receptor.trim()) payload.apellido_receptor = f.apellido_receptor.trim()
+              if (f.telefono_receptor.trim()) payload.telefono_receptor = f.telefono_receptor.trim()
+              if (f.observacion.trim()) payload.observacion = f.observacion.trim()
+              setProcesandoCaptura(true)
+              setErrorPago('')
+              try {
+                const resp = await reservasApi.capturarOrdenPayPal(payload)
+                const factura = resp?.data
+                onPagoRef.current(factura)
+              } catch (err) {
+                const msg =
+                  err?.response?.data?.message ||
+                  err?.response?.data?.details?.[0] ||
+                  err?.message ||
+                  'No se pudo completar el pago.'
+                setErrorPago(msg)
+                throw err
+              } finally {
+                setProcesandoCaptura(false)
+              }
+            },
+            onError: (err) => {
+              const msg = err?.message || 'Error en el checkout de PayPal.'
+              setErrorPago(msg)
+            },
+          })
+          .render(el)
+      } catch (e) {
+        if (!cancelled) setErrorPago(e?.message || 'No se pudo iniciar PayPal.')
+      }
+    })()
+    return () => {
+      cancelled = true
+      el.innerHTML = ''
     }
-    if (form.apellido_receptor.trim()) payload.apellido_receptor = form.apellido_receptor.trim()
-    if (form.telefono_receptor.trim()) payload.telefono_receptor = form.telefono_receptor.trim()
-    if (form.observacion.trim()) payload.observacion = form.observacion.trim()
-    onConfirmar(payload)
-  }
+  }, [clientId, reserva?.rev_guid, reserva?.rev_codigo, estaAutenticado, moneda])
 
   const revSubtotal = Number(reserva?.rev_subtotal ?? subtotal ?? 0)
   const revIva = Number(reserva?.rev_valor_iva ?? iva ?? 0)
@@ -119,12 +223,11 @@ function PantallaPago({ reserva, subtotal, iva, total, onConfirmar, errorPago, p
     <section className="page-section">
       <div className="confirmacion-card fade-in">
         <div className="check-icon">💳</div>
-        <h1>Pago simulado</h1>
+        <h1>Pago con PayPal</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-          Confirma los datos de facturación para finalizar tu reserva.
+          Completa los datos de facturación y usa el botón de PayPal. El cargo se confirma en el servidor; no ingreses datos de tarjeta en esta web.
         </p>
 
-        {/* Resumen de la reserva */}
         <div className="confirmacion-row">
           <span>Código de reserva</span>
           <span style={{ fontFamily: 'monospace' }}>{reserva?.rev_codigo || '—'}</span>
@@ -151,11 +254,10 @@ function PantallaPago({ reserva, subtotal, iva, total, onConfirmar, errorPago, p
         </div>
         <div className="confirmacion-row" style={{ fontWeight: 700 }}>
           <span>Total</span>
-          <span>${revTotal.toFixed(2)}</span>
+          <span>${revTotal.toFixed(2)} {moneda}</span>
         </div>
 
-        {/* Formulario de facturación */}
-        <form onSubmit={handleConfirmar} noValidate style={{ marginTop: '1.75rem', textAlign: 'left', width: '100%' }}>
+        <form noValidate style={{ marginTop: '1.75rem', textAlign: 'left', width: '100%' }} onSubmit={(e) => e.preventDefault()}>
           <div className="form-grid">
             <div className="form-group">
               <label htmlFor="pago-nombre">Nombre *</label>
@@ -216,17 +318,23 @@ function PantallaPago({ reserva, subtotal, iva, total, onConfirmar, errorPago, p
               />
             </div>
           </div>
-
-          <ErrorMessage mensaje={errorPago} />
-
-          <div style={{ marginTop: '1rem' }}>
-            <button type="submit" className="btn btn-full" disabled={procesando}>
-              {procesando
-                ? <><span className="spinner spinner-sm" /> Procesando pago...</>
-                : 'Confirmar pago'}
-            </button>
-          </div>
         </form>
+
+        {!clientId && (
+          <div className="info-message" style={{ marginTop: '1rem' }}>
+            Falta configurar <code>VITE_PAYPAL_CLIENT_ID</code> en el entorno del frontend (clave pública de sandbox o live).
+          </div>
+        )}
+
+        <ErrorMessage mensaje={errorPago} />
+
+        <div id="paypal-button-container" style={{ marginTop: '1.25rem' }} />
+
+        {procesandoCaptura && (
+          <p className="text-muted text-sm" style={{ marginTop: '0.75rem' }}>
+            <span className="spinner spinner-sm" /> Confirmando pago en el servidor…
+          </p>
+        )}
       </div>
     </section>
   )
@@ -418,7 +526,6 @@ function ReservaPage() {
   const [reservaLocal, setReservaLocal] = useState(null)
   const [factura, setFactura] = useState(null)
   const [errorPago, setErrorPago] = useState('')
-  const [procesandoPago, setProcesandoPago] = useState(false)
 
   const { detalle, cargarDetalle, cargando, error } = useAtracciones({})
   const { crearReserva, error: errorReserva, cargando: creando } = useReserva()
@@ -485,33 +592,10 @@ function ReservaPage() {
     }
   }
 
-  const handleConfirmarPago = async (datosFacturacion) => {
-    if (!reservaLocal?.rev_guid) {
-      setErrorPago('No se encontró el identificador de la reserva. Intenta nuevamente.')
-      return
-    }
-    setProcesandoPago(true)
-    setErrorPago('')
-    try {
-      const resp = await reservasApi.confirmarPago(reservaLocal.rev_guid, datosFacturacion)
-      const facturaData = resp?.data ?? resp
-      setFactura(facturaData)
-      setPaso('confirmacion')
-    } catch (err) {
-      const status = err?.response?.status
-      if (status === 409) {
-        setErrorPago('Esta reserva ya tiene un pago confirmado.')
-      } else {
-        setErrorPago(
-          err?.response?.data?.message ||
-          err?.response?.data?.details?.[0] ||
-          'No se pudo confirmar el pago. La reserva sigue activa — intenta de nuevo o ve a Mis Reservas.'
-        )
-      }
-    } finally {
-      setProcesandoPago(false)
-    }
-  }
+  const handlePagoExitoso = useCallback((facturaData) => {
+    setFactura(facturaData)
+    setPaso('confirmacion')
+  }, [])
 
   if (cargando && paso === 'cargando') return <Spinner message="Cargando atracción..." />
 
@@ -526,9 +610,10 @@ function ReservaPage() {
         subtotal={subtotal}
         iva={iva}
         total={total}
-        onConfirmar={handleConfirmarPago}
+        estaAutenticado={estaAutenticado}
+        onPagoExitoso={handlePagoExitoso}
         errorPago={errorPago}
-        procesando={procesandoPago}
+        setErrorPago={setErrorPago}
       />
     )
   }

@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+option csharp_namespace = "Atracciones.Contracts.Inventario.V1";
+
+package atracciones.inventario.v1;
+
+// Inventario / cupos de horarios (Fase 4–5). Consumido por ms-orquestador en sagas de reserva.
+service AtraccionInventarioService {
+  rpc GetTicketPrecio (GetTicketPrecioRequest) returns (GetTicketPrecioResponse);
+  rpc ObtenerHorarioParaReserva (ObtenerHorarioParaReservaRequest) returns (ObtenerHorarioParaReservaResponse);
+  rpc ValidarYReservarCupo (ValidarYReservarCupoRequest) returns (CupoOperacionResponse);
+  rpc LiberarCupo (LiberarCupoRequest) returns (CupoOperacionResponse);
+}
+
+message GetTicketPrecioRequest {
+  string tck_guid = 1;
+}
+
+message GetTicketPrecioResponse {
+  bool ok = 1;
+  string mensaje = 2;
+  double precio = 3;
+  string tipo_participante = 4;
+  string at_guid = 5;
+}
+
+message ObtenerHorarioParaReservaRequest {
+  string hor_guid = 1;
+  string at_guid = 2;
+}
+
+message ObtenerHorarioParaReservaResponse {
+  bool ok = 1;
+  string mensaje = 2;
+  string atraccion_nombre = 3;
+  string hor_fecha = 4;
+  string hor_hora_inicio = 5;
+  string hor_hora_fin = 6;
+}
+
+message ValidarYReservarCupoRequest {
+  string hor_guid = 1;
+  int32 cantidad_personas = 2;
+  string reserva_guid = 3;
+}
+
+message LiberarCupoRequest {
+  string hor_guid = 1;
+  int32 cantidad_personas = 2;
+  string reserva_guid = 3;
+}
+
+message CupoOperacionResponse {
+  bool ok = 1;
+  string mensaje = 2;
+  int32 cupos_disponibles_tras_operacion = 3;
+}

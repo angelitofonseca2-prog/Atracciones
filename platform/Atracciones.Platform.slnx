@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/gateway/">
+    <Project Path="gateway/Atracciones.Gateway.csproj" />
+  </Folder>
+  <Folder Name="/shared/" />
+  <Folder Name="/shared/BuildingBlocks/">
+    <Project Path="shared/BuildingBlocks/Atracciones.Platform.BuildingBlocks.csproj" />
+  </Folder>
+</Solution>

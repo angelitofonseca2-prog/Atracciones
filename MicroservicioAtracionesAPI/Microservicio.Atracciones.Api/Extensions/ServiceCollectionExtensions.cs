@@ -1,5 +1,6 @@
 using Microservicio.Atracciones.Business.Interfaces.Admin;
 using Microservicio.Atracciones.Business.Interfaces.Auth;
+using Microservicio.Atracciones.Business.Interfaces.Integration;
 using Microservicio.Atracciones.Business.Interfaces.Public;
 using Microservicio.Atracciones.Business.Rules.Admin;
 using Microservicio.Atracciones.Business.Rules.Public;
@@ -30,6 +31,9 @@ namespace Microservicio.Atracciones.Api.Extensions
 
             // ── Settings ───────────────────────────────────────────────
             services.Configure<JwtSettings>(config.GetSection("JwtSettings"));
+            services.Configure<IdentidadSyncSettings>(config.GetSection(IdentidadSyncSettings.SectionName));
+            services.Configure<ClientesSyncSettings>(config.GetSection(ClientesSyncSettings.SectionName));
+            services.Configure<CatalogMirrorIngressSettings>(config.GetSection(CatalogMirrorIngressSettings.SectionName));
             services.Configure<CorsSettings>(config.GetSection("CorsSettings"));
             services.Configure<CacheSettings>(config.GetSection("CacheSettings"));
             services.Configure<ApiSettings>(config.GetSection("ApiSettings"));
@@ -74,23 +78,36 @@ namespace Microservicio.Atracciones.Api.Extensions
             services.AddScoped<IAtraccionPublicService, AtraccionPublicService>();
             services.AddScoped<IReservaPublicService, ReservaPublicService>();
             services.AddScoped<IReseniaPublicService, ReseniaPublicService>();
-            services.AddScoped<IClientePerfilService, ClientePerfilService>();
             services.AddScoped<IFacturaPublicService, FacturaPublicService>();
 
             // ── Business — Admin Services ──────────────────────────────
             services.AddScoped<IUsuarioAdminService, UsuarioAdminService>();
             services.AddScoped<IClienteAdminService, ClienteAdminService>();
-            services.AddScoped<IDestinoAdminService, DestinoAdminService>();
-            services.AddScoped<ICatalogoAdminService, CatalogoAdminService>();
             services.AddScoped<IAtraccionAdminService, AtraccionAdminService>();
             services.AddScoped<ITicketAdminService, TicketAdminService>();
             services.AddScoped<IReservaAdminService, ReservaAdminService>();
             services.AddScoped<IFacturaAdminService, FacturaAdminService>();
             services.AddScoped<IReseniaAdminService, ReseniaAdminService>();
-            services.AddScoped<IImagenAdminService, ImagenAdminService>();
 
-            // ── API — Token Service ────────────────────────────────────
+            // ── API — Token Service (legado; registro usa JWT de ms-identidad) ──
             services.AddScoped<TokenService, JwtTokenService>();
+            services.AddScoped<ICatalogMirrorApplicator, CatalogMirrorApplicator>();
+
+            services.AddHttpClient<IIdentidadUsuarioSyncPublisher, IdentidadUsuarioSyncPublisher>((sp, client) =>
+            {
+                var s = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<IdentidadSyncSettings>>().Value;
+                if (!string.IsNullOrWhiteSpace(s.BaseUrl))
+                    client.BaseAddress = new Uri(s.BaseUrl.TrimEnd('/') + "/");
+                client.Timeout = TimeSpan.FromSeconds(20);
+            });
+
+            services.AddHttpClient<IClienteCrmSyncPublisher, ClienteCrmSyncPublisher>((sp, client) =>
+            {
+                var s = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ClientesSyncSettings>>().Value;
+                if (!string.IsNullOrWhiteSpace(s.BaseUrl))
+                    client.BaseAddress = new Uri(s.BaseUrl.TrimEnd('/') + "/");
+                client.Timeout = TimeSpan.FromSeconds(20);
+            });
 
             return services;
         }

@@ -1,0 +1,21 @@
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+.vs/
+
+# Node / Vite
+node_modules/
+**/dist/
+frontend-atracciones/.env.local
+
+# Secretos y entorno local (no subir credenciales)
+.env
+platform/.env
+**/secrets/*.pem
+
+# OS
+.DS_Store
+Thumbs.db

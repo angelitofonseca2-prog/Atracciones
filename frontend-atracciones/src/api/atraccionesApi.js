@@ -12,6 +12,12 @@ apiClient.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  if (!config.headers['X-Correlation-ID']) {
+    config.headers['X-Correlation-ID'] =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  }
   return config
 })
 

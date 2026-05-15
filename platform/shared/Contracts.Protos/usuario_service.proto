@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option csharp_namespace = "Atracciones.Contracts.Identidad.V1";
+
+package atracciones.identidad.v1;
+
+// Servidor gRPC consumido por ms-orquestador (Fase 5+).
+service UsuarioService {
+  rpc CrearUsuario (CrearUsuarioRequest) returns (UsuarioReply);
+  rpc EliminarUsuario (EliminarUsuarioRequest) returns (EliminarUsuarioReply);
+  rpc ObtenerUsuarioPorGuid (ObtenerUsuarioRequest) returns (UsuarioReply);
+}
+
+message CrearUsuarioRequest {
+  string login = 1;
+  string password_plain = 2;
+  repeated string roles = 3;
+  string creado_por = 4;
+  string ip_creador = 5;
+}
+
+message UsuarioReply {
+  int32 usu_id = 1;
+  string usu_guid = 2;
+  string login = 3;
+}
+
+message EliminarUsuarioRequest {
+  string usu_guid = 1;
+}
+
+message EliminarUsuarioReply {
+  bool ok = 1;
+}
+
+message ObtenerUsuarioRequest {
+  string usu_guid = 1;
+}

@@ -63,7 +63,7 @@ namespace Microservicio.Atracciones.DataManagement.Services
 
             var entity = new CategoriaEntity
             {
-                CatGuid = Guid.NewGuid(),
+                CatGuid = model.CatGuid != Guid.Empty ? model.CatGuid : Guid.NewGuid(),
                 CatNombre = model.CatNombre,
                 CatParentId = parentId,
                 CatEstado = 'A',

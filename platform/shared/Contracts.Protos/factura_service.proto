@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option csharp_namespace = "Atracciones.Contracts.Facturacion.V1";
+
+package atracciones.facturacion.v1;
+
+// Facturación (ms-facturacion). Consumido por ms-orquestador.
+service FacturaService {
+  rpc EmitirFactura (EmitirFacturaRequest) returns (FacturaReply);
+  rpc ObtenerFacturaPorGuid (ObtenerFacturaRequest) returns (FacturaReply);
+  rpc ListarMisFacturas (ListarMisFacturasRequest) returns (ListarMisFacturasReply);
+}
+
+message EmitirFacturaDatos {
+  string nombre_receptor = 1;
+  string correo_receptor = 2;
+  string telefono_receptor = 3;
+}
+
+message EmitirFacturaRequest {
+  string rev_guid = 1;
+  string cli_guid = 2;
+  EmitirFacturaDatos datos = 3;
+  double total = 4;
+  string moneda = 5;
+  string rev_codigo_snap = 6;
+  string usuario_emision = 7;
+  string ip_emision = 8;
+}
+
+message ObtenerFacturaRequest {
+  string fac_guid = 1;
+}
+
+message ListarMisFacturasRequest {
+  string cli_guid = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message FacturaReply {
+  string fac_guid = 1;
+  string fac_numero = 2;
+  string rev_guid = 3;
+  string cli_guid = 4;
+  double total = 5;
+  string moneda = 6;
+  string fecha_emision_utc = 7;
+  string estado = 8;
+  string nombre_receptor = 9;
+  string correo_receptor = 10;
+  string rev_codigo_snap = 11;
+}
+
+message ListarMisFacturasReply {
+  repeated FacturaReply items = 1;
+  int32 total_filtrado = 2;
+}

@@ -44,7 +44,7 @@ namespace Microservicio.Atracciones.DataManagement.Mappers.Catalogos
         {
             return new DestinoEntity
             {
-                DesGuid = Guid.NewGuid(),
+                DesGuid = model.DesGuid != Guid.Empty ? model.DesGuid : Guid.NewGuid(),
                 DesNombre = model.DesNombre,
                 DesPais = model.DesPais,
                 DesImagenUrl = model.DesImagenUrl,

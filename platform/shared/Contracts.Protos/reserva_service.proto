@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+option csharp_namespace = "Atracciones.Contracts.Reservas.V1";
+
+package atracciones.reservas.v1;
+
+// Persistencia de reservas (ms-reservas). Consumido por ms-orquestador.
+service ReservaService {
+  rpc CrearReservaPendiente (CrearReservaPendienteRequest) returns (ReservaReply);
+  rpc ConfirmarReservaPagada (ConfirmarReservaPagadaRequest) returns (ReservaReply);
+  rpc AnularReserva (AnularReservaRequest) returns (AnularReservaReply);
+  rpc ObtenerReserva (ObtenerReservaRequest) returns (ReservaReply);
+  rpc ListarMisReservas (ListarMisReservasRequest) returns (ListarMisReservasReply);
+}
+
+message LineaDetalleReserva {
+  string tck_guid = 1;
+  int32 cantidad = 2;
+  double precio_unit = 3;
+  double subtotal_linea = 4;
+  string tipo_participante = 5;
+}
+
+message CrearReservaPendienteRequest {
+  string rev_guid = 15;
+  string cli_guid = 1;
+  string at_guid = 2;
+  string hor_guid = 3;
+  repeated LineaDetalleReserva lineas = 4;
+  double subtotal = 5;
+  double valor_iva = 6;
+  double total = 7;
+  string origen_canal = 8;
+  string usuario_ingreso = 9;
+  string ip_ingreso = 10;
+  string atraccion_nombre_snap = 11;
+  string hor_fecha_snap = 12;
+  string hor_hora_inicio_snap = 13;
+  string hor_hora_fin_snap = 14;
+}
+
+message ConfirmarReservaPagadaRequest {
+  string rev_guid = 1;
+  string usuario_accion = 2;
+  string ip_accion = 3;
+}
+
+message AnularReservaRequest {
+  string rev_guid = 1;
+  string motivo = 2;
+  string usuario_accion = 3;
+  string ip_accion = 4;
+}
+
+message AnularReservaReply {
+  bool ok = 1;
+}
+
+message ObtenerReservaRequest {
+  string rev_guid = 1;
+}
+
+message ListarMisReservasRequest {
+  string cli_guid = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message ReservaDetalleReply {
+  string tck_guid = 1;
+  int32 cantidad = 2;
+  double precio_unit = 3;
+  double subtotal_linea = 4;
+  string tipo_participante = 5;
+}
+
+message ReservaReply {
+  string rev_guid = 1;
+  string rev_codigo = 2;
+  string cli_guid = 3;
+  string at_guid = 4;
+  string hor_guid = 5;
+  string estado = 6;
+  double subtotal = 7;
+  double valor_iva = 8;
+  double total = 9;
+  string moneda = 10;
+  string origen_canal = 11;
+  string rev_fecha_reserva_utc = 12;
+  string atraccion_nombre_snap = 13;
+  string hor_fecha_snap = 14;
+  string hor_hora_inicio_snap = 15;
+  string hor_hora_fin_snap = 16;
+  repeated ReservaDetalleReply detalle = 17;
+}
+
+message ListarMisReservasReply {
+  repeated ReservaReply items = 1;
+  int32 total_filtrado = 2;
+}

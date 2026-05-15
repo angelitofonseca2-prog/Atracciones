@@ -39,7 +39,7 @@ namespace Microservicio.Atracciones.DataManagement.Services
         {
             var entity = new ImagenEntity
             {
-                ImgGuid = Guid.NewGuid(),
+                ImgGuid = model.ImgGuid != Guid.Empty ? model.ImgGuid : Guid.NewGuid(),
                 ImgUrl = model.ImgUrl,
                 ImgDescripcion = model.ImgDescripcion,
                 ImgEstado = 'A',
