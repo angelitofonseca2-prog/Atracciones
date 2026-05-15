@@ -1,0 +1,14 @@
+# Mantener acciones y dependencias de npm/nuget razonablemente al día (PRs automáticos).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: npm
+    directory: /frontend-atracciones
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5

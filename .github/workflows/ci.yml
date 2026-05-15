@@ -1,0 +1,77 @@
+# Compilación continua del monorepo (.NET 10 + Vite).
+# No despliega a Railway: el despliegue se hace desde el panel de Railway o con CLI + token.
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet:
+    name: .NET (gateway, monolito, microservicios)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Restore and build gateway
+        run: |
+          dotnet restore platform/gateway/Atracciones.Gateway.csproj
+          dotnet build platform/gateway/Atracciones.Gateway.csproj -c Release --no-restore
+
+      - name: Restore and build monolito API
+        run: |
+          dotnet restore MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Microservicio.Atracciones.Api.csproj
+          dotnet build MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Microservicio.Atracciones.Api.csproj -c Release --no-restore
+
+      - name: Restore and build microservicios (API)
+        run: |
+          set -e
+          for csproj in \
+            services/ms-identidad/src/Atracciones.MsIdentidad.Api/Atracciones.MsIdentidad.Api.csproj \
+            services/ms-atracciones/src/Atracciones.MsAtracciones.Api/Atracciones.MsAtracciones.Api.csproj \
+            services/ms-reservas/src/Atracciones.MsReservas.Api/Atracciones.MsReservas.Api.csproj \
+            services/ms-orquestador/src/Atracciones.MsOrquestador.Api/Atracciones.MsOrquestador.Api.csproj \
+            services/ms-facturacion/src/Atracciones.MsFacturacion.Api/Atracciones.MsFacturacion.Api.csproj \
+            services/ms-auditoria/src/Atracciones.MsAuditoria.Api/Atracciones.MsAuditoria.Api.csproj \
+            services/ms-catalogos/src/Atracciones.MsCatalogos.Api/Atracciones.MsCatalogos.Api.csproj \
+            services/ms-clientes/src/Atracciones.MsClientes.Api/Atracciones.MsClientes.Api.csproj
+          do
+            echo "==> $csproj"
+            dotnet restore "$csproj"
+            dotnet build "$csproj" -c Release --no-restore
+          done
+
+  frontend:
+    name: Frontend (Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-atracciones
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend-atracciones/package-lock.json
+
+      - name: Install and build
+        env:
+          # Valor ficticio solo para que `vite build` resuelva import.meta.env
+          VITE_API_URL: https://example.invalid/api/v1
+        run: |
+          npm ci
+          npm run build
