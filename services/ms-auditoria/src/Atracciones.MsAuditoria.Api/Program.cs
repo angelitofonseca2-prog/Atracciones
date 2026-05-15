@@ -1,3 +1,4 @@
+using Atracciones.MsAuditoria.Api.Configuration;
 using Atracciones.MsAuditoria.Api.Grpc;
 using Atracciones.MsAuditoria.DataAccess;
 using Atracciones.MsAuditoria.DataAccess.Context;
@@ -6,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+
+DatabaseUrlMapper.Apply("ConnectionStrings__AuditoriaDb");
 
 var builder = WebApplication.CreateBuilder(args);
 

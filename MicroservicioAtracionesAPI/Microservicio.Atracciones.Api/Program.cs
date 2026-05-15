@@ -30,6 +30,7 @@ builder.Services.AddApiVersioningConfig();
 
 var app = builder.Build();
 
+await app.MigrateDatabaseAsync();
 await app.EnsureEssentialRolesAsync();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();

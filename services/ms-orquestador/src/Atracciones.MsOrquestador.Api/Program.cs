@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Atracciones.MsOrquestador.Api.Configuration;
 using Atracciones.MsOrquestador.Api.Extensions;
 using Atracciones.MsOrquestador.Api.Middleware;
 using Atracciones.MsOrquestador.Business;
@@ -9,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+
+DatabaseUrlMapper.Apply("ConnectionStrings__OrquestadorDb");
 
 var builder = WebApplication.CreateBuilder(args);
 

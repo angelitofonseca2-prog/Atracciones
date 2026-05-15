@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Atracciones.MsFacturacion.Api.Configuration;
 using Atracciones.MsFacturacion.Api.Extensions;
 using Atracciones.MsFacturacion.Api.Grpc;
 using Atracciones.MsFacturacion.Api.Middleware;
@@ -7,6 +8,8 @@ using Atracciones.MsFacturacion.DataAccess.Context;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+
+DatabaseUrlMapper.Apply("ConnectionStrings__BillingDb");
 
 var builder = WebApplication.CreateBuilder(args);
 

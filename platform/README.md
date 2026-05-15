@@ -57,6 +57,60 @@ Levanta Postgres (5433), ms-identidad (5101), gateway en el host (**http://local
 
 Igual que antes: orígenes Vite en `gateway/appsettings.Development.json` o variables `Cors__*`.
 
+## Railway — Configuración por servicio
+
+### Variables obligatorias en Railway
+
+Cada servicio lee `DATABASE_URL` y la convierte automáticamente al formato Npgsql.
+Configura estas variables en la pestaña **Variables** de cada servicio:
+
+| Servicio Railway | DATABASE_URL (termina en) | Variables adicionales obligatorias |
+|---|---|---|
+| `Atracciones` (monolito) | `/atracciones_db` | — |
+| `services/ms-identidad` | `/auth_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__ExpirationHours`, `Jwt__KeyId`, `Jwt__RsaPrivateKeyPem` (contenido del PEM), `InternalSync__MonolithApiKey` |
+| `services/ms-atracciones` | `/atracciones_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl` |
+| `services/ms-reservas` | `/reservas_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl`, `ClientesMirror__MonolithApiKey` |
+| `services/ms-facturacion` | `/facturacion_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl` |
+| `services/ms-orquestador` | `/orquestador_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl`, `GrpcClients__Identidad`, `GrpcClients__Atracciones`, `GrpcClients__Reservas`, `GrpcClients__Facturacion`, `GrpcClients__Auditoria`, `PayPal__ClientId`, `PayPal__ClientSecret`, `PayPal__WebhookId` |
+| `services/ms-auditoria` | `/audit_db` | — |
+
+**Valores de ejemplo para los JWT (usar los mismos en todos los servicios):**
+```
+Jwt__Issuer=microservicio-atracciones
+Jwt__Audience=booking-prototipo
+Jwt__JwksUrl=https://<dominio-publico-ms-identidad>/.well-known/jwks.json
+```
+
+**Nota sobre `Jwt__RsaPrivateKeyPem` en ms-identidad:**
+El contenido del archivo `platform/secrets/dev-rsa-private.pem` (generado localmente) debe pegarse como valor de esta variable en Railway (incluyendo las líneas `-----BEGIN RSA PRIVATE KEY-----` y `-----END RSA PRIVATE KEY-----`). Sin esto, cada redeploy genera una clave distinta y los tokens existentes se invalidan.
+
+**Nota sobre `GrpcClients__*` en ms-orquestador:**
+Railway expone un único puerto HTTP por servicio. Usar el dominio público de cada microservicio con puerto 443 (Railway maneja TLS automáticamente). Ejemplo:
+```
+GrpcClients__Identidad=https://<dominio-ms-identidad>
+GrpcClients__Atracciones=https://<dominio-ms-atracciones>
+GrpcClients__Reservas=https://<dominio-ms-reservas>
+GrpcClients__Facturacion=https://<dominio-ms-facturacion>
+GrpcClients__Auditoria=https://<dominio-ms-auditoria>
+```
+
+### Root Directory y Dockerfile path
+
+- **Root Directory**: dejar **vacío** en todos los servicios. Los Dockerfiles hacen `COPY . .` desde la raíz del repo; si se cambia el Root Directory, el contexto del build cambia y las rutas de `dotnet publish` dejan de existir.
+- **Dockerfile path** (`RAILWAY_DOCKERFILE_PATH`): configurar por servicio:
+
+| Servicio | RAILWAY_DOCKERFILE_PATH |
+|---|---|
+| `Atracciones` (monolito) | `MicroservicioAtracionesAPI/Dockerfile` (ya fijado en `railway.json`) |
+| `services/ms-identidad` | `services/ms-identidad/Dockerfile` |
+| `services/ms-atracciones` | `services/ms-atracciones/Dockerfile` |
+| `services/ms-reservas` | `services/ms-reservas/Dockerfile` |
+| `services/ms-facturacion` | `services/ms-facturacion/Dockerfile` |
+| `services/ms-orquestador` | `services/ms-orquestador/Dockerfile` |
+| `services/ms-auditoria` | `services/ms-auditoria/Dockerfile` |
+
+---
+
 ## Railway (build fallido / monorepo)
 
 1. **Raíz del servicio (Root Directory):** déjala **vacía** (raíz del repositorio). Si la pones en `platform/gateway` o `frontend-atracciones`, los `COPY platform/...` o `COPY frontend-atracciones/...` del Dockerfile **fallan** porque el contexto ya no incluye esas rutas.

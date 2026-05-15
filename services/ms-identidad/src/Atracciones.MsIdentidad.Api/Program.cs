@@ -1,3 +1,4 @@
+using Atracciones.MsIdentidad.Api.Configuration;
 using Atracciones.MsIdentidad.Api.Extensions;
 using Atracciones.MsIdentidad.Api.Grpc;
 using Atracciones.MsIdentidad.Api.Middleware;
@@ -11,6 +12,8 @@ using Atracciones.MsIdentidad.DataAccess.Context;
 using Atracciones.MsIdentidad.DataAccess.Seeding;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
+
+DatabaseUrlMapper.Apply("ConnectionStrings__IdentidadDb");
 
 var builder = WebApplication.CreateBuilder(args);
 
