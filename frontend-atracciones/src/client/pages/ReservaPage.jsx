@@ -522,6 +522,11 @@ function ReservaPage() {
   const [tickets, setTickets] = useState([])
   const [horarios, setHorarios] = useState([])
 
+  const horarioSeleccionado = useMemo(
+    () => horarios.find((h) => h.hor_guid === horGuid) ?? null,
+    [horarios, horGuid],
+  )
+
   // Estado del pago
   const [reservaLocal, setReservaLocal] = useState(null)
   const [factura, setFactura] = useState(null)
@@ -546,6 +551,11 @@ function ReservaPage() {
       .catch(() => setHorarios([]))
   }, [guid])
 
+  const ticketsFiltrados = useMemo(() => {
+    if (!horarioSeleccionado?.tck_guid) return []
+    return tickets.filter((t) => t.tck_guid === horarioSeleccionado.tck_guid)
+  }, [tickets, horarioSeleccionado])
+
   const lineas = useMemo(
     () =>
       Object.entries(cantidades)
@@ -555,11 +565,11 @@ function ReservaPage() {
   )
 
   const subtotal = useMemo(() => {
-    return tickets.reduce((acc, ticket) => {
+    return ticketsFiltrados.reduce((acc, ticket) => {
       const cantidad = Number(cantidades[ticket.tck_guid] || 0)
       return acc + cantidad * Number(ticket.precio || 0)
     }, 0)
-  }, [cantidades, tickets])
+  }, [cantidades, ticketsFiltrados])
 
   const iva = subtotal * 0.15
   const total = subtotal + iva
@@ -673,14 +683,17 @@ function ReservaPage() {
                 <select
                   id="horario"
                   value={horGuid}
-                  onChange={(e) => { setHorGuid(e.target.value); setIntentoEnvio(false) }}
+                  onChange={(e) => { setHorGuid(e.target.value); setCantidades({}); setIntentoEnvio(false) }}
                   className={intentoEnvio && sinHorario ? 'input-error' : ''}
                 >
                   <option value="">— Elige una fecha y hora —</option>
                   {horarios.map((horario, index) => (
                     <option key={horario.hor_guid || index} value={horario.hor_guid}>
                       {horario.fecha} {horario.hora_inicio}
-                      {horario.cupos_disponibles != null ? ` — ${horario.cupos_disponibles} cupos disponibles` : ''}
+                      {horario.ticket_titulo ? ` — ${horario.ticket_titulo}` : ''}
+                      {(horario.cupos ?? horario.cupos_disponibles) != null
+                        ? ` — ${horario.cupos ?? horario.cupos_disponibles} cupos`
+                        : ''}
                     </option>
                   ))}
                 </select>
@@ -690,45 +703,55 @@ function ReservaPage() {
               </div>
 
               <div className="form-group">
-                <label>Cantidad de tickets *</label>
-                <div className="tickets-box">
-                  {tickets.map((ticket) => (
-                    <div className="ticket-row" key={ticket.tck_guid}>
-                      <div className="ticket-row-info">
-                        <strong>{ticket.titulo}</strong>
-                        <span>${Number(ticket.precio).toFixed(2)} por persona</span>
+                <label>Cantidad de entradas *</label>
+                {!horGuid ? (
+                  <p className="text-muted text-sm" style={{ marginTop: '0.5rem' }}>
+                    Selecciona primero el horario para ver las entradas disponibles.
+                  </p>
+                ) : ticketsFiltrados.length === 0 ? (
+                  <p className="text-muted text-sm" style={{ marginTop: '0.5rem' }}>
+                    No hay información de tarifa para este horario.
+                  </p>
+                ) : (
+                  <div className="tickets-box">
+                    {ticketsFiltrados.map((ticket) => (
+                      <div className="ticket-row" key={ticket.tck_guid}>
+                        <div className="ticket-row-info">
+                          <strong>{ticket.titulo}</strong>
+                          <span>${Number(ticket.precio).toFixed(2)} por persona</span>
+                        </div>
+                        <div className="ticket-qty">
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => setCantidades((prev) => ({
+                              ...prev,
+                              [ticket.tck_guid]: Math.max(0, (Number(prev[ticket.tck_guid] || 0) - 1))
+                            }))}
+                          >−</button>
+                          <input
+                            type="number"
+                            min="0"
+                            value={cantidades[ticket.tck_guid] || 0}
+                            onChange={(e) =>
+                              setCantidades((prev) => ({ ...prev, [ticket.tck_guid]: e.target.value }))
+                            }
+                          />
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => setCantidades((prev) => ({
+                              ...prev,
+                              [ticket.tck_guid]: (Number(prev[ticket.tck_guid] || 0) + 1)
+                            }))}
+                          >+</button>
+                        </div>
                       </div>
-                      <div className="ticket-qty">
-                        <button
-                          type="button"
-                          className="btn btn-outline btn-sm"
-                          onClick={() => setCantidades((prev) => ({
-                            ...prev,
-                            [ticket.tck_guid]: Math.max(0, (Number(prev[ticket.tck_guid] || 0) - 1))
-                          }))}
-                        >−</button>
-                        <input
-                          type="number"
-                          min="0"
-                          value={cantidades[ticket.tck_guid] || 0}
-                          onChange={(e) =>
-                            setCantidades((prev) => ({ ...prev, [ticket.tck_guid]: e.target.value }))
-                          }
-                        />
-                        <button
-                          type="button"
-                          className="btn btn-outline btn-sm"
-                          onClick={() => setCantidades((prev) => ({
-                            ...prev,
-                            [ticket.tck_guid]: (Number(prev[ticket.tck_guid] || 0) + 1)
-                          }))}
-                        >+</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
                 {intentoEnvio && sinTickets && (
-                  <span className="field-error">⚠ Selecciona al menos un ticket</span>
+                  <span className="field-error">⚠ Selecciona al menos una entrada</span>
                 )}
               </div>
 

@@ -40,7 +40,7 @@ public interface IInventarioRepository
 
     Task<(decimal Precio, string TipoParticipante, Guid AtGuid)?> ObtenerPrecioTicketActivoAsync(Guid tckGuid, CancellationToken ct = default);
 
-    Task<(string AtNombre, DateOnly HorFecha, TimeOnly HorHoraInicio, TimeOnly? HorHoraFin)?> ObtenerHorarioReservaSnapshotAsync(
+    Task<(string AtNombre, DateOnly HorFecha, TimeOnly HorHoraInicio, TimeOnly? HorHoraFin, Guid TckGuid)?> ObtenerHorarioReservaSnapshotAsync(
         Guid horGuid,
         Guid atGuidEsperado,
         CancellationToken ct = default);

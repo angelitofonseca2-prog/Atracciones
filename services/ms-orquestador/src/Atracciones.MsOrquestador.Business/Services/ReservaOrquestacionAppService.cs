@@ -86,6 +86,11 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
                 if (!string.Equals(pr.AtGuid, request.AtGuid.ToString("D"), StringComparison.OrdinalIgnoreCase))
                     throw new ConflictOrchestadorException("Un ticket de las líneas no pertenece a la atracción indicada.");
 
+                if (!string.IsNullOrEmpty(hor.TckGuid) &&
+                    !string.Equals(ln.TckGuid.ToString("D"), hor.TckGuid, StringComparison.OrdinalIgnoreCase))
+                    throw new ConflictOrchestadorException(
+                        $"El ticket '{ln.TckGuid}' no corresponde al horario seleccionado. El horario solo acepta el ticket '{hor.TckGuid}'.");
+
                 var pu = (decimal)pr.Precio;
                 var subL = pu * ln.Cantidad;
                 subtotal += subL;

@@ -36,6 +36,7 @@ message ObtenerHorarioParaReservaResponse {
   string hor_fecha = 4;
   string hor_hora_inicio = 5;
   string hor_hora_fin = 6;
+  string tck_guid = 7;
 }
 
 message ValidarYReservarCupoRequest {

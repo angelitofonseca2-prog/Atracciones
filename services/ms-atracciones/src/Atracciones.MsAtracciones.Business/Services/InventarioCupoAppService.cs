@@ -19,19 +19,19 @@ public sealed class InventarioCupoAppService : IInventarioCupoAppService
         return (true, string.Empty, (double)row.Value.Precio, row.Value.TipoParticipante, row.Value.AtGuid.ToString());
     }
 
-    public async Task<(bool Ok, string Mensaje, string AtraccionNombre, string HorFecha, string HorHoraInicio, string HorHoraFin)> ObtenerHorarioParaReservaAsync(
+    public async Task<(bool Ok, string Mensaje, string AtraccionNombre, string HorFecha, string HorHoraInicio, string HorHoraFin, string TckGuid)> ObtenerHorarioParaReservaAsync(
         Guid horGuid,
         Guid atGuid,
         CancellationToken ct = default)
     {
         var row = await _repo.ObtenerHorarioReservaSnapshotAsync(horGuid, atGuid, ct);
         if (row is null)
-            return (false, "Horario no disponible o no coincide con la atracción.", "", "", "", "");
+            return (false, "Horario no disponible o no coincide con la atracción.", "", "", "", "", "");
 
         var fecha = row.Value.HorFecha.ToString("yyyy-MM-dd");
         var ini = row.Value.HorHoraInicio.ToString("HH:mm");
         var fin = row.Value.HorHoraFin?.ToString("HH:mm") ?? "";
-        return (true, string.Empty, row.Value.AtNombre, fecha, ini, fin);
+        return (true, string.Empty, row.Value.AtNombre, fecha, ini, fin, row.Value.TckGuid.ToString("D"));
     }
 
     public async Task<(bool Ok, string Mensaje, int Cupos)> ValidarYReservarAsync(Guid horGuid, int cantidad, CancellationToken ct = default)

@@ -555,7 +555,7 @@ public sealed class InventarioRepository : IInventarioRepository
         return row is null ? null : (row.TckPrecio, row.TckTipoParticipante, row.AtGuid);
     }
 
-    public async Task<(string AtNombre, DateOnly HorFecha, TimeOnly HorHoraInicio, TimeOnly? HorHoraFin)?> ObtenerHorarioReservaSnapshotAsync(
+    public async Task<(string AtNombre, DateOnly HorFecha, TimeOnly HorHoraInicio, TimeOnly? HorHoraFin, Guid TckGuid)?> ObtenerHorarioReservaSnapshotAsync(
         Guid horGuid,
         Guid atGuidEsperado,
         CancellationToken ct = default)
@@ -574,7 +574,7 @@ public sealed class InventarioRepository : IInventarioRepository
         if (string.IsNullOrWhiteSpace(nombre) || row.Ticket.Atraccion!.AtEstado != 'A')
             return null;
 
-        return (nombre, row.HorFecha, row.HorHoraInicio, row.HorHoraFin);
+        return (nombre, row.HorFecha, row.HorHoraInicio, row.HorHoraFin, row.Ticket.TckGuid);
     }
 
     public async Task<int?> DescontarCuposHorarioAsync(Guid horGuid, int cantidad, CancellationToken ct = default)

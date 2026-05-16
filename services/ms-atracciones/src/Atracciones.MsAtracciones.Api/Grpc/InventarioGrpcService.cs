@@ -39,7 +39,7 @@ public sealed class InventarioGrpcService : AtraccionInventarioService.Atraccion
             return new ObtenerHorarioParaReservaResponse { Ok = false, Mensaje = "hor_guid o at_guid inválido." };
         }
 
-        var (ok, msg, nombre, fecha, ini, fin) = await _cupos.ObtenerHorarioParaReservaAsync(horGuid, atGuid, context.CancellationToken);
+        var (ok, msg, nombre, fecha, ini, fin, tckGuid) = await _cupos.ObtenerHorarioParaReservaAsync(horGuid, atGuid, context.CancellationToken);
         return new ObtenerHorarioParaReservaResponse
         {
             Ok = ok,
@@ -48,6 +48,7 @@ public sealed class InventarioGrpcService : AtraccionInventarioService.Atraccion
             HorFecha = fecha,
             HorHoraInicio = ini,
             HorHoraFin = fin,
+            TckGuid = tckGuid,
         };
     }
 
