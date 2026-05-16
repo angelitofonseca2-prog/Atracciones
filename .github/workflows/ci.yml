@@ -43,9 +43,7 @@ jobs:
             services/ms-reservas/src/Atracciones.MsReservas.Api/Atracciones.MsReservas.Api.csproj \
             services/ms-orquestador/src/Atracciones.MsOrquestador.Api/Atracciones.MsOrquestador.Api.csproj \
             services/ms-facturacion/src/Atracciones.MsFacturacion.Api/Atracciones.MsFacturacion.Api.csproj \
-            services/ms-auditoria/src/Atracciones.MsAuditoria.Api/Atracciones.MsAuditoria.Api.csproj \
-            services/ms-catalogos/src/Atracciones.MsCatalogos.Api/Atracciones.MsCatalogos.Api.csproj \
-            services/ms-clientes/src/Atracciones.MsClientes.Api/Atracciones.MsClientes.Api.csproj
+            services/ms-auditoria/src/Atracciones.MsAuditoria.Api/Atracciones.MsAuditoria.Api.csproj
           do
             echo "==> $csproj"
             dotnet restore "$csproj"

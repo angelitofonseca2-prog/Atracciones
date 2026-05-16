@@ -17,7 +17,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\catalogo_service.proto" GrpcServices="None" Link="Protos\catalogo_service.proto" />
+    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\catalogo_service.proto" GrpcServices="Server" Link="Protos\catalogo_service.proto" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Atracciones.MsAtracciones.DataManagement\Atracciones.MsAtracciones.DataManagement.csproj" />
