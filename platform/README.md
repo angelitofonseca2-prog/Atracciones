@@ -96,12 +96,12 @@ GrpcClients__Auditoria=https://<dominio-ms-auditoria>
 
 ### Root Directory y Dockerfile path
 
-- **Root Directory**: dejar **vacío** en todos los servicios. Los Dockerfiles hacen `COPY . .` desde la raíz del repo; si se cambia el Root Directory, el contexto del build cambia y las rutas de `dotnet publish` dejan de existir.
-- **Dockerfile path** (`RAILWAY_DOCKERFILE_PATH`): configurar por servicio:
+- **Root Directory**: dejar **vacío** (raíz del repositorio) en **todos** los microservicios y el gateway. Los Dockerfiles hacen `WORKDIR /repo` + `COPY . .` y luego `dotnet publish services/ms-*/src/...`; además los `.csproj` referencian `platform/shared/Contracts.Protos`. Si pones Root Directory en `services/ms-auditoria` (u otro subcarpeta), Railway muestra diagnóstico tipo **"Project file does not exist"** / **MSB1009** porque el contexto ya no incluye `services/ms-auditoria/...` ni `platform/`.
+- **Dockerfile path** (en el panel del servicio o variable `RAILWAY_DOCKERFILE_PATH`): configurar por servicio:
 
-| Servicio | RAILWAY_DOCKERFILE_PATH |
+| Servicio | Ruta del Dockerfile |
 |---|---|
-| `Atracciones` (monolito) | `MicroservicioAtracionesAPI/Dockerfile` (ya fijado en `railway.json`) |
+| `Atracciones` (monolito) | `MicroservicioAtracionesAPI/Dockerfile` |
 | `services/ms-identidad` | `services/ms-identidad/Dockerfile` |
 | `services/ms-atracciones` | `services/ms-atracciones/Dockerfile` |
 | `services/ms-reservas` | `services/ms-reservas/Dockerfile` |
@@ -114,7 +114,7 @@ GrpcClients__Auditoria=https://<dominio-ms-auditoria>
 ## Railway (build fallido / monorepo)
 
 1. **Raíz del servicio (Root Directory):** déjala **vacía** (raíz del repositorio). Si la pones en `platform/gateway` o `frontend-atracciones`, los `COPY platform/...` o `COPY frontend-atracciones/...` del Dockerfile **fallan** porque el contexto ya no incluye esas rutas.
-2. **Dockerfile / Railpack:** en la raíz del repo hay **`railway.json`** que fuerza el builder **Dockerfile** y apunta al monolito (`MicroservicioAtracionesAPI/Dockerfile`). Así Railway no intenta Railpack al importar el repo. Si añades **otro** servicio (gateway, `ms-identidad`, etc.), en ese servicio configura **`RAILWAY_DOCKERFILE_PATH`** (p. ej. `platform/gateway/Dockerfile`) y, si Railway aplica el `railway.json` de la raíz a todos los servicios, usa **config as code por servicio** según [monorepo](https://docs.railway.com/deployments/monorepo) o anula en el panel el Dockerfile de ese servicio.
+2. **Dockerfile por servicio:** en cada servicio de Railway, fija la ruta del Dockerfile (p. ej. `services/ms-auditoria/Dockerfile`). No hace falta `railway.json` en la raíz del monorepo; si un servicio no despliega, revisa que **Root Directory** esté vacío y que la ruta del Dockerfile sea la correcta para ese servicio.
 3. **Build logs:** si sigue fallando, abre la pestaña **Build Logs** del despliegue; suele verse `COPY failed` (contexto) o error de `dotnet publish`.
 4. En la raíz del repo hay **`.dockerignore`** para que `COPY . .` no suba `node_modules`, `.git`, `bin/obj`, etc. (evita timeouts en Railway).
 
