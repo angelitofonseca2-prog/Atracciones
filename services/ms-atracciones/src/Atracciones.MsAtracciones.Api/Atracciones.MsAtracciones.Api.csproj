@@ -10,6 +10,7 @@
     <PackageReference Include="Grpc.AspNetCore" Version="2.67.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,6 +22,7 @@
     <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\atraccion_inventario_service.proto" GrpcServices="Server" Link="Protos\atraccion_inventario_service.proto" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\platform\shared\BuildingBlocks\Atracciones.Platform.BuildingBlocks.csproj" />
     <ProjectReference Include="..\Atracciones.MsAtracciones.Business\Atracciones.MsAtracciones.Business.csproj" />
     <ProjectReference Include="..\Atracciones.MsAtracciones.DataAccess\Atracciones.MsAtracciones.DataAccess.csproj" />
   </ItemGroup>

@@ -20,3 +20,10 @@ SELECT rol_descripcion FROM auth.roles WHERE rol_estado = 'A';
 
 -- 4) Historial EF (debe existir tras arrancar ms-identidad)
 SELECT * FROM auth."__EFMigrationsHistory" ORDER BY "MigrationId";
+
+-- Si falla 42P07 "roles already exists", alinear historial (una vez):
+-- INSERT INTO auth."__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+-- SELECT "MigrationId", "ProductVersion" FROM public."__EFMigrationsHistory"
+-- ON CONFLICT DO NOTHING;
+-- INSERT INTO auth."__EFMigrationsHistory" VALUES ('20260510022937_InitialCreate', '10.0.5')
+-- ON CONFLICT DO NOTHING;

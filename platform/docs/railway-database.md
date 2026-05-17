@@ -1,5 +1,24 @@
 # PostgreSQL en Railway (Atracciones)
 
+## Error `42P07: relation "roles" already exists` al reiniciar
+
+Ocurre cuando las tablas del esquema `auth` **ya existen** (arranque anterior o migración manual) pero el historial de EF (`__EFMigrationsHistory`) quedó en **`public`** o vacío tras mover el historial al esquema `auth`.
+
+**Solución en código (desde commit con baseline):** al arrancar, cada servicio copia filas de `public.__EFMigrationsHistory` al esquema propio y registra la migración inicial si la tabla marcadora ya existe, luego `MigrateAsync` no vuelve a crear tablas.
+
+**Solución manual en Data UI** (si hace falta antes del redeploy):
+
+```sql
+INSERT INTO auth."__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+SELECT "MigrationId", "ProductVersion"
+FROM public."__EFMigrationsHistory"
+ON CONFLICT DO NOTHING;
+
+INSERT INTO auth."__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260510022937_InitialCreate', '10.0.5')
+ON CONFLICT DO NOTHING;
+```
+
 ## Qué significan los errores del log
 
 | Mensaje en Data UI | Causa |

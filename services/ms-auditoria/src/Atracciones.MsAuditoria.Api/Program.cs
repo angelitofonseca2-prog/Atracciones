@@ -1,3 +1,4 @@
+using Atracciones.BuildingBlocks.Database;
 using Atracciones.MsAuditoria.Api.Configuration;
 using Atracciones.MsAuditoria.Api.Grpc;
 using Atracciones.MsAuditoria.DataAccess;
@@ -35,25 +36,23 @@ var app = builder.Build();
 app.MapGrpcService<AuditoriaGrpcService>();
 app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 
-app.Lifetime.ApplicationStarted.Register(() =>
 {
-    _ = Task.Run(async () =>
+    var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("AuditoriaDb");
+    try
     {
-        try
-        {
-            await using var scope = app.Services.CreateAsyncScope();
-            var db = scope.ServiceProvider.GetRequiredService<AuditoriaDbContext>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("AuditoriaDb");
-            await db.Database.MigrateAsync();
-            logger.LogInformation("Migraciones del esquema audit aplicadas.");
-        }
-        catch (Exception ex)
-        {
-            var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("AuditoriaDb");
-            logger.LogError(ex,
-                "No se pudieron aplicar migraciones de auditoría. Revise Postgres (:5440) y ConnectionStrings:AuditoriaDb.");
-        }
-    });
-});
+        await using var scope = app.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AuditoriaDbContext>();
+        await EfMigrationHistoryBaseline.MigrateWithBaselineAsync(
+            db, "audit", "audit", "eventos",
+            ["20260510214720_InitialAuditoria"], startupLogger);
+        startupLogger.LogInformation("Migraciones del esquema audit aplicadas.");
+    }
+    catch (Exception ex)
+    {
+        startupLogger.LogCritical(ex,
+            "No se pudieron aplicar migraciones de auditoría. Revise DATABASE_URL en Railway.");
+        throw;
+    }
+}
 
 app.Run();

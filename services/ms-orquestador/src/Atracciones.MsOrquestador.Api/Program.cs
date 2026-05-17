@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Atracciones.BuildingBlocks.Database;
 using Atracciones.MsOrquestador.Api.Configuration;
 using Atracciones.MsOrquestador.Api.Extensions;
 using Atracciones.MsOrquestador.Api.Middleware;
@@ -56,25 +57,23 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 
-app.Lifetime.ApplicationStarted.Register(() =>
 {
-    _ = Task.Run(async () =>
+    var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("OrquestadorDb");
+    try
     {
-        try
-        {
-            await using var scope = app.Services.CreateAsyncScope();
-            var db = scope.ServiceProvider.GetRequiredService<OrquestadorDbContext>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("OrquestadorDb");
-            await db.Database.MigrateAsync();
-            logger.LogInformation("Migraciones del esquema orquestador aplicadas.");
-        }
-        catch (Exception ex)
-        {
-            var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("OrquestadorDb");
-            logger.LogError(ex,
-                "No se pudieron aplicar migraciones de orquestador. Revise Postgres (:5438) y ConnectionStrings:OrquestadorDb.");
-        }
-    });
-});
+        await using var scope = app.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<OrquestadorDbContext>();
+        await EfMigrationHistoryBaseline.MigrateWithBaselineAsync(
+            db, "orq", "orq", "saga_state",
+            ["20260510205821_InitialOrquestador"], startupLogger);
+        startupLogger.LogInformation("Migraciones del esquema orquestador aplicadas.");
+    }
+    catch (Exception ex)
+    {
+        startupLogger.LogCritical(ex,
+            "No se pudieron aplicar migraciones de orquestador. Revise DATABASE_URL en Railway.");
+        throw;
+    }
+}
 
 app.Run();

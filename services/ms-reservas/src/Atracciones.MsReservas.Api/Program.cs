@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Atracciones.BuildingBlocks.Database;
 using Atracciones.MsReservas.Api.Configuration;
 using Atracciones.MsReservas.Api.Extensions;
 using Atracciones.MsReservas.Api.Grpc;
@@ -45,11 +46,15 @@ app.MapGet("/health", () => Results.Json(new { status = "ok" }));
     {
         await using var scope = app.Services.CreateAsyncScope();
         var ventasDb = scope.ServiceProvider.GetRequiredService<VentasDbContext>();
-        await ventasDb.Database.MigrateAsync();
+        await EfMigrationHistoryBaseline.MigrateWithBaselineAsync(
+            ventasDb, "ventas", "ventas", "reservas",
+            ["20260510204836_InitialVentas"], startupLogger);
         startupLogger.LogInformation("Migraciones del esquema ventas aplicadas.");
 
         var crmDb = scope.ServiceProvider.GetRequiredService<CrmDbContext>();
-        await crmDb.Database.MigrateAsync();
+        await EfMigrationHistoryBaseline.MigrateWithBaselineAsync(
+            crmDb, "crm", "crm", "clientes",
+            ["20260513224038_InitialCrm"], startupLogger);
         startupLogger.LogInformation("Migraciones del esquema crm aplicadas.");
     }
     catch (Exception ex)

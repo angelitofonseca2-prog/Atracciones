@@ -1,3 +1,4 @@
+using Atracciones.BuildingBlocks.Database;
 using Atracciones.MsIdentidad.Api.Configuration;
 using Atracciones.MsIdentidad.Api.Extensions;
 using Atracciones.MsIdentidad.Api.Grpc;
@@ -59,7 +60,13 @@ app.MapGet("/health", () => Results.Json(new { status = "ok" }));
     {
         await using var scope = app.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<IdentidadDbContext>();
-        await db.Database.MigrateAsync();
+        await EfMigrationHistoryBaseline.MigrateWithBaselineAsync(
+            db,
+            historySchema: "auth",
+            markerSchema: "auth",
+            markerTable: "roles",
+            migrationIds: ["20260510022937_InitialCreate"],
+            startupLogger);
         startupLogger.LogInformation("Migraciones del esquema auth aplicadas.");
         await IdentidadRolesSeed.EnsureAsync(db);
         if (app.Environment.IsDevelopment())
