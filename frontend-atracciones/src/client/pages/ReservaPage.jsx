@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { obtenerHorariosDisponibles, obtenerTicketsAtraccion } from '../../api/atraccionesApi'
 import * as reservasApi from '../../api/reservasApi'
+import CalendarioDiasVisita from '../../components/common/CalendarioDiasVisita'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Spinner from '../../components/common/Spinner'
 import { useAuthContext } from '../../context/AuthContext'
@@ -15,9 +16,9 @@ import {
   mensajeNombre,
 } from '../../utils/validaciones'
 import {
+  etiquetaHorarioReserva,
   formatearRangoFechas,
-  horarioTieneRangoFechas,
-  listarDiasEnRango,
+  listarDiasReservablesEnRango,
 } from '../../utils/formatFechas'
 import { useAtracciones } from '../hooks/useAtracciones'
 import { mapPerfilAFormulario, mapPerfilAPago, usePerfilCliente } from '../hooks/usePerfilCliente'
@@ -577,31 +578,18 @@ function ReservaPage() {
     [horarios, horGuid],
   )
 
-  const horarioConRango = useMemo(
-    () => horarioTieneRangoFechas(horarioSeleccionado),
-    [horarioSeleccionado],
-  )
-
-  const diasVisitaDisponibles = useMemo(() => {
+  const diasCalendarioHabilitados = useMemo(() => {
     if (!horarioSeleccionado) return []
-    return listarDiasEnRango(horarioSeleccionado.fecha, horarioSeleccionado.fecha_fin)
+    return listarDiasReservablesEnRango(
+      horarioSeleccionado.fecha,
+      horarioSeleccionado.fecha_fin,
+    )
   }, [horarioSeleccionado])
 
-  useEffect(() => {
-    if (!horarioSeleccionado) {
-      setFechaVisita('')
-      return
-    }
-    if (!horarioConRango) {
-      setFechaVisita(String(horarioSeleccionado.fecha || '').slice(0, 10))
-      return
-    }
-    setFechaVisita((actual) => (
-      actual && diasVisitaDisponibles.includes(actual)
-        ? actual
-        : (diasVisitaDisponibles[0] ?? '')
-    ))
-  }, [horGuid, horarioSeleccionado, horarioConRango, diasVisitaDisponibles])
+  const rangoHorarioLabel = useMemo(() => {
+    if (!horarioSeleccionado) return ''
+    return formatearRangoFechas(horarioSeleccionado.fecha, horarioSeleccionado.fecha_fin)
+  }, [horarioSeleccionado])
 
   // Estado del pago
   const [reservaLocal, setReservaLocal] = useState(null)
@@ -679,7 +667,7 @@ function ReservaPage() {
   const total = subtotal + iva
   const sinTickets = lineas.length === 0
   const sinHorario = !horGuid
-  const sinFechaVisita = horarioConRango && !fechaVisita
+  const sinFechaVisita = Boolean(horGuid) && !fechaVisita
 
   const handleRegistrarse = () => {
     navigate('/registro', { state: { from: location } })
@@ -818,12 +806,7 @@ function ReservaPage() {
                   <option value="">— Elige un horario —</option>
                   {horarios.map((horario, index) => (
                     <option key={horario.hor_guid || index} value={horario.hor_guid}>
-                      {formatearRangoFechas(horario.fecha, horario.fecha_fin)} · {horario.hora_inicio}
-                      {horario.hora_fin ? `–${horario.hora_fin}` : ''}
-                      {horario.ticket_titulo ? ` — ${horario.ticket_titulo}` : ''}
-                      {(horario.cupos ?? horario.cupos_disponibles) != null
-                        ? ` · ${horario.cupos ?? horario.cupos_disponibles} cupos`
-                        : ''}
+                      {etiquetaHorarioReserva(horario)}
                     </option>
                   ))}
                 </select>
@@ -832,24 +815,21 @@ function ReservaPage() {
                 )}
               </div>
 
-              {horarioConRango && (
+              {horGuid && (
                 <div className="form-group">
-                  <label htmlFor="fecha-visita">Día de tu visita *</label>
-                  <select
-                    id="fecha-visita"
-                    value={fechaVisita}
-                    onChange={(e) => setFechaVisita(e.target.value)}
-                    className={intentoEnvio && sinFechaVisita ? 'input-error' : ''}
-                  >
-                    <option value="">— Elige el día —</option>
-                    {diasVisitaDisponibles.map((dia) => (
-                      <option key={dia} value={dia}>
-                        {formatearRangoFechas(dia, dia)}
-                      </option>
-                    ))}
-                  </select>
+                  <label>Día de tu visita *</label>
+                  <p className="text-muted text-sm" style={{ margin: '0 0 0.5rem' }}>
+                    Elige un día disponible en el calendario (solo fechas del horario seleccionado).
+                  </p>
+                  <CalendarioDiasVisita
+                    diasHabilitados={diasCalendarioHabilitados}
+                    valor={fechaVisita}
+                    onChange={setFechaVisita}
+                    rangoLabel={rangoHorarioLabel}
+                    error={intentoEnvio && sinFechaVisita}
+                  />
                   {intentoEnvio && sinFechaVisita && (
-                    <span className="field-error">⚠ Indica el día de visita dentro del rango</span>
+                    <span className="field-error">⚠ Selecciona un día en el calendario</span>
                   )}
                 </div>
               )}

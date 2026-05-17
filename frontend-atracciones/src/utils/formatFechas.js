@@ -37,3 +37,22 @@ export function horarioTieneRangoFechas(horario) {
   const fin = String(horario?.fecha_fin ?? horario?.fecha ?? '').slice(0, 10)
   return Boolean(ini && fin && fin > ini)
 }
+
+export function hoyUtcIso() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+/** Días del rango que aún no han pasado (>= hoy UTC). */
+export function listarDiasReservablesEnRango(fechaInicio, fechaFin, hoy = hoyUtcIso()) {
+  return listarDiasEnRango(fechaInicio, fechaFin).filter((d) => d >= hoy)
+}
+
+export function etiquetaHorarioReserva(horario) {
+  if (!horario) return ''
+  const hora = `${horario.hora_inicio || ''}${horario.hora_fin ? `–${horario.hora_fin}` : ''}`
+  const ticket = horario.ticket_titulo ? ` — ${horario.ticket_titulo}` : ''
+  const cupos = (horario.cupos ?? horario.cupos_disponibles) != null
+    ? ` · ${horario.cupos ?? horario.cupos_disponibles} cupos`
+    : ''
+  return `${hora}${ticket}${cupos}`
+}

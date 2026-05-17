@@ -678,7 +678,7 @@ textarea.input-error {
 
 /* ── Reserva form ── */
 .reserva-form {
-  max-width: 520px;
+  max-width: 400px;
   display: grid;
   gap: 1rem;
 }
@@ -747,7 +747,104 @@ textarea.input-error {
   color: var(--text);
   border-top: 1px solid rgba(85, 210, 255, 0.2);
   padding-top: 0.5rem;
-  margin-top: 0.25rem;
+}
+
+/* ── Calendario día de visita (reserva) ── */
+.calendario-visita {
+  background: rgba(5, 16, 32, 0.45);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.calendario-visita--error {
+  border-color: var(--danger, #e55);
+  box-shadow: 0 0 0 1px rgba(229, 85, 85, 0.35);
+}
+
+.calendario-visita-rango strong {
+  color: var(--text);
+}
+
+.calendario-visita-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.calendario-visita-mes {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.calendario-visita-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+}
+
+.calendario-visita-dow {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.25rem 0;
+}
+
+.calendario-visita-celda {
+  aspect-ratio: 1;
+  min-height: 2.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  cursor: default;
+  padding: 0;
+}
+
+.calendario-visita-celda--vacia {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.calendario-visita-celda--inactiva {
+  opacity: 0.35;
+}
+
+.calendario-visita-celda--activa {
+  color: var(--text);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border);
+}
+
+.calendario-visita-celda--activa:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.calendario-visita-celda--seleccionada {
+  background: var(--accent) !important;
+  color: #041018 !important;
+  border-color: var(--accent) !important;
+  font-weight: 700;
+}
+
+.calendario-visita-celda--activa:disabled {
+  cursor: not-allowed;
+}
+
+.calendario-visita-seleccion {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.calendario-visita-seleccion strong {
+  color: var(--accent);
 }
 
 /* ── Confirmación de reserva ── */
