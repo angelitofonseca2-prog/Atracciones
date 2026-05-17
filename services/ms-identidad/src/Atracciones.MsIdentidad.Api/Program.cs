@@ -21,6 +21,7 @@ KestrelGrpcRestPorts.Configure(builder);
 
 builder.Services.Configure<JwtIssuerOptions>(builder.Configuration.GetSection(JwtIssuerOptions.SectionName));
 builder.Services.Configure<InternalSyncOptions>(builder.Configuration.GetSection(InternalSyncOptions.SectionName));
+builder.Services.Configure<BootstrapAdminOptions>(builder.Configuration.GetSection(BootstrapAdminOptions.SectionName));
 
 builder.Services.AddControllers()
     .AddJsonOptions(o =>
@@ -56,9 +57,21 @@ await using (var scope = app.Services.CreateAsyncScope())
     var db = scope.ServiceProvider.GetRequiredService<IdentidadDbContext>();
     await db.Database.MigrateAsync();
     await IdentidadRolesSeed.EnsureAsync(db);
+
+    var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    var bootstrap = scope.ServiceProvider
+        .GetRequiredService<Microsoft.Extensions.Options.IOptions<BootstrapAdminOptions>>().Value;
+    if (bootstrap.IsConfigured)
+    {
+        await IdentidadBootstrapAdminSeed.EnsureAsync(
+            db,
+            bootstrap.Login!,
+            hasher.Hash(bootstrap.Password!));
+        app.Logger.LogInformation("Usuario bootstrap ADMIN asegurado para login {Login}", bootstrap.Login);
+    }
+
     if (app.Environment.IsDevelopment())
     {
-        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
         await IdentidadDevAdminSeed.EnsureAsync(
             db,
             IdentidadDevAdminSeed.DefaultLogin,

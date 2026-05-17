@@ -21,6 +21,10 @@ SELECT rol_descripcion FROM auth.roles WHERE rol_estado = 'A';
 -- 4) Historial EF (debe existir tras arrancar ms-identidad)
 SELECT * FROM auth."__EFMigrationsHistory" ORDER BY "MigrationId";
 
+-- 5) Admin: ver services/ms-identidad/db/bootstrap_admin.sql
+--    o variables en ms-identidad: BootstrapAdmin__Login, BootstrapAdmin__Password
+--    (la contraseña en SQL debe ser hash BCrypt; texto plano => "Credenciales inválidas")
+
 -- Si falla 42P07 "roles already exists", alinear historial (una vez):
 -- INSERT INTO auth."__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 -- SELECT "MigrationId", "ProductVersion" FROM public."__EFMigrationsHistory"
