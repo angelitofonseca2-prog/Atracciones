@@ -48,6 +48,7 @@ public static class EfMigrationHistoryBaseline
             )
             ON CONFLICT ("MigrationId") DO NOTHING;
             """,
+            [],
             cancellationToken);
 #pragma warning restore EF1002
 
@@ -60,10 +61,7 @@ public static class EfMigrationHistoryBaseline
                 "AND NOT EXISTS (SELECT 1 FROM \"" + historySchema + "\".\"__EFMigrationsHistory\" h WHERE h.\"MigrationId\" = {0});";
             await db.Database.ExecuteSqlRawAsync(
                 insertSql,
-                migrationId,
-                productVersion,
-                markerSchema,
-                markerTable,
+                [migrationId, productVersion, markerSchema, markerTable],
                 cancellationToken);
         }
 
@@ -84,7 +82,9 @@ public static class EfMigrationHistoryBaseline
         CancellationToken cancellationToken = default)
     {
         await AlignHistoryIfTablesExistAsync(
-            db, historySchema, markerSchema, markerTable, migrationIds, logger, cancellationToken: cancellationToken);
+            db, historySchema, markerSchema, markerTable, migrationIds, logger,
+            productVersion: DefaultProductVersion,
+            cancellationToken: cancellationToken);
         await db.Database.MigrateAsync(cancellationToken);
     }
 
