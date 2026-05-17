@@ -22,7 +22,6 @@
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\platform\shared\BuildingBlocks\Atracciones.Platform.BuildingBlocks.csproj" />
     <ProjectReference Include="..\Atracciones.MsOrquestador.Business\Atracciones.MsOrquestador.Business.csproj" />
     <ProjectReference Include="..\Atracciones.MsOrquestador.DataAccess\Atracciones.MsOrquestador.DataAccess.csproj" />
   </ItemGroup>

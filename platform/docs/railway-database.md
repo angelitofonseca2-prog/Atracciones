@@ -2,11 +2,9 @@
 
 ## Error `42P07: relation "roles" already exists` al reiniciar
 
-Ocurre cuando las tablas del esquema `auth` **ya existen** (arranque anterior o migración manual) pero el historial de EF (`__EFMigrationsHistory`) quedó en **`public`** o vacío tras mover el historial al esquema `auth`.
+Ocurre cuando las tablas del esquema `auth` **ya existen** pero EF intenta ejecutar de nuevo `InitialCreate` (historial en `public.__EFMigrationsHistory` o vacío).
 
-**Solución en código (desde commit con baseline):** al arrancar, cada servicio copia filas de `public.__EFMigrationsHistory` al esquema propio y registra la migración inicial si la tabla marcadora ya existe, luego `MigrateAsync` no vuelve a crear tablas.
-
-**Solución manual en Data UI** (si hace falta antes del redeploy):
+**Solución manual en Data UI** (una vez, antes de reiniciar ms-identidad):
 
 ```sql
 INSERT INTO auth."__EFMigrationsHistory" ("MigrationId", "ProductVersion")
@@ -60,10 +58,8 @@ No hace falta un Postgres por microservicio: conviven esquemas distintos en la m
 
 ## Comprobar sin Data UI
 
-- `GET https://<ms-identidad>/health/db` → `{ "status": "ok", "schema": "auth" }`
-- `GET https://<ms-reservas>/health/db` → esquemas `crm` y `ventas`
-
-Si devuelve 503, revisar logs de arranque del servicio (migración fallida o `DATABASE_URL` ausente).
+- `GET https://<ms-identidad>/health` → `{ "status": "ok" }`
+- Revisar logs de arranque: mensajes de migración EF o excepciones de conexión.
 
 ## Script SQL de verificación
 

@@ -27,7 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\platform\shared\BuildingBlocks\Atracciones.Platform.BuildingBlocks.csproj" />
     <ProjectReference Include="..\Atracciones.MsIdentidad.Business\Atracciones.MsIdentidad.Business.csproj" />
     <ProjectReference Include="..\Atracciones.MsIdentidad.DataAccess\Atracciones.MsIdentidad.DataAccess.csproj" />
   </ItemGroup>

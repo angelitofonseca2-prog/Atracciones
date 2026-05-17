@@ -17,8 +17,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Falta ConnectionStrings:IdentidadDb");
 
         services.AddDbContext<IdentidadDbContext>(o =>
-            o.UseNpgsql(cs, npgsql =>
-                npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "auth")));
+            o.UseNpgsql(cs));
 
         services.AddScoped<IIdentidadUsuarioRepository, IdentidadUsuarioRepository>();
         return services;

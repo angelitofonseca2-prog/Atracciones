@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Atracciones.BuildingBlocks.Database;
+using Atracciones.MsFacturacion.Api.Configuration;
 using Atracciones.MsFacturacion.Api.Extensions;
 using Atracciones.MsFacturacion.Api.Grpc;
 using Atracciones.MsFacturacion.Api.Middleware;
@@ -34,23 +34,25 @@ app.MapControllers();
 app.MapGrpcService<FacturaGrpcService>();
 app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 
+app.Lifetime.ApplicationStarted.Register(() =>
 {
-    var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("BillingDb");
-    try
+    _ = Task.Run(async () =>
     {
-        await using var scope = app.Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<BillingDbContext>();
-        await EfMigrationHistoryBaseline.MigrateWithBaselineAsync(
-            db, "billing", "billing", "facturas",
-            ["20260510213512_InitialBilling"], startupLogger);
-        startupLogger.LogInformation("Migraciones del esquema billing aplicadas.");
-    }
-    catch (Exception ex)
-    {
-        startupLogger.LogCritical(ex,
-            "No se pudieron aplicar migraciones de billing. Revise DATABASE_URL en Railway.");
-        throw;
-    }
-}
+        try
+        {
+            await using var scope = app.Services.CreateAsyncScope();
+            var db = scope.ServiceProvider.GetRequiredService<BillingDbContext>();
+            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("BillingDb");
+            await db.Database.MigrateAsync();
+            logger.LogInformation("Migraciones del esquema billing aplicadas.");
+        }
+        catch (Exception ex)
+        {
+            var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("BillingDb");
+            logger.LogError(ex,
+                "No se pudieron aplicar migraciones de billing. Revise Postgres (:5439) y ConnectionStrings:BillingDb.");
+        }
+    });
+});
 
 app.Run();

@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Atracciones.BuildingBlocks.Database;
+using Atracciones.MsAtracciones.Api.Configuration;
 using Atracciones.MsAtracciones.Api.Extensions;
 using Atracciones.MsAtracciones.Api.Grpc;
 using Atracciones.MsAtracciones.Api.Middleware;
@@ -10,9 +10,8 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-DatabaseUrlMapper.ApplyToAll(
-    "ConnectionStrings__InventarioDb",
-    "ConnectionStrings__CatalogosDb");
+DatabaseUrlMapper.Apply("ConnectionStrings__InventarioDb");
+DatabaseUrlMapper.Apply("ConnectionStrings__CatalogosDb");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,29 +45,32 @@ app.MapGrpcService<InventarioGrpcService>();
 app.MapGrpcService<CatalogGrpcService>();
 app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 
+app.Lifetime.ApplicationStarted.Register(() =>
 {
-    var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("AtraccionesDb");
-    try
+    _ = Task.Run(async () =>
     {
-        await using var scope = app.Services.CreateAsyncScope();
-        var inventarioDb = scope.ServiceProvider.GetRequiredService<InventarioDbContext>();
-        await EfMigrationHistoryBaseline.MigrateWithBaselineAsync(
-            inventarioDb, "inventario", "inventario", "atracciones",
-            ["20260510203501_InitialInventario"], startupLogger);
-        startupLogger.LogInformation("Migraciones del esquema inventario aplicadas.");
+        try
+        {
+            await using var scope = app.Services.CreateAsyncScope();
+            var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
 
-        var catalogosDb = scope.ServiceProvider.GetRequiredService<CatalogosDbContext>();
-        await EfMigrationHistoryBaseline.MigrateWithBaselineAsync(
-            catalogosDb, "catalogos", "catalogos", "categorias",
-            ["20260513224040_InitialCatalogos"], startupLogger);
-        startupLogger.LogInformation("Migraciones del esquema catalogos aplicadas.");
-    }
-    catch (Exception ex)
-    {
-        startupLogger.LogCritical(ex,
-            "No se pudieron aplicar migraciones inventario/catalogos. Revise DATABASE_URL en Railway.");
-        throw;
-    }
-}
+            var inventarioDb = scope.ServiceProvider.GetRequiredService<InventarioDbContext>();
+            var invLogger = loggerFactory.CreateLogger("InventarioDb");
+            await inventarioDb.Database.MigrateAsync();
+            invLogger.LogInformation("Migraciones del esquema inventario aplicadas.");
+
+            var catalogosDb = scope.ServiceProvider.GetRequiredService<CatalogosDbContext>();
+            var catLogger = loggerFactory.CreateLogger("CatalogosDb");
+            await catalogosDb.Database.MigrateAsync();
+            catLogger.LogInformation("Migraciones del esquema catalogos aplicadas.");
+        }
+        catch (Exception ex)
+        {
+            var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("InventarioDb");
+            logger.LogError(ex,
+                "No se pudieron aplicar migraciones. Revise Postgres (:5436) y ConnectionStrings:InventarioDb/CatalogosDb.");
+        }
+    });
+});
 
 app.Run();
