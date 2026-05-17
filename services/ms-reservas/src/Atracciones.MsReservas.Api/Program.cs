@@ -39,30 +39,39 @@ app.MapGrpcService<ReservaGrpcService>();
 app.MapGrpcService<ClienteGrpcService>();
 app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 
-app.Lifetime.ApplicationStarted.Register(() =>
 {
-    _ = Task.Run(async () =>
+    var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("ReservasDb");
+    try
     {
-        try
-        {
-            await using var scope = app.Services.CreateAsyncScope();
+        await using var scope = app.Services.CreateAsyncScope();
+        var ventasDb = scope.ServiceProvider.GetRequiredService<VentasDbContext>();
+        await ventasDb.Database.MigrateAsync();
+        startupLogger.LogInformation("Migraciones del esquema ventas aplicadas.");
 
-            var ventasDb = scope.ServiceProvider.GetRequiredService<VentasDbContext>();
-            var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("VentasDb");
-            await ventasDb.Database.MigrateAsync();
-            logger.LogInformation("Migraciones del esquema ventas aplicadas.");
+        var crmDb = scope.ServiceProvider.GetRequiredService<CrmDbContext>();
+        await crmDb.Database.MigrateAsync();
+        startupLogger.LogInformation("Migraciones del esquema crm aplicadas.");
+    }
+    catch (Exception ex)
+    {
+        startupLogger.LogCritical(ex,
+            "No se pudieron aplicar migraciones ventas/crm. Revise DATABASE_URL en Railway.");
+        throw;
+    }
+}
 
-            var crmDb = scope.ServiceProvider.GetRequiredService<CrmDbContext>();
-            await crmDb.Database.MigrateAsync();
-            logger.LogInformation("Migraciones del esquema crm aplicadas.");
-        }
-        catch (Exception ex)
-        {
-            var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("VentasDb");
-            logger.LogError(ex,
-                "No se pudieron aplicar migraciones. Revise Postgres (:5437) y ConnectionStrings:VentasDb/CrmDb.");
-        }
-    });
+app.MapGet("/health/db", async (CrmDbContext crm, VentasDbContext ventas, CancellationToken ct) =>
+{
+    try
+    {
+        _ = await crm.Clientes.AsNoTracking().AnyAsync(ct);
+        _ = await ventas.Reservas.AsNoTracking().AnyAsync(ct);
+        return Results.Json(new { status = "ok", schemas = new[] { "crm", "ventas" } });
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new { status = "error", message = ex.Message }, statusCode: 503);
+    }
 });
 
 app.Run();

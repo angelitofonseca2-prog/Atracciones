@@ -249,6 +249,7 @@ Criterio: login con tokens RS256 de identidad; registro funcional con sync; usua
 ## 8. Riesgos y mitigaciones
 
 - **Railway / gRPC:** usar red privada `*.railway.internal:8080` entre servicios; `GrpcClients:Clientes` y `:Reservas` deben ser la **misma base URL** (ms-reservas). Errores `HTTP_1_1_REQUIRED` o 503 en registro suelen indicar URL incorrecta, dependiente caído o proxy sin HTTP/2 hacia gRPC — revisar logs del orquestador y variables `GrpcClients__*`.
+- **Railway / Postgres:** un solo plugin Postgres compartido; cada servicio enlazado con `DATABASE_URL`. Las tablas viven en **esquemas** (`auth.usuarios`, `crm.clientes`), no en una tabla llamada `auth_db`. Si `auth.usuarios` no existe, redesplegar **ms-identidad** primero y revisar [`platform/docs/railway-database.md`](platform/docs/railway-database.md).
 - **Migración de datos:** cada extracción requiere ETL puntual y ventana corta; mitigar con script idempotente y verificación de conteos antes/después (`services/ms-reservas/db/`, `services/ms-atracciones/db/`).
 - **Costo Railway con varias BD:** si el plan no permite N instancias Postgres, usar una instancia con bases distintas durante fases tempranas (cumple “sin FK cruzadas”).
 - **Acoplamiento temporal por gRPC síncrono:** la saga falla si **cualquier** dependiente cae. Mitigar con timeouts cortos, retry/circuit breaker (Polly) y compensación robusta. Los pasos `RegistrarEvento` (auditoría) y `EmitirFactura` se pueden marcar como **best-effort** para no bloquear al usuario (factura se emite en segundo plano controlado).

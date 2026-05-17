@@ -53,19 +53,43 @@ app.MapGet("/.well-known/jwks.json", (IdentidadSigningKeys keys) =>
     Results.Text(keys.BuildJwksJson(), "application/json"));
 app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 
-await using (var scope = app.Services.CreateAsyncScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<IdentidadDbContext>();
-    await db.Database.MigrateAsync();
-    await IdentidadRolesSeed.EnsureAsync(db);
-    if (app.Environment.IsDevelopment())
+    var startupLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("IdentidadDb");
+    try
     {
-        var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-        await IdentidadDevAdminSeed.EnsureAsync(
-            db,
-            IdentidadDevAdminSeed.DefaultLogin,
-            hasher.Hash("DevAdmin123!"));
+        await using var scope = app.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<IdentidadDbContext>();
+        await db.Database.MigrateAsync();
+        startupLogger.LogInformation("Migraciones del esquema auth aplicadas.");
+        await IdentidadRolesSeed.EnsureAsync(db);
+        if (app.Environment.IsDevelopment())
+        {
+            var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+            await IdentidadDevAdminSeed.EnsureAsync(
+                db,
+                IdentidadDevAdminSeed.DefaultLogin,
+                hasher.Hash("DevAdmin123!"));
+        }
+    }
+    catch (Exception ex)
+    {
+        startupLogger.LogCritical(ex,
+            "No se pudo aplicar migraciones auth. Revise DATABASE_URL / ConnectionStrings:IdentidadDb en Railway.");
+        throw;
     }
 }
+
+app.MapGet("/health/db", async (IdentidadDbContext db, CancellationToken ct) =>
+{
+    try
+    {
+        _ = await db.Roles.AsNoTracking().AnyAsync(ct);
+        return Results.Json(new { status = "ok", schema = "auth" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new { status = "error", message = ex.Message }, statusCode: 503);
+    }
+});
 
 app.Run();
