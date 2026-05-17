@@ -318,6 +318,7 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
         {
             HorGuid = request.HorGuid.ToString("D"),
             AtGuid = request.AtGuid.ToString("D"),
+            FechaVisita = request.FechaVisita?.Trim() ?? string.Empty,
         }, cancellationToken: ct);
 
         if (!hor.Ok)

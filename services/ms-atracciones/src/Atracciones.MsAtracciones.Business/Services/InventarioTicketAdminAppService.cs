@@ -114,7 +114,11 @@ public sealed class InventarioTicketAdminAppService : IInventarioTicketAdminAppS
         _ = await _repo.ObtenerTicketAdminAsync(request.TckGuid, ct)
             ?? throw new NotFoundException("Ticket", request.TckGuid);
 
-        var nuevo = await _repo.CrearHorarioAsync(new HorarioPersistModel(null, request.TckGuid, request.Fecha, request.HoraInicio, request.HoraFin, request.CuposDisponibles, usuario, ip), ct);
+        var fechaFin = NormalizarFechaFin(request.Fecha, request.FechaFin);
+        ValidarRangoFechas(request.Fecha, fechaFin);
+        var nuevo = await _repo.CrearHorarioAsync(
+            new HorarioPersistModel(null, request.TckGuid, request.Fecha, fechaFin, request.HoraInicio, request.HoraFin, request.CuposDisponibles, usuario, ip),
+            ct);
 
         var created = await _repo.ObtenerHorarioAdminAsync(nuevo, ct)
             ?? throw new InvalidOperationException("No se pudo leer el horario creado.");
@@ -127,10 +131,16 @@ public sealed class InventarioTicketAdminAppService : IInventarioTicketAdminAppS
         var h = await _repo.ObtenerHorarioAdminAsync(horGuid, ct)
             ?? throw new NotFoundException("Horario", horGuid);
 
+        var fecha = request.Fecha ?? h.HorFecha;
+        var fechaFin = request.FechaFin.HasValue
+            ? NormalizarFechaFin(fecha, request.FechaFin)
+            : (h.HorFechaFin ?? h.HorFecha);
+        ValidarRangoFechas(fecha, fechaFin);
         await _repo.ActualizarHorarioAsync(new HorarioPersistModel(
             horGuid,
             h.TckGuid,
-            request.Fecha ?? h.HorFecha,
+            fecha,
+            fechaFin,
             request.HoraInicio ?? h.HorHoraInicio,
             request.HoraFin ?? h.HorHoraFin,
             request.CuposDisponibles ?? h.HorCuposDisponibles,
@@ -178,6 +188,7 @@ public sealed class InventarioTicketAdminAppService : IInventarioTicketAdminAppS
             AtraccionNombre = h.AtNombre,
             TicketTitulo = h.TckTitulo,
             Fecha = h.HorFecha.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            FechaFin = (h.HorFechaFin ?? h.HorFecha).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             HoraInicio = h.HorHoraInicio.ToString("HH:mm", CultureInfo.InvariantCulture),
             HoraFin = h.HorHoraFin?.ToString("HH:mm", CultureInfo.InvariantCulture),
             CapacidadMaxima = h.TckCapacidadMaxima,
@@ -199,5 +210,14 @@ public sealed class InventarioTicketAdminAppService : IInventarioTicketAdminAppS
         var results = new List<ValidationResult>();
         if (!Validator.TryValidateObject(o, ctx, results, true))
             throw new DomainValidationException(results.Select(r => r.ErrorMessage ?? "inválido").ToList());
+    }
+
+    private static DateOnly NormalizarFechaFin(DateOnly inicio, DateOnly? fin)
+        => fin is null || fin.Value < inicio ? inicio : fin.Value;
+
+    private static void ValidarRangoFechas(DateOnly inicio, DateOnly fin)
+    {
+        if (fin < inicio)
+            throw new DomainValidationException(new[] { "La fecha final no puede ser anterior a la fecha inicial." });
     }
 }

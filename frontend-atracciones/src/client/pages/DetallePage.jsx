@@ -4,6 +4,7 @@ import * as reseniasApi from '../../api/reseniasApi'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Spinner from '../../components/common/Spinner'
 import { useAuthContext } from '../../context/AuthContext'
+import { formatearRangoFechas } from '../../utils/formatFechas'
 import { useAtracciones } from '../hooks/useAtracciones'
 
 const FALLBACK_IMAGE = 'https://placehold.co/400x300?text=Sin+imagen'
@@ -154,8 +155,8 @@ function DetallePage() {
               ) : (
                 <ul>
                   {detalle.horarios_proximos.map((horario, index) => (
-                    <li key={`${horario.fecha}-${horario.hora_inicio}-${index}`}>
-                      {horario.fecha} {horario.hora_inicio}
+                    <li key={`${horario.hor_guid || horario.fecha}-${horario.hora_inicio}-${index}`}>
+                      {formatearRangoFechas(horario.fecha, horario.fecha_fin)} · {horario.hora_inicio}
                       {horario.hora_fin ? `–${horario.hora_fin}` : ''}{' '}
                       {horario.cupos != null ? `(${horario.cupos} cupos)` : ''}
                     </li>

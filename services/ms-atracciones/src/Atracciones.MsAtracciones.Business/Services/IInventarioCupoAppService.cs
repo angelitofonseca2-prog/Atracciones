@@ -6,9 +6,10 @@ public interface IInventarioCupoAppService
         Guid tckGuid,
         CancellationToken ct = default);
 
-    Task<(bool Ok, string Mensaje, string AtraccionNombre, string HorFecha, string HorHoraInicio, string HorHoraFin, string TckGuid)> ObtenerHorarioParaReservaAsync(
+    Task<(bool Ok, string Mensaje, string AtraccionNombre, string HorFecha, string HorFechaFin, string HorHoraInicio, string HorHoraFin, string TckGuid)> ObtenerHorarioParaReservaAsync(
         Guid horGuid,
         Guid atGuid,
+        DateOnly? fechaVisita,
         CancellationToken ct = default);
 
     Task<(bool Ok, string Mensaje, int Cupos)> ValidarYReservarAsync(Guid horGuid, int cantidad, CancellationToken ct = default);

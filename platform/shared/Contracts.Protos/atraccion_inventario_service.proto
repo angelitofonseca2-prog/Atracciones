@@ -27,6 +27,8 @@ message GetTicketPrecioResponse {
 message ObtenerHorarioParaReservaRequest {
   string hor_guid = 1;
   string at_guid = 2;
+  /// Día concreto de visita (yyyy-MM-dd) cuando el horario abarca un rango de fechas.
+  string fecha_visita = 3;
 }
 
 message ObtenerHorarioParaReservaResponse {
@@ -37,6 +39,7 @@ message ObtenerHorarioParaReservaResponse {
   string hor_hora_inicio = 5;
   string hor_hora_fin = 6;
   string tck_guid = 7;
+  string hor_fecha_fin = 8;
 }
 
 message ValidarYReservarCupoRequest {

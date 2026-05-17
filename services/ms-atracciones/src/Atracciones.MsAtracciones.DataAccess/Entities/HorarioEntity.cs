@@ -5,6 +5,8 @@ public sealed class HorarioEntity
     public Guid HorGuid { get; set; }
     public Guid TckGuid { get; set; }
     public DateOnly HorFecha { get; set; }
+    /// <summary>Último día del rango; si es null, equivale a <see cref="HorFecha"/>.</summary>
+    public DateOnly? HorFechaFin { get; set; }
     public TimeOnly HorHoraInicio { get; set; }
     public TimeOnly? HorHoraFin { get; set; }
     public int HorCuposDisponibles { get; set; }

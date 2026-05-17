@@ -25,6 +25,8 @@ public sealed class CrearReservaApiRequest
 {
     public Guid AtGuid { get; set; }
     public Guid HorGuid { get; set; }
+    /// <summary>Día de visita (yyyy-MM-dd) si el horario abarca varias fechas.</summary>
+    public string? FechaVisita { get; set; }
     [MinLength(1)]
     public IList<ReservaDetalleApiRequest> Lineas { get; set; } = new List<ReservaDetalleApiRequest>();
     public string? OrigenCanal { get; set; }

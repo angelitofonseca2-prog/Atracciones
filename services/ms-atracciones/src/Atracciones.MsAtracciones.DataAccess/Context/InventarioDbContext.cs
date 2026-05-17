@@ -85,6 +85,7 @@ public sealed class InventarioDbContext : DbContext
             b.Property(x => x.HorGuid).HasColumnName("hor_guid");
             b.Property(x => x.TckGuid).HasColumnName("tck_guid").IsRequired();
             b.Property(x => x.HorFecha).HasColumnName("hor_fecha").IsRequired();
+            b.Property(x => x.HorFechaFin).HasColumnName("hor_fecha_fin");
             b.Property(x => x.HorHoraInicio).HasColumnName("hor_hora_inicio").IsRequired();
             b.Property(x => x.HorHoraFin).HasColumnName("hor_hora_fin");
             b.Property(x => x.HorCuposDisponibles).HasColumnName("hor_cupos_disponibles").IsRequired();

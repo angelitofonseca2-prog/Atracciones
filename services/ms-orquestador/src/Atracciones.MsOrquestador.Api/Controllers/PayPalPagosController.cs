@@ -70,6 +70,7 @@ public sealed class PayPalPagosController : ControllerBase
             {
                 AtGuid = request.Reserva.AtGuid,
                 HorGuid = request.Reserva.HorGuid,
+                FechaVisita = request.Reserva.FechaVisita,
                 OrigenCanal = request.Reserva.OrigenCanal,
                 Lineas = request.Reserva.Lineas
                     .Select(l => new LineaTicketOrquestadorDto { TckGuid = l.TckGuid, Cantidad = l.Cantidad })

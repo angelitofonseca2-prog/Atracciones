@@ -14,6 +14,11 @@ import {
   mensajeTelefono,
   mensajeNombre,
 } from '../../utils/validaciones'
+import {
+  formatearRangoFechas,
+  horarioTieneRangoFechas,
+  listarDiasEnRango,
+} from '../../utils/formatFechas'
 import { useAtracciones } from '../hooks/useAtracciones'
 import { mapPerfilAFormulario, mapPerfilAPago, usePerfilCliente } from '../hooks/usePerfilCliente'
 
@@ -174,6 +179,7 @@ function PantallaPago({
                   hor_guid: checkoutReserva.hor_guid,
                   lineas: checkoutReserva.lineas,
                   origen_canal: checkoutReserva.origen_canal || 'web',
+                  fecha_visita: checkoutReserva.fecha_visita,
                 },
               })
               const data = resp?.data ?? resp
@@ -256,8 +262,14 @@ function PantallaPago({
         )}
         {resumen?.hor_fecha && (
           <div className="confirmacion-row">
-            <span>Fecha</span>
+            <span>Fechas del horario</span>
             <span>{resumen.hor_fecha}</span>
+          </div>
+        )}
+        {resumen?.fecha_visita && (
+          <div className="confirmacion-row">
+            <span>Día de visita</span>
+            <span>{formatearRangoFechas(resumen.fecha_visita, resumen.fecha_visita)}</span>
           </div>
         )}
         <div className="confirmacion-row">
@@ -554,6 +566,7 @@ function ReservaPage() {
   const [paso, setPaso] = useState('cargando')
   const [datosCliente, setDatosCliente] = useState(null)
   const [horGuid, setHorGuid] = useState('')
+  const [fechaVisita, setFechaVisita] = useState('')
   const [cantidades, setCantidades] = useState({})
   const [intentoEnvio, setIntentoEnvio] = useState(false)
   const [tickets, setTickets] = useState([])
@@ -563,6 +576,32 @@ function ReservaPage() {
     () => horarios.find((h) => h.hor_guid === horGuid) ?? null,
     [horarios, horGuid],
   )
+
+  const horarioConRango = useMemo(
+    () => horarioTieneRangoFechas(horarioSeleccionado),
+    [horarioSeleccionado],
+  )
+
+  const diasVisitaDisponibles = useMemo(() => {
+    if (!horarioSeleccionado) return []
+    return listarDiasEnRango(horarioSeleccionado.fecha, horarioSeleccionado.fecha_fin)
+  }, [horarioSeleccionado])
+
+  useEffect(() => {
+    if (!horarioSeleccionado) {
+      setFechaVisita('')
+      return
+    }
+    if (!horarioConRango) {
+      setFechaVisita(String(horarioSeleccionado.fecha || '').slice(0, 10))
+      return
+    }
+    setFechaVisita((actual) => (
+      actual && diasVisitaDisponibles.includes(actual)
+        ? actual
+        : (diasVisitaDisponibles[0] ?? '')
+    ))
+  }, [horGuid, horarioSeleccionado, horarioConRango, diasVisitaDisponibles])
 
   // Estado del pago
   const [reservaLocal, setReservaLocal] = useState(null)
@@ -640,6 +679,7 @@ function ReservaPage() {
   const total = subtotal + iva
   const sinTickets = lineas.length === 0
   const sinHorario = !horGuid
+  const sinFechaVisita = horarioConRango && !fechaVisita
 
   const handleRegistrarse = () => {
     navigate('/registro', { state: { from: location } })
@@ -652,7 +692,7 @@ function ReservaPage() {
   const handleSubmit = (event) => {
     event.preventDefault()
     setIntentoEnvio(true)
-    if (sinHorario || sinTickets) return
+    if (sinHorario || sinTickets || sinFechaVisita) return
     if (!estaAutenticado) {
       navigate('/registro', { state: { from: location } })
       return
@@ -667,10 +707,12 @@ function ReservaPage() {
       hor_guid: horGuid,
       lineas,
       origen_canal: 'web',
+      fecha_visita: fechaVisita || undefined,
     })
     setResumenPago({
       atraccion_nombre: detalle?.nombre,
-      hor_fecha: horarioSeleccionado?.fecha,
+      hor_fecha: formatearRangoFechas(horarioSeleccionado?.fecha, horarioSeleccionado?.fecha_fin),
+      fecha_visita: fechaVisita,
     })
     setPaso('pago')
   }
@@ -765,16 +807,22 @@ function ReservaPage() {
                 <select
                   id="horario"
                   value={horGuid}
-                  onChange={(e) => { setHorGuid(e.target.value); setCantidades({}); setIntentoEnvio(false) }}
+                  onChange={(e) => {
+                    setHorGuid(e.target.value)
+                    setCantidades({})
+                    setFechaVisita('')
+                    setIntentoEnvio(false)
+                  }}
                   className={intentoEnvio && sinHorario ? 'input-error' : ''}
                 >
-                  <option value="">— Elige una fecha y hora —</option>
+                  <option value="">— Elige un horario —</option>
                   {horarios.map((horario, index) => (
                     <option key={horario.hor_guid || index} value={horario.hor_guid}>
-                      {horario.fecha} {horario.hora_inicio}
+                      {formatearRangoFechas(horario.fecha, horario.fecha_fin)} · {horario.hora_inicio}
+                      {horario.hora_fin ? `–${horario.hora_fin}` : ''}
                       {horario.ticket_titulo ? ` — ${horario.ticket_titulo}` : ''}
                       {(horario.cupos ?? horario.cupos_disponibles) != null
-                        ? ` — ${horario.cupos ?? horario.cupos_disponibles} cupos`
+                        ? ` · ${horario.cupos ?? horario.cupos_disponibles} cupos`
                         : ''}
                     </option>
                   ))}
@@ -783,6 +831,28 @@ function ReservaPage() {
                   <span className="field-error">⚠ Selecciona un horario para continuar</span>
                 )}
               </div>
+
+              {horarioConRango && (
+                <div className="form-group">
+                  <label htmlFor="fecha-visita">Día de tu visita *</label>
+                  <select
+                    id="fecha-visita"
+                    value={fechaVisita}
+                    onChange={(e) => setFechaVisita(e.target.value)}
+                    className={intentoEnvio && sinFechaVisita ? 'input-error' : ''}
+                  >
+                    <option value="">— Elige el día —</option>
+                    {diasVisitaDisponibles.map((dia) => (
+                      <option key={dia} value={dia}>
+                        {formatearRangoFechas(dia, dia)}
+                      </option>
+                    ))}
+                  </select>
+                  {intentoEnvio && sinFechaVisita && (
+                    <span className="field-error">⚠ Indica el día de visita dentro del rango</span>
+                  )}
+                </div>
+              )}
 
               <div className="form-group">
                 <label>Cantidad de entradas *</label>

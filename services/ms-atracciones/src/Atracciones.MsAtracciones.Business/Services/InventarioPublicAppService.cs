@@ -251,32 +251,39 @@ public sealed class InventarioPublicAppService : IInventarioPublicAppService
     private static bool EsHorarioDisponible(HorarioProximoRow h)
     {
         var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
-        return h.HorCuposDisponibles > 0 && h.HorFecha >= hoy;
+        var fin = h.HorFechaFin ?? h.HorFecha;
+        return h.HorCuposDisponibles > 0 && fin >= hoy;
     }
 
     private static HorarioProximoResponse ToHorarioProximoResponse(HorarioProximoRow h)
-        => new()
+    {
+        var fin = h.HorFechaFin ?? h.HorFecha;
+        return new()
         {
             HorGuid = h.HorGuid.ToString(),
             TckGuid = h.TckGuid.ToString(),
             TicketTitulo = h.TicketTitulo,
             Fecha = h.HorFecha.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            FechaFin = fin.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             HoraInicio = h.HorHoraInicio.ToString("HH:mm", CultureInfo.InvariantCulture),
             HoraFin = h.HorHoraFin?.ToString("HH:mm", CultureInfo.InvariantCulture),
             Cupos = h.HorCuposDisponibles,
             Disponible = EsHorarioDisponible(h),
         };
+    }
 
     private static (bool DisponibleHoy, DateOnly? ProximaFecha, int? Cupos) ComputeDisp(IReadOnlyList<HorarioRow> horarios)
     {
         var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
         var activos = horarios
-            .Where(h => h.HorCuposDisponibles > 0 && h.HorFecha >= hoy)
+            .Where(h => h.HorCuposDisponibles > 0 && (h.HorFechaFin ?? h.HorFecha) >= hoy)
             .OrderBy(h => h.HorFecha).ThenBy(h => h.HorHoraInicio)
             .ToList();
-        var hayHoy = activos.Any(h => h.HorFecha == hoy);
+        var hayHoy = activos.Any(h => h.HorFecha <= hoy && (h.HorFechaFin ?? h.HorFecha) >= hoy);
         var primero = activos.FirstOrDefault();
-        var prox = primero?.HorFecha;
+        DateOnly? prox = primero?.HorFecha;
+        if (primero is not null && primero.HorFecha < hoy && (primero.HorFechaFin ?? primero.HorFecha) >= hoy)
+            prox = hoy;
         var cupos = primero?.HorCuposDisponibles;
         return (hayHoy, prox == hoy ? null : prox, cupos);
     }

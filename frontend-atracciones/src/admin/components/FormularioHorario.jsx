@@ -4,7 +4,7 @@ import { adminApi } from '../../api/adminApi'
 /**
  * Crea/edita horarios contra:
  *   - POST /admin/tickets/horarios   body: CrearHorarioRequest
- *       { tck_guid, fecha (yyyy-MM-dd), hora_inicio (HH:mm:ss),
+ *       { tck_guid, fecha (yyyy-MM-dd), fecha_fin? (yyyy-MM-dd), hora_inicio (HH:mm:ss),
  *         hora_fin? (HH:mm:ss), cupos_disponibles }
  *   - PUT  /admin/horarios/{guid}    body: ActualizarHorarioRequest
  *       Todos los campos opcionales; estado puede ser 'A' o 'I'.
@@ -37,6 +37,7 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
   const [form, setForm] = useState({
     tck_guid: '',
     fecha: '',
+    fecha_fin: '',
     hora_inicio: '',
     hora_fin: '',
     cupos_disponibles: '',
@@ -85,6 +86,7 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
     setForm({
       tck_guid: inicial.tck_guid ?? '',
       fecha: (inicial.fecha ?? '').slice(0, 10),
+      fecha_fin: (inicial.fecha_fin ?? inicial.fecha ?? '').slice(0, 10),
       hora_inicio: a_HH_MM(inicial.hora_inicio),
       hora_fin: a_HH_MM(inicial.hora_fin),
       cupos_disponibles: inicial.cupos_disponibles ?? '',
@@ -101,7 +103,10 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
     const e = {}
     if (!esEdicion && !atGuid) e.atGuid = 'Selecciona una atracción'
     if (!esEdicion && !form.tck_guid) e.tck_guid = 'Selecciona un ticket'
-    if (!form.fecha) e.fecha = 'La fecha es obligatoria'
+    if (!form.fecha) e.fecha = 'La fecha inicial es obligatoria'
+    if (form.fecha_fin && form.fecha_fin < form.fecha) {
+      e.fecha_fin = 'La fecha final no puede ser anterior a la inicial'
+    }
     if (!form.hora_inicio) e.hora_inicio = 'La hora de inicio es obligatoria'
     if (form.cupos_disponibles === '' || Number(form.cupos_disponibles) < 1) {
       e.cupos_disponibles = 'Cupos mínimo: 1'
@@ -122,6 +127,7 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
           cupos_disponibles: Number(form.cupos_disponibles),
           estado: form.estado,
         }
+        if (form.fecha_fin) payload.fecha_fin = form.fecha_fin
         if (form.hora_fin) payload.hora_fin = a_HH_MM_SS(form.hora_fin)
         await onActualizar(inicial.hor_guid, payload)
       } else {
@@ -131,6 +137,7 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
           hora_inicio: a_HH_MM_SS(form.hora_inicio),
           cupos_disponibles: Number(form.cupos_disponibles),
         }
+        if (form.fecha_fin) payload.fecha_fin = form.fecha_fin
         if (form.hora_fin) payload.hora_fin = a_HH_MM_SS(form.hora_fin)
         await onCrear(payload)
       }
@@ -212,9 +219,9 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
         </div>
       )}
 
-      {/* Fecha */}
+      {/* Fechas del rango */}
       <div className="form-group">
-        <label htmlFor="fh-fecha">Fecha *</label>
+        <label htmlFor="fh-fecha">Fecha inicial *</label>
         <input
           id="fh-fecha"
           type="date"
@@ -224,6 +231,22 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
           className={errores.fecha ? 'input-error' : ''}
         />
         {errores.fecha && <span className="field-error">⚠ {errores.fecha}</span>}
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="fh-fecha-fin">Fecha final <span className="text-muted">(opcional)</span></label>
+        <input
+          id="fh-fecha-fin"
+          type="date"
+          value={form.fecha_fin}
+          onChange={set('fecha_fin')}
+          min={form.fecha || new Date().toISOString().slice(0, 10)}
+          className={errores.fecha_fin ? 'input-error' : ''}
+        />
+        <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.35rem' }}>
+          Si la dejas vacía, el horario aplica solo al día inicial.
+        </span>
+        {errores.fecha_fin && <span className="field-error">⚠ {errores.fecha_fin}</span>}
       </div>
 
       {/* Hora inicio */}

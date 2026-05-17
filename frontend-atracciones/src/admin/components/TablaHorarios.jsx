@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import ModalConfirmacion from '../../components/common/ModalConfirmacion'
+import { formatearRangoFechas } from '../../utils/formatFechas'
 
 /**
  * Tabla de horarios.
@@ -32,7 +33,7 @@ function TablaHorarios({ items, onEditar, onEliminar }) {
           <tr>
             <th>Atracción</th>
             <th>Ticket</th>
-            <th>Fecha</th>
+            <th>Fechas</th>
             <th>Inicio</th>
             <th>Fin</th>
             <th>Cupos</th>
@@ -52,7 +53,7 @@ function TablaHorarios({ items, onEditar, onEliminar }) {
             <tr key={item.hor_guid}>
               <td>{item.atraccion_nombre || '—'}</td>
               <td>{item.ticket_titulo || '—'}</td>
-              <td>{item.fecha ? String(item.fecha).slice(0, 10) : '—'}</td>
+              <td>{formatearRangoFechas(item.fecha, item.fecha_fin) || '—'}</td>
               <td>{formatearHora(item.hora_inicio)}</td>
               <td>{formatearHora(item.hora_fin)}</td>
               <td>{item.cupos_disponibles ?? '—'}</td>
@@ -83,7 +84,7 @@ function TablaHorarios({ items, onEditar, onEliminar }) {
         titulo="¿Eliminar horario?"
         descripcion={
           confirmando
-            ? `Se eliminará el horario del ${confirmando.fecha} ${String(confirmando.hora_inicio || '').slice(0, 5)}. Esta acción no se puede deshacer.`
+            ? `Se eliminará el horario (${formatearRangoFechas(confirmando.fecha, confirmando.fecha_fin)}) ${String(confirmando.hora_inicio || '').slice(0, 5)}. Esta acción no se puede deshacer.`
             : ''
         }
         textoConfirmar="Eliminar"

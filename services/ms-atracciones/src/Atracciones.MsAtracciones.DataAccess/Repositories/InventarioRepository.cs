@@ -161,7 +161,7 @@ public sealed class InventarioRepository : IInventarioRepository
         var tickets = a.Tickets.Where(t => t.TckEstado == 'A').Select(t => new TicketRow(t.TckGuid, t.TckTitulo, t.TckPrecio, t.TckTipoParticipante, t.TckCapacidadMaxima, t.TckCuposDisponibles)).ToList();
         var horarios = a.Tickets.Where(t => t.TckEstado == 'A').SelectMany(t => t.Horarios)
             .Where(h => h.HorEstado == 'A')
-            .Select(h => new HorarioRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles)).ToList();
+            .Select(h => new HorarioRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles)).ToList();
 
         var calVals = a.Resenias.Where(r => r.RsnEstado == 'A').Select(r => (double)r.RsnRating).ToList();
         double? calAvg = calVals.Count > 0 ? calVals.Average() : null;
@@ -189,7 +189,7 @@ public sealed class InventarioRepository : IInventarioRepository
             .Where(h => h.HorEstado == 'A' && h.HorCuposDisponibles > 0 && h.HorFecha >= hoy &&
                         h.Ticket.AtGuid == atGuid && h.Ticket.TckEstado == 'A')
             .OrderBy(h => h.HorFecha).ThenBy(h => h.HorHoraInicio)
-            .Select(h => new HorarioRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles))
+            .Select(h => new HorarioRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles))
             .ToListAsync(ct);
     }
 
@@ -198,10 +198,10 @@ public sealed class InventarioRepository : IInventarioRepository
         var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
         var limite = hoy.AddDays(7);
         return await _db.Horarios.AsNoTracking()
-            .Where(h => h.TckGuid == tckGuid && h.HorEstado == 'A' && h.HorCuposDisponibles > 0 &&
-                        h.HorFecha >= hoy && h.HorFecha <= limite)
+            .Where(h => h.TckGuid == tckGuid && h.HorEstado == 'A' && h.HorCuposDisponibles > 0
+                        && h.HorFecha <= limite && (h.HorFechaFin ?? h.HorFecha) >= hoy)
             .OrderBy(h => h.HorFecha).ThenBy(h => h.HorHoraInicio)
-            .Select(h => new HorarioProximoRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.Ticket.TckTitulo))
+            .Select(h => new HorarioProximoRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.Ticket.TckTitulo))
             .ToListAsync(ct);
     }
 
@@ -210,10 +210,11 @@ public sealed class InventarioRepository : IInventarioRepository
         var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
         var limite = hoy.AddDays(Math.Max(1, diasAdelante));
         return await _db.Horarios.AsNoTracking()
-            .Where(h => h.HorEstado == 'A' && h.HorCuposDisponibles > 0 && h.HorFecha >= hoy && h.HorFecha <= limite &&
-                        h.Ticket.AtGuid == atGuid && h.Ticket.TckEstado == 'A')
+            .Where(h => h.HorEstado == 'A' && h.HorCuposDisponibles > 0
+                        && h.HorFecha <= limite && (h.HorFechaFin ?? h.HorFecha) >= hoy
+                        && h.Ticket.AtGuid == atGuid && h.Ticket.TckEstado == 'A')
             .OrderBy(h => h.HorFecha).ThenBy(h => h.HorHoraInicio)
-            .Select(h => new HorarioProximoRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.Ticket.TckTitulo))
+            .Select(h => new HorarioProximoRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.Ticket.TckTitulo))
             .ToListAsync(ct);
     }
 
@@ -481,24 +482,24 @@ public sealed class InventarioRepository : IInventarioRepository
     public Task<HorarioAdminRow?> ObtenerHorarioAdminAsync(Guid horGuid, CancellationToken ct = default)
         => _db.Horarios.AsNoTracking()
             .Where(h => h.HorGuid == horGuid)
-            .Select(h => new HorarioAdminRow(h.HorGuid, h.TckGuid, h.Ticket.AtGuid, h.Ticket.Atraccion.AtNombre, h.Ticket.TckTitulo, h.Ticket.TckCapacidadMaxima, h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.HorEstado, h.HorFechaIngreso))
+            .Select(h => new HorarioAdminRow(h.HorGuid, h.TckGuid, h.Ticket.AtGuid, h.Ticket.Atraccion.AtNombre, h.Ticket.TckTitulo, h.Ticket.TckCapacidadMaxima, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.HorEstado, h.HorFechaIngreso))
             .FirstOrDefaultAsync(ct);
 
     public async Task<IReadOnlyList<HorarioAdminRow>> ListarHorariosAdminAsync(CancellationToken ct = default)
         => await _db.Horarios.AsNoTracking().Where(h => h.HorEstado == 'A')
             .OrderBy(h => h.HorFecha).ThenBy(h => h.HorHoraInicio)
-            .Select(h => new HorarioAdminRow(h.HorGuid, h.TckGuid, h.Ticket.AtGuid, h.Ticket.Atraccion.AtNombre, h.Ticket.TckTitulo, h.Ticket.TckCapacidadMaxima, h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.HorEstado, h.HorFechaIngreso))
+            .Select(h => new HorarioAdminRow(h.HorGuid, h.TckGuid, h.Ticket.AtGuid, h.Ticket.Atraccion.AtNombre, h.Ticket.TckTitulo, h.Ticket.TckCapacidadMaxima, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.HorEstado, h.HorFechaIngreso))
             .ToListAsync(ct);
 
     public async Task<IReadOnlyList<HorarioAdminRow>> ListarHorariosPorTicketAdminAsync(Guid tckGuid, CancellationToken ct = default)
         => await _db.Horarios.AsNoTracking().Where(h => h.TckGuid == tckGuid && h.HorEstado == 'A')
-            .Select(h => new HorarioAdminRow(h.HorGuid, h.TckGuid, h.Ticket.AtGuid, h.Ticket.Atraccion.AtNombre, h.Ticket.TckTitulo, h.Ticket.TckCapacidadMaxima, h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.HorEstado, h.HorFechaIngreso))
+            .Select(h => new HorarioAdminRow(h.HorGuid, h.TckGuid, h.Ticket.AtGuid, h.Ticket.Atraccion.AtNombre, h.Ticket.TckTitulo, h.Ticket.TckCapacidadMaxima, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.HorEstado, h.HorFechaIngreso))
             .ToListAsync(ct);
 
     public async Task<IReadOnlyList<HorarioAdminRow>> ListarHorariosPorAtraccionAdminAsync(Guid atGuid, CancellationToken ct = default)
         => await _db.Horarios.AsNoTracking()
             .Where(h => h.HorEstado == 'A' && h.Ticket.AtGuid == atGuid && h.Ticket.TckEstado == 'A')
-            .Select(h => new HorarioAdminRow(h.HorGuid, h.TckGuid, h.Ticket.AtGuid, h.Ticket.Atraccion.AtNombre, h.Ticket.TckTitulo, h.Ticket.TckCapacidadMaxima, h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.HorEstado, h.HorFechaIngreso))
+            .Select(h => new HorarioAdminRow(h.HorGuid, h.TckGuid, h.Ticket.AtGuid, h.Ticket.Atraccion.AtNombre, h.Ticket.TckTitulo, h.Ticket.TckCapacidadMaxima, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.HorEstado, h.HorFechaIngreso))
             .ToListAsync(ct);
 
     public async Task<Guid> CrearHorarioAsync(HorarioPersistModel m, CancellationToken ct = default)
@@ -509,6 +510,7 @@ public sealed class InventarioRepository : IInventarioRepository
             HorGuid = g,
             TckGuid = m.TckGuid,
             HorFecha = m.Fecha,
+            HorFechaFin = m.FechaFin,
             HorHoraInicio = m.HoraInicio,
             HorHoraFin = m.HoraFin,
             HorCuposDisponibles = m.CuposDisponibles,
@@ -527,6 +529,7 @@ public sealed class InventarioRepository : IInventarioRepository
         var h = await _db.Horarios.FirstOrDefaultAsync(x => x.HorGuid == m.HorGuid && x.HorEstado == 'A', ct)
             ?? throw new InvalidOperationException("Horario no encontrado.");
         h.HorFecha = m.Fecha;
+        h.HorFechaFin = m.FechaFin;
         h.HorHoraInicio = m.HoraInicio;
         h.HorHoraFin = m.HoraFin;
         h.HorCuposDisponibles = m.CuposDisponibles;
@@ -555,7 +558,7 @@ public sealed class InventarioRepository : IInventarioRepository
         return row is null ? null : (row.TckPrecio, row.TckTipoParticipante, row.AtGuid);
     }
 
-    public async Task<(string AtNombre, DateOnly HorFecha, TimeOnly HorHoraInicio, TimeOnly? HorHoraFin, Guid TckGuid)?> ObtenerHorarioReservaSnapshotAsync(
+    public async Task<(string AtNombre, DateOnly HorFecha, DateOnly HorFechaFin, TimeOnly HorHoraInicio, TimeOnly? HorHoraFin, Guid TckGuid)?> ObtenerHorarioReservaSnapshotAsync(
         Guid horGuid,
         Guid atGuidEsperado,
         CancellationToken ct = default)
@@ -564,7 +567,7 @@ public sealed class InventarioRepository : IInventarioRepository
             .Include(h => h.Ticket)
             .ThenInclude(t => t.Atraccion)
             .Where(h => h.HorGuid == horGuid && h.HorEstado == 'A')
-            .Select(h => new { h.HorFecha, h.HorHoraInicio, h.HorHoraFin, h.Ticket })
+            .Select(h => new { h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.Ticket })
             .FirstOrDefaultAsync(ct);
 
         if (row?.Ticket is null || row.Ticket.TckEstado != 'A' || row.Ticket.AtGuid != atGuidEsperado)
@@ -574,7 +577,8 @@ public sealed class InventarioRepository : IInventarioRepository
         if (string.IsNullOrWhiteSpace(nombre) || row.Ticket.Atraccion!.AtEstado != 'A')
             return null;
 
-        return (nombre, row.HorFecha, row.HorHoraInicio, row.HorHoraFin, row.Ticket.TckGuid);
+        var fin = row.HorFechaFin ?? row.HorFecha;
+        return (nombre, row.HorFecha, fin, row.HorHoraInicio, row.HorHoraFin, row.Ticket.TckGuid);
     }
 
     public async Task<int?> DescontarCuposHorarioAsync(Guid horGuid, int cantidad, CancellationToken ct = default)

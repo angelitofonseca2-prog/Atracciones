@@ -84,6 +84,7 @@ public sealed class ReservasController : ControllerBase
         {
             AtGuid = request.AtGuid,
             HorGuid = request.HorGuid,
+            FechaVisita = request.FechaVisita,
             OrigenCanal = request.OrigenCanal,
             Lineas = request.Lineas.Select(l => new LineaTicketOrquestadorDto { TckGuid = l.TckGuid, Cantidad = l.Cantidad }).ToList(),
             ClienteInvitado = request.ClienteInvitado is null

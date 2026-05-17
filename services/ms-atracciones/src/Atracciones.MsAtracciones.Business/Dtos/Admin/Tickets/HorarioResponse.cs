@@ -8,6 +8,7 @@ public class HorarioResponse
     public string AtraccionNombre { get; set; } = string.Empty;
     public string TicketTitulo { get; set; } = string.Empty;
     public string Fecha { get; set; } = string.Empty;
+    public string? FechaFin { get; set; }
     public string HoraInicio { get; set; } = string.Empty;
     public string? HoraFin { get; set; }
     public int CapacidadMaxima { get; set; }

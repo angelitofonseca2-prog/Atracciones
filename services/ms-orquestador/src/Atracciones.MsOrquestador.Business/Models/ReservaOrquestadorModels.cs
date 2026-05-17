@@ -16,6 +16,8 @@ public sealed class CrearReservaOrquestadorDto
 {
     public Guid AtGuid { get; set; }
     public Guid HorGuid { get; set; }
+    /// <summary>Día de visita (yyyy-MM-dd) cuando el horario tiene rango de fechas.</summary>
+    public string? FechaVisita { get; set; }
     public IList<LineaTicketOrquestadorDto> Lineas { get; set; } = new List<LineaTicketOrquestadorDto>();
     public string? OrigenCanal { get; set; }
     public ClienteInvitadoOrquestadorDto? ClienteInvitado { get; set; }
