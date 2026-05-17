@@ -20,13 +20,13 @@ public static class DependencyInjection
             .BindConfiguration(GrpcClientsOptions.SectionName)
             .PostConfigure(o =>
             {
-                o.Identidad = GrpcBaseUrlNormalizer.Normalize(o.Identidad);
-                o.IdentidadHttp = GrpcBaseUrlNormalizer.Normalize(o.IdentidadHttp);
-                o.Clientes = GrpcBaseUrlNormalizer.Normalize(o.Clientes);
-                o.Atracciones = GrpcBaseUrlNormalizer.Normalize(o.Atracciones);
-                o.Reservas = GrpcBaseUrlNormalizer.Normalize(o.Reservas);
-                o.Facturacion = GrpcBaseUrlNormalizer.Normalize(o.Facturacion);
-                o.Auditoria = GrpcBaseUrlNormalizer.Normalize(o.Auditoria);
+                o.Identidad = GrpcBaseUrlNormalizer.NormalizeGrpc(o.Identidad);
+                o.IdentidadHttp = GrpcBaseUrlNormalizer.NormalizeHttp(o.IdentidadHttp);
+                o.Clientes = GrpcBaseUrlNormalizer.NormalizeGrpc(o.Clientes);
+                o.Atracciones = GrpcBaseUrlNormalizer.NormalizeGrpc(o.Atracciones);
+                o.Reservas = GrpcBaseUrlNormalizer.NormalizeGrpc(o.Reservas);
+                o.Facturacion = GrpcBaseUrlNormalizer.NormalizeGrpc(o.Facturacion);
+                o.Auditoria = GrpcBaseUrlNormalizer.NormalizeGrpc(o.Auditoria);
             });
         services.AddSingleton<GrpcChannelHolder>();
 

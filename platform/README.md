@@ -92,13 +92,13 @@ Tras la fusión CRM+ventas, **`GrpcClients__Clientes` y `GrpcClients__Reservas` 
 
 Ejemplo (sustituir por los nombres de servicio que muestra Railway en *Settings → Networking*):
 ```
-GrpcClients__Identidad=http://servicesms-identidad.railway.internal:8080
+GrpcClients__Identidad=http://servicesms-identidad.railway.internal:8081
 GrpcClients__IdentidadHttp=http://servicesms-identidad.railway.internal:8080
-GrpcClients__Clientes=http://servicesms-reservas.railway.internal:8080
-GrpcClients__Reservas=http://servicesms-reservas.railway.internal:8080
-GrpcClients__Atracciones=http://servicesms-atracciones.railway.internal:8080
-GrpcClients__Facturacion=http://servicesms-facturacion.railway.internal:8080
-GrpcClients__Auditoria=http://servicesms-auditoria.railway.internal:8080
+GrpcClients__Clientes=http://servicesms-reservas.railway.internal:8081
+GrpcClients__Reservas=http://servicesms-reservas.railway.internal:8081
+GrpcClients__Atracciones=http://servicesms-atracciones.railway.internal:8081
+GrpcClients__Facturacion=http://servicesms-facturacion.railway.internal:8081
+GrpcClients__Auditoria=http://servicesms-auditoria.railway.internal:8081
 ```
 
 Si por error quedaron URLs `https://…-production….up.railway.app`, el orquestador las reescribe a `*.railway.internal:8080` al arrancar (convención `-production` en el hostname público).

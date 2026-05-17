@@ -6,7 +6,7 @@ using Atracciones.MsAtracciones.Api.Middleware;
 using Atracciones.MsAtracciones.Business;
 using Atracciones.MsAtracciones.DataAccess;
 using Atracciones.MsAtracciones.DataAccess.Context;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Atracciones.Platform.BuildingBlocks.Kestrel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -22,8 +22,7 @@ if (string.IsNullOrWhiteSpace(inventarioCs))
         "Falta ConnectionStrings:InventarioDb. Use `dotnet run --launch-profile http` o ConnectionStrings__InventarioDb.");
 }
 
-builder.WebHost.ConfigureKestrel(o =>
-    o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
+KestrelGrpcRestPorts.Configure(builder);
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {

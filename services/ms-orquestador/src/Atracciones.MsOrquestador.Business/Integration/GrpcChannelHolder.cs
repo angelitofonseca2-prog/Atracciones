@@ -28,7 +28,7 @@ public sealed class GrpcChannelHolder : IDisposable
 
     private static GrpcChannel CreateChannel(string address)
     {
-        var url = GrpcBaseUrlNormalizer.Normalize(address).TrimEnd('/');
+        var url = GrpcBaseUrlNormalizer.NormalizeGrpc(address).TrimEnd('/');
         var handler = new SocketsHttpHandler
         {
             EnableMultipleHttp2Connections = true,

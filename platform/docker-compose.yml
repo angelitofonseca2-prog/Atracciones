@@ -4,7 +4,7 @@
 # Limpiar contenedores viejos de otro compose: docker compose down --remove-orphans
 #
 # Topología consolidada:
-#   auth_db        → ms-identidad  (Postgres 5433, API 5101; REST+gRPC mismo puerto 8080 en contenedor)
+#   auth_db        → ms-identidad  (Postgres 5433, API 5101; REST :8080 + gRPC :8081 en contenedor)
 #   atracciones_db → ms-atracciones (5436, 5401)
 #   reservas_db    → ms-reservas   (5437, 5601)
 #   facturacion_db → ms-facturacion(5439, 5701)
@@ -129,13 +129,13 @@ services:
       Jwt__Audience: booking-prototipo-dev
       Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
       # Clientes gRPC apuntan a ms-reservas (absorbe ms-clientes)
-      GrpcClients__Identidad: http://ms-identidad:8080
+      GrpcClients__Identidad: http://ms-identidad:8081
       GrpcClients__IdentidadHttp: http://ms-identidad:8080
-      GrpcClients__Clientes: http://ms-reservas:8080
-      GrpcClients__Atracciones: http://ms-atracciones:8080
-      GrpcClients__Reservas: http://ms-reservas:8080
-      GrpcClients__Facturacion: http://ms-facturacion:8080
-      GrpcClients__Auditoria: http://ms-auditoria:8080
+      GrpcClients__Clientes: http://ms-reservas:8081
+      GrpcClients__Atracciones: http://ms-atracciones:8081
+      GrpcClients__Reservas: http://ms-reservas:8081
+      GrpcClients__Facturacion: http://ms-facturacion:8081
+      GrpcClients__Auditoria: http://ms-auditoria:8081
       Otlp__Endpoint: http://jaeger:4317
       Otlp__ServiceName: atracciones-orquestador
       # PayPal: definir en .env junto al compose o aquí (no dejar comillas vacías en YAML)

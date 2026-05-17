@@ -5,7 +5,7 @@ using Atracciones.MsFacturacion.Api.Grpc;
 using Atracciones.MsFacturacion.Api.Middleware;
 using Atracciones.MsFacturacion.DataAccess;
 using Atracciones.MsFacturacion.DataAccess.Context;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Atracciones.Platform.BuildingBlocks.Kestrel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -13,8 +13,7 @@ DatabaseUrlMapper.Apply("ConnectionStrings__BillingDb");
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(o =>
-    o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
+KestrelGrpcRestPorts.Configure(builder);
 
 builder.Services.AddControllers().AddJsonOptions(o =>
 {

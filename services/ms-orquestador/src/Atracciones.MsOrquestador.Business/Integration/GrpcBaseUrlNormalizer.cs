@@ -3,15 +3,20 @@ using System.Text.RegularExpressions;
 namespace Atracciones.MsOrquestador.Business.Integration;
 
 /// <summary>
-/// Ajusta URLs de clientes gRPC para Docker Compose y Railway.
-/// <list type="bullet">
-/// <item>Private DNS (<c>*.railway.internal</c>) sin puerto → <c>:8080</c> (Kestrel en contenedor).</item>
-/// <item>Dominio público <c>https://*.up.railway.app</c> → <c>http://{servicio}.railway.internal:8080</c> (h2c; evita <c>HTTP_1_1_REQUIRED</c> en el edge HTTP/1.1).</item>
-/// </list>
+/// Ajusta URLs para Docker Compose y Railway (REST :8080, gRPC :8081 en red privada).
 /// </summary>
 public static partial class GrpcBaseUrlNormalizer
 {
-    public static string Normalize(string? raw)
+    public const int HttpPort = 8080;
+    public const int GrpcPort = 8081;
+
+    public static string NormalizeGrpc(string? raw) =>
+        Normalize(raw, GrpcPort, rewriteLegacyGrpcPort: true);
+
+    public static string NormalizeHttp(string? raw) =>
+        Normalize(raw, HttpPort, rewriteLegacyGrpcPort: false);
+
+    private static string Normalize(string? raw, int defaultPort, bool rewriteLegacyGrpcPort)
     {
         if (string.IsNullOrWhiteSpace(raw))
             return raw?.Trim() ?? string.Empty;
@@ -21,18 +26,17 @@ public static partial class GrpcBaseUrlNormalizer
             return trimmed;
 
         if (IsRailwayPublicEdge(uri))
-            return ToPrivateH2cBase(uri.Host);
+            return ToPrivateBase(uri.Host, defaultPort);
 
-        if (string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase)
-            && IsRailwayPrivateHost(uri.Host)
-            && uri.IsDefaultPort)
-            return $"{Uri.UriSchemeHttp}://{uri.Host}:8080";
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+            return trimmed;
 
-        if (string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
-            && IsRailwayPrivateHost(uri.Host))
+        if (IsRailwayPrivateHost(uri.Host))
         {
-            var port = uri.IsDefaultPort ? 8080 : uri.Port;
-            return $"{Uri.UriSchemeHttp}://{uri.Host}:{port}";
+            if (uri.IsDefaultPort || (rewriteLegacyGrpcPort && uri.Port == HttpPort))
+                return $"{Uri.UriSchemeHttp}://{uri.Host}:{defaultPort}";
+
+            return trimmed;
         }
 
         return trimmed;
@@ -42,14 +46,14 @@ public static partial class GrpcBaseUrlNormalizer
         string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase)
         && uri.Host.EndsWith(".up.railway.app", StringComparison.OrdinalIgnoreCase);
 
-    private static string ToPrivateH2cBase(string publicHost)
+    private static string ToPrivateBase(string publicHost, int port)
     {
-        var serviceSlug = RailwayPublicHostRegex().Match(publicHost);
-        var name = serviceSlug.Success
-            ? serviceSlug.Groups["name"].Value
+        var match = RailwayPublicHostRegex().Match(publicHost);
+        var name = match.Success
+            ? match.Groups["name"].Value
             : publicHost.Split('.')[0];
 
-        return $"{Uri.UriSchemeHttp}://{name}.railway.internal:8080";
+        return $"{Uri.UriSchemeHttp}://{name}.railway.internal:{port}";
     }
 
     private static bool IsRailwayPrivateHost(string host) =>

@@ -6,7 +6,7 @@ using Atracciones.MsReservas.Api.Middleware;
 using Atracciones.MsReservas.Api.Options;
 using Atracciones.MsReservas.DataAccess;
 using Atracciones.MsReservas.DataAccess.Context;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Atracciones.Platform.BuildingBlocks.Kestrel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -15,8 +15,7 @@ DatabaseUrlMapper.Apply("ConnectionStrings__CrmDb");
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(o =>
-    o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
+KestrelGrpcRestPorts.Configure(builder);
 
 builder.Services.Configure<ClientesMirrorOptions>(builder.Configuration.GetSection(ClientesMirrorOptions.SectionName));
 

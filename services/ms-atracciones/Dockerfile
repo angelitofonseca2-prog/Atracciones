@@ -8,6 +8,5 @@ RUN dotnet publish services/ms-atracciones/src/Atracciones.MsAtracciones.Api/Atr
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app .
-ENV ASPNETCORE_URLS=http://+:8080
-EXPOSE 8080
+EXPOSE 8080 8081
 ENTRYPOINT ["dotnet", "Atracciones.MsAtracciones.Api.dll"]

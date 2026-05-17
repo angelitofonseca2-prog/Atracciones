@@ -24,7 +24,7 @@ Tras las fases B/C del [plan de fusión](docs/plan-fusion-microservicios.md), el
 
 **Orquestador — `GrpcClients` (Docker Compose y Railway):**
 
-- `Clientes` y `Reservas` → **misma URL** (host/puerto de `ms-reservas`, p. ej. `http://ms-reservas:8080` o `http://servicesms-reservas.railway.internal:8080`).
+- `Clientes` y `Reservas` → **misma URL gRPC** (host de `ms-reservas`, puerto **8081**; REST/JWKS en **8080**), p. ej. `http://ms-reservas:8081` o `http://servicesms-reservas.railway.internal:8081`.
 - `Atracciones` → host de `ms-atracciones` (inventario y catálogo en un solo Kestrel).
 - `Identidad` + `IdentidadHttp` → `ms-identidad` (gRPC + `POST /api/v1/auth/login` HTTP tras registro).
 

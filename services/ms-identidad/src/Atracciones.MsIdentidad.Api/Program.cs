@@ -10,16 +10,14 @@ using Atracciones.MsIdentidad.Business.Auth;
 using Atracciones.MsIdentidad.DataAccess;
 using Atracciones.MsIdentidad.DataAccess.Context;
 using Atracciones.MsIdentidad.DataAccess.Seeding;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Atracciones.Platform.BuildingBlocks.Kestrel;
 using Microsoft.EntityFrameworkCore;
 
 DatabaseUrlMapper.Apply("ConnectionStrings__IdentidadDb");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// REST y gRPC en el mismo listener (HTTP/1 + HTTP/2). Evita HTTP_1_1_REQUIRED si gRPC usa el puerto 8080 (Railway/orquestador).
-builder.WebHost.ConfigureKestrel(o =>
-    o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
+KestrelGrpcRestPorts.Configure(builder);
 
 builder.Services.Configure<JwtIssuerOptions>(builder.Configuration.GetSection(JwtIssuerOptions.SectionName));
 builder.Services.Configure<InternalSyncOptions>(builder.Configuration.GetSection(InternalSyncOptions.SectionName));

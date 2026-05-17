@@ -2,7 +2,7 @@ using Atracciones.MsAuditoria.Api.Configuration;
 using Atracciones.MsAuditoria.Api.Grpc;
 using Atracciones.MsAuditoria.DataAccess;
 using Atracciones.MsAuditoria.DataAccess.Context;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Atracciones.Platform.BuildingBlocks.Kestrel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Resources;
@@ -12,8 +12,7 @@ DatabaseUrlMapper.Apply("ConnectionStrings__AuditoriaDb");
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(o =>
-    o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
+KestrelGrpcRestPorts.Configure(builder);
 
 var otlp = builder.Configuration["Otlp:Endpoint"];
 if (!string.IsNullOrWhiteSpace(otlp))
