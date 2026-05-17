@@ -64,6 +64,7 @@ public sealed class ReservaResponseDto
 
 public sealed class FacturaStubResponseDto
 {
+    public string RevGuid { get; set; } = string.Empty;
     public string FacGuid { get; set; } = string.Empty;
     public string FacNumero { get; set; } = string.Empty;
     public string RevCodigo { get; set; } = string.Empty;

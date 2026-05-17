@@ -13,16 +13,18 @@ namespace Atracciones.MsOrquestador.Business.Services;
 public interface IPayPalPagosService
 {
     Task<CreatePayPalOrderResult> CrearOrdenAsync(
-        Guid revGuid,
+        CrearReservaOrquestadorDto? reserva,
+        Guid? revGuidLegacy,
         string? revCodigo,
         Guid? usuGuidCliente,
+        string? authorizationBearer,
         string usuarioAccion,
         string ip,
         string correlationId,
         CancellationToken ct = default);
 
     Task<FacturaStubResponseDto> CapturarYCompletarReservaAsync(
-        Guid revGuid,
+        Guid? revGuid,
         string? revCodigo,
         Guid? usuGuidCliente,
         string paypalOrderId,
@@ -35,10 +37,20 @@ public interface IPayPalPagosService
     Task ProcesarWebhookAsync(string rawBody, CancellationToken ct = default);
 }
 
-public sealed record CreatePayPalOrderResult(string PaypalOrderId, string Moneda, decimal Monto);
+public sealed record CreatePayPalOrderResult(
+    string PaypalOrderId,
+    string Moneda,
+    decimal Monto,
+    Guid RevGuid);
 
 public sealed class PayPalPagosAppService : IPayPalPagosService
 {
+    private static readonly JsonSerializerOptions CheckoutJsonOpts = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false,
+    };
+
     private readonly PayPalApiClient _paypal;
     private readonly IPayPalPaymentRepository _pagos;
     private readonly IReservaOrquestacionService _reservas;
@@ -60,9 +72,11 @@ public sealed class PayPalPagosAppService : IPayPalPagosService
     }
 
     public async Task<CreatePayPalOrderResult> CrearOrdenAsync(
-        Guid revGuid,
+        CrearReservaOrquestadorDto? reserva,
+        Guid? revGuidLegacy,
         string? revCodigo,
         Guid? usuGuidCliente,
+        string? authorizationBearer,
         string usuarioAccion,
         string ip,
         string correlationId,
@@ -72,21 +86,35 @@ public sealed class PayPalPagosAppService : IPayPalPagosService
             throw new ServiceUnavailableOrchestadorException(
                 "PayPal no está configurado en el orquestador (PayPal:ClientId / ClientSecret).");
 
-        var pendiente = await ObtenerReservaAutorizadaAsync(revGuid, revCodigo, usuGuidCliente, ct);
+        if (reserva is not null)
+        {
+            var prep = await _reservas.PrepararCheckoutPayPalAsync(
+                reserva, usuGuidCliente, authorizationBearer, usuarioAccion, ip, ct);
+            var revGuid = prep.Payload.RevGuid;
+            var payloadJson = JsonSerializer.Serialize(prep.Payload, CheckoutJsonOpts);
+            var orderId = await _paypal.CreateOrderAsync(prep.Total, prep.Moneda, revGuid.ToString("D"), ct);
+            await _pagos.InsertAsync(revGuid, orderId, PayPalPaymentEstados.OrderCreated, prep.Total, prep.Moneda, payloadJson, ct);
+            _logger.LogInformation("PayPal orden creada {OrderId} checkout {Rev}", orderId, revGuid);
+            return new CreatePayPalOrderResult(orderId, prep.Moneda, prep.Total, revGuid);
+        }
+
+        if (!revGuidLegacy.HasValue || revGuidLegacy.Value == Guid.Empty)
+            throw new ValidationOrchestadorException(new[] { "Debe enviar el cuerpo de la reserva (at_guid, hor_guid, lineas) para iniciar el pago." });
+
+        var pendiente = await ObtenerReservaAutorizadaAsync(revGuidLegacy.Value, revCodigo, usuGuidCliente, ct);
         if (pendiente.Estado != "P")
             throw new ConflictOrchestadorException("La reserva no está pendiente de pago.");
 
-        var total = (decimal)pendiente.Total;
-        var moneda = string.IsNullOrWhiteSpace(pendiente.Moneda) ? "USD" : pendiente.Moneda.Trim();
-
-        var orderId = await _paypal.CreateOrderAsync(total, moneda, revGuid.ToString("D"), ct);
-        await _pagos.InsertAsync(revGuid, orderId, PayPalPaymentEstados.OrderCreated, total, moneda, ct);
-        _logger.LogInformation("PayPal orden creada {OrderId} rev {Rev}", orderId, revGuid);
-        return new CreatePayPalOrderResult(orderId, moneda, total);
+        var totalLegacy = (decimal)pendiente.Total;
+        var monedaLegacy = string.IsNullOrWhiteSpace(pendiente.Moneda) ? "USD" : pendiente.Moneda.Trim();
+        var orderIdLegacy = await _paypal.CreateOrderAsync(totalLegacy, monedaLegacy, revGuidLegacy.Value.ToString("D"), ct);
+        await _pagos.InsertAsync(revGuidLegacy.Value, orderIdLegacy, PayPalPaymentEstados.OrderCreated, totalLegacy, monedaLegacy, null, ct);
+        _logger.LogInformation("PayPal orden creada {OrderId} rev legacy {Rev}", orderIdLegacy, revGuidLegacy);
+        return new CreatePayPalOrderResult(orderIdLegacy, monedaLegacy, totalLegacy, revGuidLegacy.Value);
     }
 
     public async Task<FacturaStubResponseDto> CapturarYCompletarReservaAsync(
-        Guid revGuid,
+        Guid? revGuid,
         string? revCodigo,
         Guid? usuGuidCliente,
         string paypalOrderId,
@@ -99,42 +127,59 @@ public sealed class PayPalPagosAppService : IPayPalPagosService
         if (!_paypal.IsConfigured)
             throw new ServiceUnavailableOrchestadorException("PayPal no está configurado.");
 
-        var pendiente = await ObtenerReservaAutorizadaAsync(revGuid, revCodigo, usuGuidCliente, ct);
-        if (pendiente.Estado != "P")
-            throw new ConflictOrchestadorException("La reserva no está pendiente de pago.");
-
         var row = await _pagos.GetByPaypalOrderIdAsync(paypalOrderId, ct)
             ?? throw new NotFoundOrchestadorException("No existe una orden PayPal asociada a este pago.");
 
-        if (row.RevGuid != revGuid)
+        if (revGuid.HasValue && revGuid.Value != Guid.Empty && row.RevGuid != revGuid.Value)
             throw new ForbiddenOrchestadorException("La orden PayPal no corresponde a esta reserva.");
 
         if (string.Equals(row.EstadoPago, PayPalPaymentEstados.Captured, StringComparison.OrdinalIgnoreCase))
             throw new ConflictOrchestadorException("Esta orden PayPal ya fue capturada.");
 
+        var checkout = DeserializeCheckout(row.CheckoutPayloadJson);
         var cap = await _paypal.CaptureOrderAsync(paypalOrderId, ct);
 
-        if (!string.Equals(cap.CustomId, revGuid.ToString("D"), StringComparison.OrdinalIgnoreCase))
-            throw new ConflictOrchestadorException("El custom_id de la captura no coincide con la reserva.");
+        if (!string.Equals(cap.CustomId, row.RevGuid.ToString("D"), StringComparison.OrdinalIgnoreCase))
+            throw new ConflictOrchestadorException("El custom_id de la captura no coincide con la sesión de checkout.");
 
-        if (!string.Equals(cap.CurrencyCode, string.IsNullOrWhiteSpace(pendiente.Moneda) ? "USD" : pendiente.Moneda.Trim(), StringComparison.OrdinalIgnoreCase))
-            throw new ConflictOrchestadorException("La moneda de la captura no coincide con la reserva.");
+        if (!string.Equals(cap.CurrencyCode, row.Moneda, StringComparison.OrdinalIgnoreCase))
+            throw new ConflictOrchestadorException("La moneda de la captura no coincide con la cotización.");
 
-        var esperado = (decimal)pendiente.Total;
-        if (Math.Abs(cap.Amount - esperado) > 0.02m)
+        if (Math.Abs(cap.Amount - row.MontoEsperado) > 0.02m)
             throw new ConflictOrchestadorException("El monto capturado no coincide con el total de la reserva.");
 
-        var dto = facturacion;
-        var factura = await _reservas.CompletarPagoReservaYFacturaAsync(
-            revGuid,
-            dto,
-            usuarioAccion,
-            ip,
-            correlationId,
-            compensarSiFallaFactura: false,
-            ct);
+        FacturaStubResponseDto factura;
+        if (checkout is not null)
+        {
+            if (usuGuidCliente.HasValue
+                && !string.Equals(checkout.CliGuid.ToString("D"), usuGuidCliente.Value.ToString("D"), StringComparison.OrdinalIgnoreCase))
+                throw new ForbiddenOrchestadorException("No tienes permiso para completar este pago.");
+
+            factura = await _reservas.MaterializarReservaTrasPagoCapturadoAsync(
+                checkout,
+                facturacion,
+                cap.Amount,
+                cap.CurrencyCode,
+                usuarioAccion,
+                ip,
+                correlationId,
+                ct);
+        }
+        else
+        {
+            await ObtenerReservaAutorizadaAsync(row.RevGuid, revCodigo, usuGuidCliente, ct);
+            factura = await _reservas.CompletarPagoReservaYFacturaAsync(
+                row.RevGuid,
+                facturacion,
+                usuarioAccion,
+                ip,
+                correlationId,
+                compensarSiFallaFactura: false,
+                ct);
+        }
 
         await _pagos.UpdateEstadoAsync(row.PayPaymentId, PayPalPaymentEstados.Captured, cap.CaptureId, null, ct);
+        await _pagos.ClearCheckoutPayloadAsync(row.PayPaymentId, ct);
         return factura;
     }
 
@@ -171,7 +216,8 @@ public sealed class PayPalPagosAppService : IPayPalPagosService
             orderRow = await _pagos.GetByPaypalOrderIdAsync(orderId, ct);
 
         var customId = resource.TryGetProperty("custom_id", out var c) ? c.GetString() : null;
-        if (string.IsNullOrEmpty(customId) || !Guid.TryParse(customId, out var revGuid))
+        Guid revGuid;
+        if (string.IsNullOrEmpty(customId) || !Guid.TryParse(customId, out revGuid))
         {
             if (orderRow is not null)
                 revGuid = orderRow.RevGuid;
@@ -187,6 +233,57 @@ public sealed class PayPalPagosAppService : IPayPalPagosService
                 amount = dec;
             if (amt.TryGetProperty("currency_code", out var cur))
                 currency = cur.GetString() ?? "USD";
+        }
+
+        var checkout = orderRow is not null ? DeserializeCheckout(orderRow.CheckoutPayloadJson) : null;
+        if (checkout is not null)
+        {
+            if (Math.Abs(amount - orderRow!.MontoEsperado) > 0.02m
+                || !string.Equals(currency, orderRow.Moneda, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("Webhook PayPal: monto/moneda no coinciden para checkout {Rev}", revGuid);
+                return;
+            }
+
+            var (nombre, correo, telefono) = ExtraerPagador(resource);
+            if (string.IsNullOrWhiteSpace(correo))
+            {
+                _logger.LogWarning("Webhook PayPal: sin correo de pagador para completar factura {Rev}", revGuid);
+                return;
+            }
+
+            var dto = new ConfirmarPagoOrquestadorDto
+            {
+                NombreReceptor = string.IsNullOrWhiteSpace(nombre) ? "Cliente" : nombre,
+                CorreoReceptor = correo.Trim(),
+                TelefonoReceptor = telefono,
+            };
+
+            try
+            {
+                await _reservas.MaterializarReservaTrasPagoCapturadoAsync(
+                    checkout,
+                    dto,
+                    amount,
+                    currency,
+                    usuarioAccion: "paypal-webhook",
+                    ip: "0.0.0.0",
+                    correlationId: captureId,
+                    ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Webhook PayPal: no se pudo materializar reserva {Rev}", revGuid);
+                return;
+            }
+
+            if (orderRow is not null)
+            {
+                await _pagos.UpdateEstadoAsync(orderRow.PayPaymentId, PayPalPaymentEstados.Captured, captureId, null, ct);
+                await _pagos.ClearCheckoutPayloadAsync(orderRow.PayPaymentId, ct);
+            }
+
+            return;
         }
 
         ReservaReply pendiente;
@@ -210,25 +307,25 @@ public sealed class PayPalPagosAppService : IPayPalPagosService
             return;
         }
 
-        var (nombre, correo, telefono) = ExtraerPagador(resource);
-        if (string.IsNullOrWhiteSpace(correo))
+        var (nombreLegacy, correoLegacy, telefonoLegacy) = ExtraerPagador(resource);
+        if (string.IsNullOrWhiteSpace(correoLegacy))
         {
             _logger.LogWarning("Webhook PayPal: sin correo de pagador para completar factura {Rev}", revGuid);
             return;
         }
 
-        var dto = new ConfirmarPagoOrquestadorDto
+        var dtoLegacy = new ConfirmarPagoOrquestadorDto
         {
-            NombreReceptor = string.IsNullOrWhiteSpace(nombre) ? "Cliente" : nombre,
-            CorreoReceptor = correo.Trim(),
-            TelefonoReceptor = telefono,
+            NombreReceptor = string.IsNullOrWhiteSpace(nombreLegacy) ? "Cliente" : nombreLegacy,
+            CorreoReceptor = correoLegacy.Trim(),
+            TelefonoReceptor = telefonoLegacy,
         };
 
         try
         {
             await _reservas.CompletarPagoReservaYFacturaAsync(
                 revGuid,
-                dto,
+                dtoLegacy,
                 usuarioAccion: "paypal-webhook",
                 ip: "0.0.0.0",
                 correlationId: captureId,
@@ -237,13 +334,18 @@ public sealed class PayPalPagosAppService : IPayPalPagosService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Webhook PayPal: no se pudo completar reserva {Rev}", revGuid);
+            _logger.LogWarning(ex, "Webhook PayPal: no se pudo completar reserva legacy {Rev}", revGuid);
             return;
         }
 
         if (orderRow is not null)
             await _pagos.UpdateEstadoAsync(orderRow.PayPaymentId, PayPalPaymentEstados.Captured, captureId, null, ct);
     }
+
+    private static PayPalCheckoutPayload? DeserializeCheckout(string? json) =>
+        string.IsNullOrWhiteSpace(json)
+            ? null
+            : JsonSerializer.Deserialize<PayPalCheckoutPayload>(json, CheckoutJsonOpts);
 
     private static (string? nombre, string? correo, string? telefono) ExtraerPagador(JsonElement resource)
     {

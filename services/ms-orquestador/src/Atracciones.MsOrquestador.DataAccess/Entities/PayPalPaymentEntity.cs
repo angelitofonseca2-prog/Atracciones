@@ -14,6 +14,8 @@ public sealed class PayPalPaymentEntity
     public decimal MontoEsperado { get; set; }
     public string Moneda { get; set; } = "USD";
     public string? ChargebackStatus { get; set; }
+    /// <summary>JSON de <see cref="Business.Models.PayPalCheckoutPayload"/> hasta completar la captura.</summary>
+    public string? CheckoutPayloadJson { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime UpdatedUtc { get; set; }
 }

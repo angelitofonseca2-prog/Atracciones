@@ -102,7 +102,7 @@ public sealed class ReservasController : ControllerBase
         };
 
         var data = await _orq.CrearReservaAsync(dto, UsuGuidOpcional, BearerToken, UsuarioAccion, IpActual, CorrelationId, ct);
-        var envelope = new ApiItemResponse<object>(data, 201, "Reserva creada exitosamente");
+        var envelope = new ApiItemResponse<object>(data, 201, "Cotización lista. Complete el pago con PayPal para confirmar la reserva.");
         await SaveIdempotentAsync(idemKey, route, hash, 201, envelope, ct);
         return StatusCode(201, envelope);
     }

@@ -17,6 +17,7 @@ public sealed class PayPalPaymentRepository : IPayPalPaymentRepository
         string estado,
         decimal monto,
         string moneda,
+        string? checkoutPayloadJson,
         CancellationToken ct = default)
     {
         var now = DateTime.UtcNow;
@@ -27,6 +28,7 @@ public sealed class PayPalPaymentRepository : IPayPalPaymentRepository
             EstadoPago = estado,
             MontoEsperado = monto,
             Moneda = moneda,
+            CheckoutPayloadJson = checkoutPayloadJson,
             CreatedUtc = now,
             UpdatedUtc = now,
         };
@@ -72,7 +74,18 @@ public sealed class PayPalPaymentRepository : IPayPalPaymentRepository
         await _db.SaveChangesAsync(ct);
     }
 
+    public async Task ClearCheckoutPayloadAsync(long payPaymentId, CancellationToken ct = default)
+    {
+        var row = await _db.PayPalPayments.FirstOrDefaultAsync(x => x.PayPaymentId == payPaymentId, ct);
+        if (row is null)
+            return;
+
+        row.CheckoutPayloadJson = null;
+        row.UpdatedUtc = DateTime.UtcNow;
+        await _db.SaveChangesAsync(ct);
+    }
+
     private static PayPalPaymentRow Map(PayPalPaymentEntity x) =>
         new(x.PayPaymentId, x.RevGuid, x.PaypalOrderId, x.PaypalCaptureId,
-            x.EstadoPago, x.MontoEsperado, x.Moneda, x.ChargebackStatus);
+            x.EstadoPago, x.MontoEsperado, x.Moneda, x.ChargebackStatus, x.CheckoutPayloadJson);
 }

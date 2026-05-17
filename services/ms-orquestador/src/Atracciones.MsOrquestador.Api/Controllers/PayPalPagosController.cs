@@ -52,6 +52,9 @@ public sealed class PayPalPagosController : ControllerBase
         HttpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault()
         ?? Guid.NewGuid().ToString("D");
 
+    private string? BearerToken =>
+        HttpContext.Request.Headers.Authorization.FirstOrDefault();
+
     [HttpPost("orders")]
     [AllowAnonymous]
     public async Task<IActionResult> CrearOrden(CancellationToken ct)
@@ -60,10 +63,39 @@ public sealed class PayPalPagosController : ControllerBase
         var request = JsonSerializer.Deserialize<CrearPayPalOrderApiRequest>(raw, JsonOpts)
             ?? throw new JsonException("JSON inválido.");
 
+        CrearReservaOrquestadorDto? reservaDto = null;
+        if (request.Reserva is not null)
+        {
+            reservaDto = new CrearReservaOrquestadorDto
+            {
+                AtGuid = request.Reserva.AtGuid,
+                HorGuid = request.Reserva.HorGuid,
+                OrigenCanal = request.Reserva.OrigenCanal,
+                Lineas = request.Reserva.Lineas
+                    .Select(l => new LineaTicketOrquestadorDto { TckGuid = l.TckGuid, Cantidad = l.Cantidad })
+                    .ToList(),
+                ClienteInvitado = request.Reserva.ClienteInvitado is null
+                    ? null
+                    : new ClienteInvitadoOrquestadorDto
+                    {
+                        TipoIdentificacion = request.Reserva.ClienteInvitado.TipoIdentificacion,
+                        NumeroIdentificacion = request.Reserva.ClienteInvitado.NumeroIdentificacion,
+                        Nombres = request.Reserva.ClienteInvitado.Nombres,
+                        Apellidos = request.Reserva.ClienteInvitado.Apellidos,
+                        RazonSocial = request.Reserva.ClienteInvitado.RazonSocial,
+                        Correo = request.Reserva.ClienteInvitado.Correo,
+                        Telefono = request.Reserva.ClienteInvitado.Telefono,
+                        Direccion = request.Reserva.ClienteInvitado.Direccion,
+                    },
+            };
+        }
+
         var data = await _pagos.CrearOrdenAsync(
-            request.RevGuid,
+            reservaDto,
+            request.RevGuid == Guid.Empty ? null : request.RevGuid,
             request.RevCodigo,
             UsuGuidOpcional,
+            BearerToken,
             UsuarioAccion,
             IpActual,
             CorrelationId,
@@ -74,6 +106,7 @@ public sealed class PayPalPagosController : ControllerBase
             paypal_order_id = data.PaypalOrderId,
             moneda = data.Moneda,
             monto = data.Monto,
+            rev_guid = data.RevGuid,
         }, 200, "Orden PayPal creada"));
     }
 

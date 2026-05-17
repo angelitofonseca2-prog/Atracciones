@@ -70,6 +70,7 @@ public sealed class OrquestadorDbContext : DbContext
             b.Property(x => x.MontoEsperado).HasColumnName("monto_esperado").HasPrecision(18, 2);
             b.Property(x => x.Moneda).HasColumnName("moneda").HasMaxLength(8).IsRequired();
             b.Property(x => x.ChargebackStatus).HasColumnName("chargeback_status").HasMaxLength(64);
+            b.Property(x => x.CheckoutPayloadJson).HasColumnName("checkout_payload_json");
             b.Property(x => x.CreatedUtc).HasColumnName("created_utc");
             b.Property(x => x.UpdatedUtc).HasColumnName("updated_utc");
             b.HasIndex(x => x.PaypalOrderId).IsUnique();

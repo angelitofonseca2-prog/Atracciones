@@ -1,7 +1,12 @@
+using Atracciones.MsOrquestador.Api.Models.Reservas;
+
 namespace Atracciones.MsOrquestador.Api.Models.Pagos;
 
 public sealed class CrearPayPalOrderApiRequest
 {
+    /// <summary>Reserva a materializar tras captura PayPal (flujo actual).</summary>
+    public CrearReservaApiRequest? Reserva { get; set; }
+    /// <summary>Solo reservas pendientes legacy (estado P) creadas antes del cambio.</summary>
     public Guid RevGuid { get; set; }
     public string? RevCodigo { get; set; }
 }

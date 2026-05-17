@@ -16,7 +16,6 @@ import {
 } from '../../utils/validaciones'
 import { useAtracciones } from '../hooks/useAtracciones'
 import { mapPerfilAFormulario, mapPerfilAPago, usePerfilCliente } from '../hooks/usePerfilCliente'
-import { useReserva } from '../hooks/useReserva'
 
 const TIPOS_IDENTIFICACION = ['CEDULA', 'PASAPORTE', 'RUC', 'OTRO']
 
@@ -102,11 +101,11 @@ function ConfirmacionConFactura({ reserva, factura }) {
 
 // ─── Pago con PayPal (orden y captura en servidor) ───────────────────────────
 function PantallaPago({
-  reserva,
+  checkoutReserva,
+  resumen,
   subtotal,
   iva,
   total,
-  estaAutenticado,
   onPagoExitoso,
   errorPago,
   setErrorPago,
@@ -145,12 +144,13 @@ function PantallaPago({
   }
 
   const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID
-  const moneda = (reserva?.moneda || 'USD').toString().toUpperCase()
+  const moneda = 'USD'
   const onPagoRef = useRef(onPagoExitoso)
   onPagoRef.current = onPagoExitoso
+  const revGuidRef = useRef(null)
 
   useEffect(() => {
-    if (!clientId || !reserva?.rev_guid) return undefined
+    if (!clientId || !checkoutReserva?.at_guid) return undefined
     const el = document.getElementById('paypal-button-container')
     if (!el) return undefined
     let cancelled = false
@@ -168,15 +168,18 @@ function PantallaPago({
                 throw new Error('Completa los datos de facturación antes de pagar.')
               }
               setErrorPago('')
-              const body = {
-                rev_guid: reserva.rev_guid,
-              }
-              if (!estaAutenticado && reserva.rev_codigo) {
-                body.rev_codigo = reserva.rev_codigo
-              }
-              const resp = await reservasApi.crearOrdenPayPal(body)
-              const orderId = resp?.data?.paypal_order_id
+              const resp = await reservasApi.crearOrdenPayPal({
+                reserva: {
+                  at_guid: checkoutReserva.at_guid,
+                  hor_guid: checkoutReserva.hor_guid,
+                  lineas: checkoutReserva.lineas,
+                  origen_canal: checkoutReserva.origen_canal || 'web',
+                },
+              })
+              const data = resp?.data ?? resp
+              const orderId = data?.paypal_order_id
               if (!orderId) throw new Error('No se recibió orden de PayPal.')
+              revGuidRef.current = data?.rev_guid
               return orderId
             },
             onApprove: async (data) => {
@@ -187,13 +190,13 @@ function PantallaPago({
               }
               const f = formRef.current
               const payload = {
-                rev_guid: reserva.rev_guid,
+                rev_guid: revGuidRef.current,
                 paypal_order_id: data.orderID,
                 nombre_receptor: f.nombre_receptor.trim(),
                 correo_receptor: f.correo_receptor.trim(),
               }
-              if (!estaAutenticado && reserva.rev_codigo) {
-                payload.rev_codigo = reserva.rev_codigo
+              if (!revGuidRef.current) {
+                throw new Error('Sesión de pago incompleta. Vuelve a intentar con PayPal.')
               }
               if (f.apellido_receptor.trim()) payload.apellido_receptor = f.apellido_receptor.trim()
               if (f.telefono_receptor.trim()) payload.telefono_receptor = f.telefono_receptor.trim()
@@ -230,11 +233,11 @@ function PantallaPago({
       cancelled = true
       el.innerHTML = ''
     }
-  }, [clientId, reserva?.rev_guid, reserva?.rev_codigo, estaAutenticado, moneda])
+  }, [clientId, checkoutReserva?.at_guid, checkoutReserva?.hor_guid, moneda])
 
-  const revSubtotal = Number(reserva?.rev_subtotal ?? subtotal ?? 0)
-  const revIva = Number(reserva?.rev_valor_iva ?? iva ?? 0)
-  const revTotal = Number(reserva?.rev_total ?? total ?? 0)
+  const revSubtotal = Number(subtotal ?? 0)
+  const revIva = Number(iva ?? 0)
+  const revTotal = Number(total ?? 0)
 
   return (
     <section className="page-section">
@@ -242,23 +245,19 @@ function PantallaPago({
         <div className="check-icon">💳</div>
         <h1>Pago con PayPal</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-          Completa los datos de facturación y usa el botón de PayPal. El cargo se confirma en el servidor; no ingreses datos de tarjeta en esta web.
+          Completa los datos de facturación y usa el botón de PayPal. La reserva y los cupos se confirman solo cuando el pago se complete correctamente.
         </p>
 
-        <div className="confirmacion-row">
-          <span>Código de reserva</span>
-          <span style={{ fontFamily: 'monospace' }}>{reserva?.rev_codigo || '—'}</span>
-        </div>
-        {reserva?.atraccion_nombre && (
+        {resumen?.atraccion_nombre && (
           <div className="confirmacion-row">
             <span>Atracción</span>
-            <span>{reserva.atraccion_nombre}</span>
+            <span>{resumen.atraccion_nombre}</span>
           </div>
         )}
-        {reserva?.hor_fecha && (
+        {resumen?.hor_fecha && (
           <div className="confirmacion-row">
             <span>Fecha</span>
-            <span>{reserva.hor_fecha}</span>
+            <span>{resumen.hor_fecha}</span>
           </div>
         )}
         <div className="confirmacion-row">
@@ -384,7 +383,6 @@ function FormularioDatosCliente({
   valoresIniciales,
   cargandoPerfil,
   errorPerfil,
-  creando,
 }) {
   const [form, setForm] = useState({
     tipo_identificacion: '',
@@ -534,12 +532,10 @@ function FormularioDatosCliente({
       </div>
 
       <div className="inline-form" style={{ marginTop: '1.25rem' }}>
-        <button className="btn" type="button" onClick={handleConfirmar} disabled={creando || cargandoPerfil}>
-          {creando ? (
-            <><span className="spinner spinner-sm" /> Procesando reserva...</>
-          ) : 'Confirmar y continuar al pago'}
+        <button className="btn" type="button" onClick={handleConfirmar} disabled={cargandoPerfil}>
+          Continuar al pago
         </button>
-        <button className="btn btn-outline" type="button" onClick={onCancelar} disabled={creando}>
+        <button className="btn btn-outline" type="button" onClick={onCancelar}>
           Atrás
         </button>
       </div>
@@ -574,7 +570,8 @@ function ReservaPage() {
   const [errorPago, setErrorPago] = useState('')
 
   const { detalle, cargarDetalle, cargando, error } = useAtracciones({})
-  const { crearReserva, error: errorReserva, cargando: creando } = useReserva()
+  const [checkoutReserva, setCheckoutReserva] = useState(null)
+  const [resumenPago, setResumenPago] = useState(null)
   const { perfil, cargando: cargandoPerfil, error: errorPerfil, cargarPerfil } = usePerfilCliente()
 
   const valoresFormularioPerfil = useMemo(
@@ -663,18 +660,26 @@ function ReservaPage() {
     setPaso('datos')
   }
 
-  const handleConfirmarDatos = async (datos) => {
+  const handleConfirmarDatos = (datos) => {
     setDatosCliente(datos)
-    try {
-      const reserva = await crearReserva(guid, horGuid, lineas, 'web', null)
-      setReservaLocal(reserva)
-      setPaso('pago')
-    } catch {
-      // errorReserva en el formulario de datos
-    }
+    setCheckoutReserva({
+      at_guid: guid,
+      hor_guid: horGuid,
+      lineas,
+      origen_canal: 'web',
+    })
+    setResumenPago({
+      atraccion_nombre: detalle?.nombre,
+      hor_fecha: horarioSeleccionado?.fecha,
+    })
+    setPaso('pago')
   }
 
   const handlePagoExitoso = useCallback((facturaData) => {
+    setReservaLocal({
+      rev_guid: facturaData?.rev_guid,
+      rev_codigo: facturaData?.rev_codigo,
+    })
     setFactura(facturaData)
     setPaso('confirmacion')
   }, [])
@@ -688,11 +693,11 @@ function ReservaPage() {
   if (paso === 'pago') {
     return (
       <PantallaPago
-        reserva={reservaLocal}
+        checkoutReserva={checkoutReserva}
+        resumen={resumenPago}
         subtotal={subtotal}
         iva={iva}
         total={total}
-        estaAutenticado={estaAutenticado}
         onPagoExitoso={handlePagoExitoso}
         errorPago={errorPago}
         setErrorPago={setErrorPago}
@@ -719,11 +724,9 @@ function ReservaPage() {
           valoresIniciales={valoresFormularioPerfil}
           cargandoPerfil={cargandoPerfil}
           errorPerfil={errorPerfil}
-          creando={creando}
           onConfirmar={handleConfirmarDatos}
           onCancelar={() => setPaso('formulario')}
         />
-        <ErrorMessage mensaje={errorReserva} />
       </section>
     )
   }
@@ -840,16 +843,11 @@ function ReservaPage() {
                 <p className="total"><span>Total</span><span>${total.toFixed(2)}</span></p>
               </div>
 
-              <ErrorMessage mensaje={errorReserva} />
-
               <button
                 type="submit"
                 className="btn btn-full"
-                disabled={creando}
               >
-                {creando ? (
-                  <><span className="spinner spinner-sm" /> Procesando reserva...</>
-                ) : 'Confirmar reserva'}
+                Continuar con datos personales
               </button>
             </form>
           )}
