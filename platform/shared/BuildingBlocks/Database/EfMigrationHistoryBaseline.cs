@@ -28,6 +28,7 @@ public static class EfMigrationHistoryBaseline
         ValidateIdentifier(markerSchema);
         ValidateIdentifier(markerTable);
 
+#pragma warning disable EF1002 // historySchema validado con ValidateIdentifier
         await db.Database.ExecuteSqlRawAsync(
             $"""
             CREATE SCHEMA IF NOT EXISTS "{historySchema}";
@@ -48,6 +49,7 @@ public static class EfMigrationHistoryBaseline
             ON CONFLICT ("MigrationId") DO NOTHING;
             """,
             cancellationToken);
+#pragma warning restore EF1002
 
         foreach (var migrationId in migrationIds)
         {

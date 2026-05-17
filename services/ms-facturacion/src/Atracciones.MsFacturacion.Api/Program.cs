@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Atracciones.BuildingBlocks.Database;
-using Atracciones.MsFacturacion.Api.Configuration;
 using Atracciones.MsFacturacion.Api.Extensions;
 using Atracciones.MsFacturacion.Api.Grpc;
 using Atracciones.MsFacturacion.Api.Middleware;

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Atracciones.BuildingBlocks.Database;
-using Atracciones.MsOrquestador.Api.Configuration;
 using Atracciones.MsOrquestador.Api.Extensions;
 using Atracciones.MsOrquestador.Api.Middleware;
 using Atracciones.MsOrquestador.Business;

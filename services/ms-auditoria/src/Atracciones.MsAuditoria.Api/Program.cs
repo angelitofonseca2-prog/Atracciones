@@ -1,5 +1,4 @@
 using Atracciones.BuildingBlocks.Database;
-using Atracciones.MsAuditoria.Api.Configuration;
 using Atracciones.MsAuditoria.Api.Grpc;
 using Atracciones.MsAuditoria.DataAccess;
 using Atracciones.MsAuditoria.DataAccess.Context;

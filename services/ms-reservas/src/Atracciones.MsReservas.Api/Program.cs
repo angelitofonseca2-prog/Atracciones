@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Atracciones.BuildingBlocks.Database;
-using Atracciones.MsReservas.Api.Configuration;
 using Atracciones.MsReservas.Api.Extensions;
 using Atracciones.MsReservas.Api.Grpc;
 using Atracciones.MsReservas.Api.Middleware;
@@ -11,8 +10,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-DatabaseUrlMapper.Apply("ConnectionStrings__VentasDb");
-DatabaseUrlMapper.Apply("ConnectionStrings__CrmDb");
+DatabaseUrlMapper.ApplyToAll(
+    "ConnectionStrings__VentasDb",
+    "ConnectionStrings__CrmDb");
 
 var builder = WebApplication.CreateBuilder(args);
 

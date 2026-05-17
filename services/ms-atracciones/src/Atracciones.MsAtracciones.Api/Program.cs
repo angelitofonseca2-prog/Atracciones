@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Atracciones.BuildingBlocks.Database;
-using Atracciones.MsAtracciones.Api.Configuration;
 using Atracciones.MsAtracciones.Api.Extensions;
 using Atracciones.MsAtracciones.Api.Grpc;
 using Atracciones.MsAtracciones.Api.Middleware;
@@ -11,8 +10,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-DatabaseUrlMapper.Apply("ConnectionStrings__InventarioDb");
-DatabaseUrlMapper.Apply("ConnectionStrings__CatalogosDb");
+DatabaseUrlMapper.ApplyToAll(
+    "ConnectionStrings__InventarioDb",
+    "ConnectionStrings__CatalogosDb");
 
 var builder = WebApplication.CreateBuilder(args);
 

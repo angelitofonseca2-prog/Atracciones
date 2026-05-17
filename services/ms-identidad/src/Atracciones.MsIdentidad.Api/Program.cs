@@ -1,5 +1,4 @@
 using Atracciones.BuildingBlocks.Database;
-using Atracciones.MsIdentidad.Api.Configuration;
 using Atracciones.MsIdentidad.Api.Extensions;
 using Atracciones.MsIdentidad.Api.Grpc;
 using Atracciones.MsIdentidad.Api.Middleware;
