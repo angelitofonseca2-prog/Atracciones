@@ -33,6 +33,7 @@ public sealed class GrpcChannelHolder : IDisposable
         {
             EnableMultipleHttp2Connections = true,
         };
+
         return GrpcChannel.ForAddress(url, new GrpcChannelOptions
         {
             HttpHandler = handler,

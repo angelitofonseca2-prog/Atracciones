@@ -3,8 +3,10 @@ using Atracciones.MsOrquestador.Api.Configuration;
 using Atracciones.MsOrquestador.Api.Extensions;
 using Atracciones.MsOrquestador.Api.Middleware;
 using Atracciones.MsOrquestador.Business;
+using Atracciones.MsOrquestador.Business.Options;
 using Atracciones.MsOrquestador.DataAccess;
 using Atracciones.MsOrquestador.DataAccess.Context;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -58,6 +60,12 @@ app.MapGet("/health", () => Results.Json(new { status = "ok" }));
 
 app.Lifetime.ApplicationStarted.Register(() =>
 {
+    var grpcLog = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("GrpcClients");
+    var grpc = app.Services.GetRequiredService<IOptions<GrpcClientsOptions>>().Value;
+    grpcLog.LogInformation(
+        "Destinos gRPC: Identidad={Identidad}, Clientes={Clientes}, Reservas={Reservas}, Atracciones={Atracciones}",
+        grpc.Identidad, grpc.Clientes, grpc.Reservas, grpc.Atracciones);
+
     _ = Task.Run(async () =>
     {
         try

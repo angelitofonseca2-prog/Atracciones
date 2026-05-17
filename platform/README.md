@@ -71,7 +71,7 @@ Configura estas variables en la pestaña **Variables** de cada servicio:
 | `services/ms-atracciones` | `/atracciones_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl` |
 | `services/ms-reservas` | `/reservas_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl`, `ClientesMirror__MonolithApiKey` |
 | `services/ms-facturacion` | `/facturacion_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl` |
-| `services/ms-orquestador` | `/orquestador_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl`, `GrpcClients__Identidad`, `GrpcClients__Atracciones`, `GrpcClients__Reservas`, `GrpcClients__Facturacion`, `GrpcClients__Auditoria`, `PayPal__ClientId`, `PayPal__ClientSecret`, `PayPal__WebhookId` |
+| `services/ms-orquestador` | `/orquestador_db` | `Jwt__Issuer`, `Jwt__Audience`, `Jwt__JwksUrl`, `GrpcClients__Identidad`, `GrpcClients__IdentidadHttp`, `GrpcClients__Clientes`, `GrpcClients__Atracciones`, `GrpcClients__Reservas`, `GrpcClients__Facturacion`, `GrpcClients__Auditoria`, `PayPal__ClientId`, `PayPal__ClientSecret`, `PayPal__WebhookId` |
 | `services/ms-auditoria` | `/audit_db` | — |
 
 **Valores de ejemplo para los JWT (usar los mismos en todos los servicios):**
@@ -84,15 +84,24 @@ Jwt__JwksUrl=https://<dominio-publico-ms-identidad>/.well-known/jwks.json
 **Nota sobre `Jwt__RsaPrivateKeyPem` en ms-identidad:**
 El contenido del archivo `platform/secrets/dev-rsa-private.pem` (generado localmente) debe pegarse como valor de esta variable en Railway (incluyendo las líneas `-----BEGIN RSA PRIVATE KEY-----` y `-----END RSA PRIVATE KEY-----`). Sin esto, cada redeploy genera una clave distinta y los tokens existentes se invalidan.
 
-**Nota sobre `GrpcClients__*` en ms-orquestador:**
-Railway expone un único puerto HTTP por servicio. Usar el dominio público de cada microservicio con puerto 443 (Railway maneja TLS automáticamente). Ejemplo:
+**Nota sobre `GrpcClients__*` en ms-orquestador (gRPC = red privada, no HTTPS público):**
+
+El borde público de Railway (`https://*.up.railway.app`) habla **HTTP/1.1** y provoca `HTTP_1_1_REQUIRED` en llamadas gRPC. Usar **Private Networking** (`http://<servicio>.railway.internal:8080`) o referencias `${{ms-identidad.RAILWAY_PRIVATE_DOMAIN}}` con puerto **8080**.
+
+Tras la fusión CRM+ventas, **`GrpcClients__Clientes` y `GrpcClients__Reservas` deben ser la misma URL** (host de `ms-reservas`).
+
+Ejemplo (sustituir por los nombres de servicio que muestra Railway en *Settings → Networking*):
 ```
-GrpcClients__Identidad=https://<dominio-ms-identidad>
-GrpcClients__Atracciones=https://<dominio-ms-atracciones>
-GrpcClients__Reservas=https://<dominio-ms-reservas>
-GrpcClients__Facturacion=https://<dominio-ms-facturacion>
-GrpcClients__Auditoria=https://<dominio-ms-auditoria>
+GrpcClients__Identidad=http://servicesms-identidad.railway.internal:8080
+GrpcClients__IdentidadHttp=http://servicesms-identidad.railway.internal:8080
+GrpcClients__Clientes=http://servicesms-reservas.railway.internal:8080
+GrpcClients__Reservas=http://servicesms-reservas.railway.internal:8080
+GrpcClients__Atracciones=http://servicesms-atracciones.railway.internal:8080
+GrpcClients__Facturacion=http://servicesms-facturacion.railway.internal:8080
+GrpcClients__Auditoria=http://servicesms-auditoria.railway.internal:8080
 ```
+
+Si por error quedaron URLs `https://…-production….up.railway.app`, el orquestador las reescribe a `*.railway.internal:8080` al arrancar (convención `-production` en el hostname público).
 
 ### Root Directory y Dockerfile path
 
