@@ -15,6 +15,7 @@ import {
   mensajeNombre,
 } from '../../utils/validaciones'
 import { useAtracciones } from '../hooks/useAtracciones'
+import { mapPerfilAFormulario, mapPerfilAPago, usePerfilCliente } from '../hooks/usePerfilCliente'
 import { useReserva } from '../hooks/useReserva'
 
 const TIPOS_IDENTIFICACION = ['CEDULA', 'PASAPORTE', 'RUC', 'OTRO']
@@ -100,7 +101,17 @@ function ConfirmacionConFactura({ reserva, factura }) {
 }
 
 // ─── Pago con PayPal (orden y captura en servidor) ───────────────────────────
-function PantallaPago({ reserva, subtotal, iva, total, estaAutenticado, onPagoExitoso, errorPago, setErrorPago }) {
+function PantallaPago({
+  reserva,
+  subtotal,
+  iva,
+  total,
+  estaAutenticado,
+  onPagoExitoso,
+  errorPago,
+  setErrorPago,
+  datosFacturacionIniciales,
+}) {
   const [form, setForm] = useState({
     nombre_receptor: '',
     apellido_receptor: '',
@@ -108,6 +119,12 @@ function PantallaPago({ reserva, subtotal, iva, total, estaAutenticado, onPagoEx
     telefono_receptor: '',
     observacion: '',
   })
+
+  useEffect(() => {
+    if (datosFacturacionIniciales) {
+      setForm((prev) => ({ ...prev, ...datosFacturacionIniciales }))
+    }
+  }, [datosFacturacionIniciales])
   const [errores, setErrores] = useState({})
   const [procesandoCaptura, setProcesandoCaptura] = useState(false)
   const formRef = useRef(form)
@@ -341,27 +358,34 @@ function PantallaPago({ reserva, subtotal, iva, total, estaAutenticado, onPagoEx
 }
 
 // ─── Pantalla de elección auth / invitado ─────────────────────────────────────
-function PantallaEleccion({ onIniciarSesion, onContinuarComoInvitado }) {
+function PantallaEleccion({ onRegistrarse, onIniciarSesion }) {
   return (
     <div className="auth-card fade-in" style={{ textAlign: 'center' }}>
-      <h2>¿Cómo deseas continuar?</h2>
+      <h2>Cuenta necesaria para reservar</h2>
       <p className="text-muted" style={{ margin: '0.75rem 0 1.5rem' }}>
-        Puedes iniciar sesión con tu cuenta o reservar como invitado sin registrarte.
+        Crea una cuenta o inicia sesión. Al volver, tus datos personales se completarán solos.
       </p>
       <div className="inline-form" style={{ justifyContent: 'center', flexDirection: 'column', gap: '0.75rem' }}>
-        <button className="btn btn-full" type="button" onClick={onIniciarSesion}>
-          Iniciar sesión
+        <button className="btn btn-full" type="button" onClick={onRegistrarse}>
+          Crear cuenta y continuar
         </button>
-        <button className="btn btn-outline btn-full" type="button" onClick={onContinuarComoInvitado}>
-          Continuar sin cuenta / Reservar como invitado
+        <button className="btn btn-outline btn-full" type="button" onClick={onIniciarSesion}>
+          Ya tengo cuenta — Iniciar sesión
         </button>
       </div>
     </div>
   )
 }
 
-// ─── Formulario de datos de invitado ─────────────────────────────────────────
-function FormularioInvitado({ onConfirmar, onCancelar }) {
+// ─── Datos personales (perfil autocompletado si hay sesión) ───────────────────
+function FormularioDatosCliente({
+  onConfirmar,
+  onCancelar,
+  valoresIniciales,
+  cargandoPerfil,
+  errorPerfil,
+  creando,
+}) {
   const [form, setForm] = useState({
     tipo_identificacion: '',
     numero_identificacion: '',
@@ -371,6 +395,19 @@ function FormularioInvitado({ onConfirmar, onCancelar }) {
     telefono: '',
   })
   const [errores, setErrores] = useState({})
+
+  useEffect(() => {
+    if (!valoresIniciales) return
+    setForm((prev) => ({
+      ...prev,
+      tipo_identificacion: valoresIniciales.tipo_identificacion ?? prev.tipo_identificacion,
+      numero_identificacion: valoresIniciales.numero_identificacion ?? prev.numero_identificacion,
+      nombres: valoresIniciales.nombres ?? prev.nombres,
+      apellidos: valoresIniciales.apellidos ?? prev.apellidos,
+      correo: valoresIniciales.correo ?? prev.correo,
+      telefono: valoresIniciales.telefono ?? prev.telefono,
+    }))
+  }, [valoresIniciales])
 
   const set = (campo) => (e) => {
     setForm((p) => ({ ...p, [campo]: e.target.value }))
@@ -413,10 +450,12 @@ function FormularioInvitado({ onConfirmar, onCancelar }) {
 
   return (
     <div className="auth-card fade-in">
-      <h2>Datos del cliente</h2>
+      <h2>Datos personales</h2>
       <p className="text-muted" style={{ marginBottom: '1.25rem' }}>
-        Completa tus datos para continuar con la reserva.
+        Revisa tus datos. Si iniciaste sesión, se cargan desde tu perfil.
       </p>
+      {cargandoPerfil && <Spinner message="Cargando tu perfil..." />}
+      <ErrorMessage mensaje={errorPerfil} />
       <div className="form-grid">
         <div className="form-group">
           <label htmlFor="inv-tipo">Tipo de identificación *</label>
@@ -495,10 +534,12 @@ function FormularioInvitado({ onConfirmar, onCancelar }) {
       </div>
 
       <div className="inline-form" style={{ marginTop: '1.25rem' }}>
-        <button className="btn" type="button" onClick={handleConfirmar}>
-          Continuar con la reserva
+        <button className="btn" type="button" onClick={handleConfirmar} disabled={creando || cargandoPerfil}>
+          {creando ? (
+            <><span className="spinner spinner-sm" /> Procesando reserva...</>
+          ) : 'Confirmar y continuar al pago'}
         </button>
-        <button className="btn btn-outline" type="button" onClick={onCancelar}>
+        <button className="btn btn-outline" type="button" onClick={onCancelar} disabled={creando}>
           Atrás
         </button>
       </div>
@@ -513,9 +554,9 @@ function ReservaPage() {
   const location = useLocation()
   const { estaAutenticado } = useAuthContext()
 
-  // cargando | eleccion | invitado | formulario | pago | confirmacion
+  // cargando | eleccion | formulario | datos | pago | confirmacion
   const [paso, setPaso] = useState('cargando')
-  const [clienteInvitado, setClienteInvitado] = useState(null)
+  const [datosCliente, setDatosCliente] = useState(null)
   const [horGuid, setHorGuid] = useState('')
   const [cantidades, setCantidades] = useState({})
   const [intentoEnvio, setIntentoEnvio] = useState(false)
@@ -534,12 +575,39 @@ function ReservaPage() {
 
   const { detalle, cargarDetalle, cargando, error } = useAtracciones({})
   const { crearReserva, error: errorReserva, cargando: creando } = useReserva()
+  const { perfil, cargando: cargandoPerfil, error: errorPerfil, cargarPerfil } = usePerfilCliente()
+
+  const valoresFormularioPerfil = useMemo(
+    () => mapPerfilAFormulario(perfil),
+    [perfil],
+  )
+
+  const datosFacturacionIniciales = useMemo(
+    () => (datosCliente ? mapPerfilAPago(datosCliente) : mapPerfilAPago(perfil)),
+    [datosCliente, perfil],
+  )
 
   useEffect(() => {
     cargarDetalle(guid)
-      .then(() => setPaso(estaAutenticado ? 'formulario' : 'eleccion'))
-      .catch(() => setPaso(estaAutenticado ? 'formulario' : 'eleccion'))
+      .then(() => {
+        if (estaAutenticado) setPaso('formulario')
+        else navigate('/registro', { state: { from: location } })
+      })
+      .catch(() => {
+        if (estaAutenticado) setPaso('formulario')
+        else navigate('/registro', { state: { from: location } })
+      })
   }, [guid]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (estaAutenticado && paso === 'eleccion') setPaso('formulario')
+  }, [estaAutenticado, paso])
+
+  useEffect(() => {
+    if (paso === 'datos' && estaAutenticado) {
+      cargarPerfil().catch(() => {})
+    }
+  }, [paso, estaAutenticado, cargarPerfil])
 
   useEffect(() => {
     if (!guid) return
@@ -576,29 +644,33 @@ function ReservaPage() {
   const sinTickets = lineas.length === 0
   const sinHorario = !horGuid
 
+  const handleRegistrarse = () => {
+    navigate('/registro', { state: { from: location } })
+  }
+
   const handleIniciarSesion = () => {
     navigate('/login', { state: { from: location } })
   }
 
-  const handleContinuarComoInvitado = () => {
-    setPaso('invitado')
-  }
-
-  const handleDatosInvitado = (datos) => {
-    setClienteInvitado(datos)
-    setPaso('formulario')
-  }
-
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault()
     setIntentoEnvio(true)
     if (sinHorario || sinTickets) return
+    if (!estaAutenticado) {
+      navigate('/registro', { state: { from: location } })
+      return
+    }
+    setPaso('datos')
+  }
+
+  const handleConfirmarDatos = async (datos) => {
+    setDatosCliente(datos)
     try {
-      const reserva = await crearReserva(guid, horGuid, lineas, 'web', clienteInvitado)
+      const reserva = await crearReserva(guid, horGuid, lineas, 'web', null)
       setReservaLocal(reserva)
       setPaso('pago')
     } catch {
-      // errorReserva ya se gestiona en el hook y se muestra en el formulario
+      // errorReserva en el formulario de datos
     }
   }
 
@@ -624,7 +696,35 @@ function ReservaPage() {
         onPagoExitoso={handlePagoExitoso}
         errorPago={errorPago}
         setErrorPago={setErrorPago}
+        datosFacturacionIniciales={datosFacturacionIniciales}
       />
+    )
+  }
+
+  if (paso === 'datos') {
+    return (
+      <section className="page-section">
+        <div style={{ marginBottom: '1.5rem' }}>
+          <button
+            type="button"
+            className="text-muted text-sm"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            onClick={() => setPaso('formulario')}
+          >
+            ← Volver a entradas
+          </button>
+          <h1 style={{ marginTop: '0.5rem' }}>Reservar: {detalle?.nombre}</h1>
+        </div>
+        <FormularioDatosCliente
+          valoresIniciales={valoresFormularioPerfil}
+          cargandoPerfil={cargandoPerfil}
+          errorPerfil={errorPerfil}
+          creando={creando}
+          onConfirmar={handleConfirmarDatos}
+          onCancelar={() => setPaso('formulario')}
+        />
+        <ErrorMessage mensaje={errorReserva} />
+      </section>
     )
   }
 
@@ -641,34 +741,13 @@ function ReservaPage() {
 
       {paso === 'eleccion' && (
         <PantallaEleccion
+          onRegistrarse={handleRegistrarse}
           onIniciarSesion={handleIniciarSesion}
-          onContinuarComoInvitado={handleContinuarComoInvitado}
-        />
-      )}
-
-      {paso === 'invitado' && (
-        <FormularioInvitado
-          onConfirmar={handleDatosInvitado}
-          onCancelar={() => setPaso('eleccion')}
         />
       )}
 
       {paso === 'formulario' && (
         <>
-          {clienteInvitado && (
-            <div className="info-message" style={{ marginBottom: '1rem' }}>
-              Reservando como invitado: <strong>{clienteInvitado.correo}</strong>.{' '}
-              <button
-                type="button"
-                className="text-sm"
-                style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', textDecoration: 'underline' }}
-                onClick={() => setPaso('invitado')}
-              >
-                Cambiar datos
-              </button>
-            </div>
-          )}
-
           {sinHorarios && (
             <div className="info-message">
               No hay horarios disponibles en los próximos 7 días. Vuelve pronto.

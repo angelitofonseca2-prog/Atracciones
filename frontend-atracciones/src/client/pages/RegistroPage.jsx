@@ -42,7 +42,7 @@ function RegistroPage() {
   const [cargando, setCargando] = useState(false)
   const [errorGlobal, setErrorGlobal] = useState('')
 
-  if (estaAutenticado) return <Navigate to="/atracciones" replace />
+  if (estaAutenticado) return <Navigate to={destino} replace />
 
   const set = (campo) => (e) => {
     setForm((prev) => ({ ...prev, [campo]: e.target.value }))
@@ -169,7 +169,10 @@ function RegistroPage() {
         </form>
 
         <p className="auth-footer">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+          ¿Ya tienes cuenta?{' '}
+          <Link to="/login" state={location.state?.from ? { from: location.state.from } : undefined}>
+            Inicia sesión
+          </Link>
         </p>
       </div>
     </section>
