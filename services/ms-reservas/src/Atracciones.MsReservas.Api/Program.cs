@@ -15,20 +15,8 @@ DatabaseUrlMapper.Apply("ConnectionStrings__CrmDb");
 
 var builder = WebApplication.CreateBuilder(args);
 
-var grpcPort = builder.Configuration.GetValue<int?>("GrpcPort");
-if (grpcPort.HasValue)
-{
-    builder.WebHost.ConfigureKestrel(kestrel =>
-    {
-        kestrel.ListenAnyIP(8080, o => o.Protocols = HttpProtocols.Http1);
-        kestrel.ListenAnyIP(grpcPort.Value, o => o.Protocols = HttpProtocols.Http2);
-    });
-}
-else
-{
-    builder.WebHost.ConfigureKestrel(o =>
-        o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
-}
+builder.WebHost.ConfigureKestrel(o =>
+    o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
 
 builder.Services.Configure<ClientesMirrorOptions>(builder.Configuration.GetSection(ClientesMirrorOptions.SectionName));
 

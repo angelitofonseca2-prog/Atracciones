@@ -16,7 +16,18 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddOrquestadorBusiness(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<GrpcClientsOptions>(configuration.GetSection(GrpcClientsOptions.SectionName));
+        services.AddOptions<GrpcClientsOptions>()
+            .BindConfiguration(GrpcClientsOptions.SectionName)
+            .PostConfigure(o =>
+            {
+                o.Identidad = GrpcBaseUrlNormalizer.Normalize(o.Identidad);
+                o.IdentidadHttp = GrpcBaseUrlNormalizer.Normalize(o.IdentidadHttp);
+                o.Clientes = GrpcBaseUrlNormalizer.Normalize(o.Clientes);
+                o.Atracciones = GrpcBaseUrlNormalizer.Normalize(o.Atracciones);
+                o.Reservas = GrpcBaseUrlNormalizer.Normalize(o.Reservas);
+                o.Facturacion = GrpcBaseUrlNormalizer.Normalize(o.Facturacion);
+                o.Auditoria = GrpcBaseUrlNormalizer.Normalize(o.Auditoria);
+            });
         services.AddSingleton<GrpcChannelHolder>();
 
         services.AddSingleton(sp =>

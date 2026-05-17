@@ -1,3 +1,4 @@
+using System.Net.Http;
 using Atracciones.MsOrquestador.Business.Options;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Options;
@@ -17,12 +18,26 @@ public sealed class GrpcChannelHolder : IDisposable
     public GrpcChannelHolder(IOptions<GrpcClientsOptions> options)
     {
         var o = options.Value;
-        Identidad = GrpcChannel.ForAddress(o.Identidad.TrimEnd('/'));
-        Clientes = GrpcChannel.ForAddress(o.Clientes.TrimEnd('/'));
-        Atracciones = GrpcChannel.ForAddress(o.Atracciones.TrimEnd('/'));
-        Reservas = GrpcChannel.ForAddress(o.Reservas.TrimEnd('/'));
-        Facturacion = GrpcChannel.ForAddress(o.Facturacion.TrimEnd('/'));
-        Auditoria = GrpcChannel.ForAddress(o.Auditoria.TrimEnd('/'));
+        Identidad = CreateChannel(o.Identidad);
+        Clientes = CreateChannel(o.Clientes);
+        Atracciones = CreateChannel(o.Atracciones);
+        Reservas = CreateChannel(o.Reservas);
+        Facturacion = CreateChannel(o.Facturacion);
+        Auditoria = CreateChannel(o.Auditoria);
+    }
+
+    private static GrpcChannel CreateChannel(string address)
+    {
+        var url = GrpcBaseUrlNormalizer.Normalize(address).TrimEnd('/');
+        var handler = new SocketsHttpHandler
+        {
+            EnableMultipleHttp2Connections = true,
+        };
+        return GrpcChannel.ForAddress(url, new GrpcChannelOptions
+        {
+            HttpHandler = handler,
+            DisposeHttpClient = true,
+        });
     }
 
     public void Dispose()

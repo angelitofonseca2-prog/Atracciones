@@ -17,22 +17,9 @@ DatabaseUrlMapper.Apply("ConnectionStrings__IdentidadDb");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// En Docker se define GrpcPort (9090) → dos puertos: 8080 HTTP/1 REST + 9090 HTTP/2 gRPC h2c.
-// En local se omite GrpcPort y se usa ASPNETCORE_URLS con Http1AndHttp2.
-var grpcPort = builder.Configuration.GetValue<int?>("GrpcPort");
-if (grpcPort.HasValue)
-{
-    builder.WebHost.ConfigureKestrel(kestrel =>
-    {
-        kestrel.ListenAnyIP(8080, o => o.Protocols = HttpProtocols.Http1);
-        kestrel.ListenAnyIP(grpcPort.Value, o => o.Protocols = HttpProtocols.Http2);
-    });
-}
-else
-{
-    builder.WebHost.ConfigureKestrel(o =>
-        o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
-}
+// REST y gRPC en el mismo listener (HTTP/1 + HTTP/2). Evita HTTP_1_1_REQUIRED si gRPC usa el puerto 8080 (Railway/orquestador).
+builder.WebHost.ConfigureKestrel(o =>
+    o.ConfigureEndpointDefaults(lo => lo.Protocols = HttpProtocols.Http1AndHttp2));
 
 builder.Services.Configure<JwtIssuerOptions>(builder.Configuration.GetSection(JwtIssuerOptions.SectionName));
 builder.Services.Configure<InternalSyncOptions>(builder.Configuration.GetSection(InternalSyncOptions.SectionName));
