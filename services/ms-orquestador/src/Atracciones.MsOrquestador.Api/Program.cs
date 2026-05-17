@@ -13,6 +13,10 @@ using OpenTelemetry.Trace;
 
 DatabaseUrlMapper.Apply("ConnectionStrings__OrquestadorDb");
 
+// Permite gRPC sobre HTTP/2 sin TLS (h2c) para Railway Private Networking.
+// Los canales gRPC apuntan a http://servicio.railway.internal:8080
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 var otlp = builder.Configuration["Otlp:Endpoint"];
