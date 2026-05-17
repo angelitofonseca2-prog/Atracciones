@@ -68,7 +68,7 @@ public sealed class RegistroOrquestacionAppService : IRegistroOrquestacionServic
 
         var usuGuid = usuReply.UsuGuid;
 
-        // Paso 2 — crear perfil de cliente en ms-clientes (gRPC); compensar si falla
+        // Paso 2 — crear perfil CRM vía ClienteService en ms-reservas (gRPC fusionado); compensar si falla
         try
         {
             await _cli.CrearClienteAsync(new CrearClienteRequest

@@ -24,7 +24,7 @@ public sealed class AuthOrquestadorController : ControllerBase
 
     /// <summary>
     /// POST /api/v1/auth/registro
-    /// SagaRegistroCliente: crea usuario en ms-identidad + perfil en ms-clientes,
+    /// SagaRegistroCliente: crea usuario en ms-identidad + perfil CRM (ClienteService en ms-reservas fusionado),
     /// compensa con EliminarUsuario si el alta de cliente falla, y devuelve el JWT.
     /// </summary>
     [HttpPost("registro")]
