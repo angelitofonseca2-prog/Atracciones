@@ -766,8 +766,7 @@ function ReservaPage() {
   return (
     <section className="page-section">
       <div style={{ marginBottom: '1.5rem' }}>
-        <Link to={`/atracciones/${guid}`} className="text-muted text-sm">← Volver al detalle</Link>
-        <h1 style={{ marginTop: '0.5rem' }}>Reservar: {detalle?.nombre}</h1>
+        <h1>Reservar: {detalle?.nombre}</h1>
       </div>
 
       <ErrorMessage mensaje={error} />

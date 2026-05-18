@@ -68,10 +68,51 @@ a {
   flex: 1;
 }
 
+.page-back-nav {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 0;
+}
+
+.btn-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  margin: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color var(--transition), background var(--transition);
+}
+
+.btn-volver:hover {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.btn-volver:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.btn-volver__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .page-section {
   max-width: 1140px;
   margin: 0 auto;
   padding: 2.5rem 1.25rem;
+}
+
+.app-main:has(.page-back-nav) .page-section {
+  padding-top: 1.25rem;
 }
 
 /* ── Header ── */
