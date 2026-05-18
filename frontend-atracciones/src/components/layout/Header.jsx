@@ -8,7 +8,7 @@ function Header() {
   const [menuAbierto, setMenuAbierto] = useState(false)
 
   const esAdministrador = usuario?.roles?.includes('ADMIN')
-  const esClienteAutenticado = estaAutenticado && !esAdministrador
+  const mostrarAreaCliente = estaAutenticado
 
   const handleLogout = () => {
     logout()
@@ -22,9 +22,9 @@ function Header() {
     <>
       <NavLink to="/" onClick={cerrarMenu}>Inicio</NavLink>
       <NavLink to="/atracciones" onClick={cerrarMenu}>Catálogo</NavLink>
-      {esClienteAutenticado && <NavLink to="/mis-reservas" onClick={cerrarMenu}>Mis Reservas</NavLink>}
-      {esClienteAutenticado && <NavLink to="/mis-facturas" onClick={cerrarMenu}>Mis Facturas</NavLink>}
-      {esClienteAutenticado && <NavLink to="/perfil" onClick={cerrarMenu}>Mi Perfil</NavLink>}
+      {mostrarAreaCliente && <NavLink to="/mis-reservas" onClick={cerrarMenu}>Mis Reservas</NavLink>}
+      {mostrarAreaCliente && <NavLink to="/mis-facturas" onClick={cerrarMenu}>Mis Facturas</NavLink>}
+      {mostrarAreaCliente && <NavLink to="/perfil" onClick={cerrarMenu}>Mi Perfil</NavLink>}
       {esAdministrador && <NavLink to="/admin" onClick={cerrarMenu}>Administración</NavLink>}
     </>
   )

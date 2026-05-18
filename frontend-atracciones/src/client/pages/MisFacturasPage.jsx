@@ -69,10 +69,12 @@ function MisFacturasPage() {
       setTotalPages(Math.max(1, Math.ceil(total / limit)))
     } catch (err) {
       const status = err?.response?.status
-      if (status === 401 || status === 403) {
-        setError('No tienes permisos para ver las facturas. Verifica que hayas iniciado sesión.')
+      if (status === 401) {
+        setError('Tu sesión expiró o no es válida. Cierra sesión e inicia de nuevo.')
+      } else if (status === 403) {
+        setError('No tienes permiso para consultar facturas con esta cuenta.')
       } else {
-        setError(err?.response?.data?.message || 'No se pudieron cargar las facturas.')
+        setError(err?.response?.data?.message || err?.response?.data?.error || 'No se pudieron cargar las facturas.')
       }
     } finally {
       setCargando(false)

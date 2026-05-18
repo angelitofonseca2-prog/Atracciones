@@ -21,7 +21,8 @@ public sealed class FacturasPublicController : ControllerBase
     {
         get
         {
-            var claim = User.FindFirstValue("usu_guid");
+            var claim = User.FindFirstValue("usu_guid")
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(claim, out var g))
                 throw new UnauthorizedAccessException("El token no tiene un usuario válido.");
             return g;

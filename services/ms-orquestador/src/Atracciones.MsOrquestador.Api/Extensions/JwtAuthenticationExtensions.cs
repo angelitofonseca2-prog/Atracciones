@@ -58,7 +58,11 @@ public static class JwtAuthenticationExtensions
             });
 
         services.AddAuthorization(options =>
-            options.AddPolicy("ClienteAutenticado", p => p.RequireRole("CLIENTE")));
+        {
+            options.AddPolicy("SoloAdmin", p => p.RequireRole("ADMIN"));
+            options.AddPolicy("ClienteAutenticado", p => p.RequireAuthenticatedUser());
+            options.AddPolicy("AdminOCliente", p => p.RequireRole("ADMIN", "CLIENTE"));
+        });
 
         return services;
     }

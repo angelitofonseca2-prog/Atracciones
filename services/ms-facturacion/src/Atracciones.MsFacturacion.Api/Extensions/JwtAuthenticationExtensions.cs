@@ -60,7 +60,9 @@ public static class JwtAuthenticationExtensions
         services.AddAuthorization(options =>
         {
             options.AddPolicy("SoloAdmin", p => p.RequireRole("ADMIN"));
-            options.AddPolicy("ClienteAutenticado", p => p.RequireRole("CLIENTE"));
+            // Cualquier JWT válido (CLIENTE, ADMIN o ambos); el filtro por cli_guid es por usu_guid del token.
+            options.AddPolicy("ClienteAutenticado", p => p.RequireAuthenticatedUser());
+            options.AddPolicy("AdminOCliente", p => p.RequireRole("ADMIN", "CLIENTE"));
         });
 
         return services;
