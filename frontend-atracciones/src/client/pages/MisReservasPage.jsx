@@ -4,7 +4,7 @@ import * as reservasApi from '../../api/reservasApi'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Spinner from '../../components/common/Spinner'
 import { emitirToast } from '../../components/common/Toast'
-import { estadoBadgeClass, estadoLabel } from '../../utils/estadoReserva'
+import { esReservaCancelable, estadoBadgeClass, estadoLabel } from '../../utils/estadoReserva'
 import { useMisReservas } from '../hooks/useMisReservas'
 
 // ──────────────────────────────────────────────
@@ -205,9 +205,7 @@ function MisReservasPage() {
                 </tr>
               )}
               {reservas.map((reserva) => {
-                // El backend usa 'A' (activa) como estado cancelable.
-                const estado = String(reserva.rev_estado ?? '').toUpperCase()
-                const activa = estado === 'A'
+                const puedeCancelar = esReservaCancelable(reserva.rev_estado)
                 const mostrandoResenia = reseniaPara?.rev_guid === reserva.rev_guid
                 const key = reserva.rev_guid ?? reserva.rev_codigo ?? Math.random()
 
@@ -233,7 +231,7 @@ function MisReservasPage() {
                       <td>${Number(reserva.rev_total ?? 0).toFixed(2)}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                          {activa && (
+                          {puedeCancelar && (
                             <button
                               className="btn btn-danger btn-sm"
                               onClick={() => setModalCancelar(reserva)}
@@ -241,7 +239,7 @@ function MisReservasPage() {
                               Cancelar
                             </button>
                           )}
-                          {activa && (
+                          {puedeCancelar && (
                             <button
                               className="btn btn-outline btn-sm"
                               onClick={() => setReseniaPara(mostrandoResenia ? null : reserva)}

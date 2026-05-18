@@ -75,7 +75,8 @@ public sealed class ReservaRepository : IReservaRepository
         page = Math.Max(1, page);
         limit = Math.Clamp(limit, 1, 50);
 
-        var q = _db.Reservas.AsNoTracking().Where(r => r.CliGuid == cliGuid);
+        var q = _db.Reservas.AsNoTracking()
+            .Where(r => r.CliGuid == cliGuid && (r.RevEstado == 'P' || r.RevEstado == 'A'));
         var total = await q.CountAsync(ct);
         var items = await q
             .OrderByDescending(r => r.RevFechaReservaUtc)

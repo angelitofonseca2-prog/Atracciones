@@ -23,11 +23,11 @@ export function normalizarAtraccion(raw) {
 export function normalizarReserva(raw) {
   if (!raw) return null
   return {
-    rev_guid: raw.rev_guid,
-    rev_codigo: raw.rev_codigo,
-    atraccion_nombre: raw.atraccion_nombre,
-    rev_fecha_reserva_utc: raw.rev_fecha_reserva_utc,
-    rev_estado: raw.rev_estado,
+    rev_guid: raw.rev_guid ?? raw.revGuid,
+    rev_codigo: raw.rev_codigo ?? raw.revCodigo,
+    atraccion_nombre: raw.atraccion_nombre ?? raw.atraccionNombre,
+    rev_fecha_reserva_utc: raw.rev_fecha_reserva_utc ?? raw.revFechaReservaUtc,
+    rev_estado: raw.rev_estado ?? raw.revEstado,
     rev_subtotal: raw.rev_subtotal ?? 0,
     rev_valor_iva: raw.rev_valor_iva ?? 0,
     rev_total: raw.rev_total ?? 0,

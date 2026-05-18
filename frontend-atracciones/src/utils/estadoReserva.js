@@ -1,18 +1,19 @@
-/** Traduce código de estado a etiqueta legible */
+/** Traduce código de estado a etiqueta legible (ventas: P, A, C, I). */
 export function estadoLabel(codigo) {
   const mapa = {
-    A: 'Activa',
+    A: 'Confirmada',
     P: 'Pendiente',
-    C: 'Confirmada',
+    C: 'Cancelada',
+    I: 'Inactiva',
     X: 'Cancelada',
     F: 'Finalizada',
-    // Variantes en texto completo (por si el backend devuelve texto)
-    ACTIVA: 'Activa',
+    ACTIVA: 'Confirmada',
     PENDIENTE: 'Pendiente',
     CONFIRMADA: 'Confirmada',
     CANCELADA: 'Cancelada',
+    INACTIVA: 'Inactiva',
     FINALIZADA: 'Finalizada',
-    ACTIVE: 'Activa',
+    ACTIVE: 'Confirmada',
     CANCELLED: 'Cancelada',
     COMPLETED: 'Finalizada',
   }
@@ -21,7 +22,22 @@ export function estadoLabel(codigo) {
 
 export function estadoBadgeClass(codigo) {
   const c = String(codigo).toUpperCase()
-  if (c === 'A' || c === 'ACTIVA' || c === 'ACTIVE' || c === 'CONFIRMADA' || c === 'C') return 'badge badge-green'
-  if (c === 'X' || c === 'CANCELADA' || c === 'CANCELLED') return 'badge badge-red'
+  if (c === 'A' || c === 'ACTIVA' || c === 'ACTIVE' || c === 'CONFIRMADA') return 'badge badge-green'
+  if (c === 'P' || c === 'PENDIENTE') return 'badge badge-blue'
+  if (c === 'C' || c === 'CANCELADA' || c === 'CANCELLED' || c === 'X' || c === 'I' || c === 'INACTIVA') {
+    return 'badge badge-red'
+  }
+  if (c === 'F' || c === 'FINALIZADA' || c === 'COMPLETED') return 'badge'
   return 'badge badge-blue'
+}
+
+/** Reservas visibles en "Mis reservas": pendiente de pago o confirmada. */
+export function esReservaActiva(codigo) {
+  const c = String(codigo).toUpperCase()
+  return c === 'P' || c === 'A'
+}
+
+/** El backend permite anular en P o A. */
+export function esReservaCancelable(codigo) {
+  return esReservaActiva(codigo)
 }

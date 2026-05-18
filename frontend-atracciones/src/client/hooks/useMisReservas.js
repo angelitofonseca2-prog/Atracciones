@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { listarMisReservas, obtenerReserva } from '../../api/reservasApi'
+import { esReservaActiva } from '../../utils/estadoReserva'
+import { normalizarReserva } from '../../utils/mappers'
 
 export function useMisReservas() {
   const [reservas, setReservas] = useState([])
@@ -13,7 +15,10 @@ export function useMisReservas() {
     setError('')
     try {
       const data = await listarMisReservas()
-      const lista = data?.data || (Array.isArray(data) ? data : [])
+      const crudas = data?.data || (Array.isArray(data) ? data : [])
+      const lista = crudas
+        .map(normalizarReserva)
+        .filter((r) => r && esReservaActiva(r.rev_estado))
       todasRef.current = lista
       setReservas(lista)
       return data
@@ -58,9 +63,14 @@ export function useMisReservas() {
     setError('')
     try {
       const data = await obtenerReserva(texto.trim())
-      const reserva = data?.data ?? data
-      setReservas(reserva ? [reserva] : [])
-      if (!reserva) setError('No se encontró ninguna reserva con ese código')
+      const reserva = normalizarReserva(data?.data ?? data)
+      const visible = reserva && esReservaActiva(reserva.rev_estado) ? [reserva] : []
+      setReservas(visible)
+      if (!visible.length) {
+        setError(reserva && !esReservaActiva(reserva.rev_estado)
+          ? 'Esa reserva ya fue cancelada y no aparece en el listado activo.'
+          : 'No se encontró ninguna reserva con ese código')
+      }
     } catch (err) {
       if (err?.response?.status === 404) {
         setError('No se encontró ninguna reserva con ese código')
