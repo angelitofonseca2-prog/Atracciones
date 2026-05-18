@@ -10,5 +10,10 @@ public interface IInventarioPublicAppService
     Task<FiltrosAtraccionResponse> ObtenerFiltrosAsync(CancellationToken ct = default);
     Task<IReadOnlyList<TicketDisponibleResponse>> ListarTicketsAsync(Guid atGuid, CancellationToken ct = default);
     Task<IReadOnlyList<HorarioProximoResponse>> ListarHorariosPorTicketAsync(Guid tckGuid, CancellationToken ct = default);
+    Task<IReadOnlyList<HorarioProximoResponse>> ListarHorariosAsync(Guid atGuid, bool soloDisponibles = false, CancellationToken ct = default);
     Task<IReadOnlyList<HorarioProximoResponse>> ListarHorariosDisponiblesAsync(Guid atGuid, CancellationToken ct = default);
+    Task<IReadOnlyList<TicketHorarioDisponibleResponse>> ListarTicketsPorHorarioAsync(
+        Guid atGuid,
+        Guid horGuid,
+        CancellationToken ct = default);
 }

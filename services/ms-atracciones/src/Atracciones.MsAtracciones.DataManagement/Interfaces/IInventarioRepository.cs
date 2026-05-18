@@ -10,6 +10,15 @@ public interface IInventarioRepository
     Task<IReadOnlyList<HorarioRow>> ListarHorariosDisponiblesPorAtraccionAsync(Guid atGuid, CancellationToken ct = default);
     Task<IReadOnlyList<HorarioProximoRow>> ListarHorariosPorTicketGuidAsync(Guid tckGuid, CancellationToken ct = default);
     Task<IReadOnlyList<HorarioProximoRow>> ListarHorariosPorAtraccionVentanaAsync(Guid atGuid, int diasAdelante, CancellationToken ct = default);
+    Task<IReadOnlyList<HorarioProximoRow>> ListarHorariosPorAtraccionPublicAsync(
+        Guid atGuid,
+        int diasAdelante,
+        bool soloDisponibles,
+        CancellationToken ct = default);
+    Task<HorarioTicketPublicoRow?> ObtenerHorarioConTicketPorAtraccionAsync(
+        Guid atGuid,
+        Guid horGuid,
+        CancellationToken ct = default);
 
     Task<IReadOnlyList<AtraccionFiltroComputationRow>> ListarActivasParaFiltrosAsync(int maxItems, CancellationToken ct = default);
 

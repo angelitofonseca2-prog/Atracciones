@@ -208,13 +208,56 @@ public sealed class InventarioPublicAppService : IInventarioPublicAppService
         return rows.Select(ToHorarioProximoResponse).ToList();
     }
 
-    public async Task<IReadOnlyList<HorarioProximoResponse>> ListarHorariosDisponiblesAsync(Guid atGuid, CancellationToken ct = default)
+    public Task<IReadOnlyList<HorarioProximoResponse>> ListarHorariosDisponiblesAsync(Guid atGuid, CancellationToken ct = default)
+        => ListarHorariosAsync(atGuid, soloDisponibles: true, ct);
+
+    public async Task<IReadOnlyList<HorarioProximoResponse>> ListarHorariosAsync(
+        Guid atGuid,
+        bool soloDisponibles = false,
+        CancellationToken ct = default)
     {
         _ = await _repo.ObtenerDetalleAsync(atGuid, ct)
             ?? throw new NotFoundException("Atracción", atGuid);
 
-        var rows = await _repo.ListarHorariosPorAtraccionVentanaAsync(atGuid, 365, ct);
-        return rows.Where(EsHorarioDisponible).Select(ToHorarioProximoResponse).ToList();
+        var rows = await _repo.ListarHorariosPorAtraccionPublicAsync(atGuid, 365, soloDisponibles, ct);
+        return rows.Select(ToHorarioProximoResponse).ToList();
+    }
+
+    public async Task<IReadOnlyList<TicketHorarioDisponibleResponse>> ListarTicketsPorHorarioAsync(
+        Guid atGuid,
+        Guid horGuid,
+        CancellationToken ct = default)
+    {
+        _ = await _repo.ObtenerDetalleAsync(atGuid, ct)
+            ?? throw new NotFoundException("Atracción", atGuid);
+
+        var row = await _repo.ObtenerHorarioConTicketPorAtraccionAsync(atGuid, horGuid, ct)
+            ?? throw new NotFoundException("Horario", horGuid);
+
+        var disponible = EsHorarioDisponible(new HorarioProximoRow(
+            row.HorGuid,
+            row.TckGuid,
+            row.HorFecha,
+            row.HorFechaFin,
+            row.HorHoraInicio,
+            row.HorHoraFin,
+            row.HorCuposDisponibles,
+            row.TckTitulo));
+
+        return
+        [
+            new TicketHorarioDisponibleResponse
+            {
+                HorGuid = row.HorGuid.ToString("D"),
+                TckGuid = row.TckGuid.ToString("D"),
+                Titulo = row.TckTitulo,
+                Tipo = row.TckTipoParticipante,
+                Precio = row.TckPrecio,
+                Moneda = "USD",
+                CuposDisponibles = row.HorCuposDisponibles,
+                Disponible = disponible,
+            },
+        ];
     }
 
     private async Task<List<TicketDisponibleResponse>> BuildTicketsDisponiblesAsync(Guid atGuid, CancellationToken ct)

@@ -7,7 +7,9 @@ Este documento formaliza el contrato de integración pública para Booking sobre
 - `GET /api/v1/atracciones`
 - `GET /api/v1/atracciones/{guid}`
 - `GET /api/v1/atracciones/{guid}/tickets`
-- `GET /api/v1/atracciones/{guid}/horarios-disponibles`
+- `GET /api/v1/atracciones/{guid}/horarios` (`?disponibles=true` para solo con cupo)
+- `GET /api/v1/atracciones/{guid}/horarios/{horarioId}/tickets`
+- `GET /api/v1/atracciones/{guid}/horarios-disponibles` (legacy; usar `horarios?disponibles=true`)
 - `GET /api/v1/atracciones/filtros`
 - `GET /api/v1/reservas` (Mis Reservas)
 - `POST /api/v1/reservas`

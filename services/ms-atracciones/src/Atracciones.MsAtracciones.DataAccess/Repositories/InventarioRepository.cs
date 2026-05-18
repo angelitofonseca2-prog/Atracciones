@@ -205,17 +205,61 @@ public sealed class InventarioRepository : IInventarioRepository
             .ToListAsync(ct);
     }
 
-    public async Task<IReadOnlyList<HorarioProximoRow>> ListarHorariosPorAtraccionVentanaAsync(Guid atGuid, int diasAdelante, CancellationToken ct = default)
+    public Task<IReadOnlyList<HorarioProximoRow>> ListarHorariosPorAtraccionVentanaAsync(Guid atGuid, int diasAdelante, CancellationToken ct = default)
+        => ListarHorariosPorAtraccionPublicAsync(atGuid, diasAdelante, soloDisponibles: true, ct);
+
+    public async Task<IReadOnlyList<HorarioProximoRow>> ListarHorariosPorAtraccionPublicAsync(
+        Guid atGuid,
+        int diasAdelante,
+        bool soloDisponibles,
+        CancellationToken ct = default)
     {
         var hoy = DateOnly.FromDateTime(DateTime.UtcNow);
         var limite = hoy.AddDays(Math.Max(1, diasAdelante));
-        return await _db.Horarios.AsNoTracking()
-            .Where(h => h.HorEstado == 'A' && h.HorCuposDisponibles > 0
+        var query = _db.Horarios.AsNoTracking()
+            .Where(h => h.HorEstado == 'A'
                         && h.HorFecha <= limite && (h.HorFechaFin ?? h.HorFecha) >= hoy
-                        && h.Ticket.AtGuid == atGuid && h.Ticket.TckEstado == 'A')
+                        && h.Ticket.AtGuid == atGuid && h.Ticket.TckEstado == 'A');
+
+        if (soloDisponibles)
+            query = query.Where(h => h.HorCuposDisponibles > 0);
+
+        return await query
             .OrderBy(h => h.HorFecha).ThenBy(h => h.HorHoraInicio)
-            .Select(h => new HorarioProximoRow(h.HorGuid, h.TckGuid, h.HorFecha, h.HorFechaFin, h.HorHoraInicio, h.HorHoraFin, h.HorCuposDisponibles, h.Ticket.TckTitulo))
+            .Select(h => new HorarioProximoRow(
+                h.HorGuid,
+                h.TckGuid,
+                h.HorFecha,
+                h.HorFechaFin,
+                h.HorHoraInicio,
+                h.HorHoraFin,
+                h.HorCuposDisponibles,
+                h.Ticket.TckTitulo))
             .ToListAsync(ct);
+    }
+
+    public async Task<HorarioTicketPublicoRow?> ObtenerHorarioConTicketPorAtraccionAsync(
+        Guid atGuid,
+        Guid horGuid,
+        CancellationToken ct = default)
+    {
+        return await _db.Horarios.AsNoTracking()
+            .Where(h => h.HorGuid == horGuid
+                        && h.HorEstado == 'A'
+                        && h.Ticket.AtGuid == atGuid
+                        && h.Ticket.TckEstado == 'A')
+            .Select(h => new HorarioTicketPublicoRow(
+                h.HorGuid,
+                h.TckGuid,
+                h.Ticket.TckTitulo,
+                h.Ticket.TckTipoParticipante,
+                h.Ticket.TckPrecio,
+                h.HorCuposDisponibles,
+                h.HorFecha,
+                h.HorFechaFin,
+                h.HorHoraInicio,
+                h.HorHoraFin))
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<IReadOnlyList<AtraccionFiltroComputationRow>> ListarActivasParaFiltrosAsync(int maxItems, CancellationToken ct = default)

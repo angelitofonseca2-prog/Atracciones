@@ -92,6 +92,19 @@ public sealed record HorarioProximoRow(
     int HorCuposDisponibles,
     string TicketTitulo = "");
 
+/// <summary>Horario activo de una atracción con datos del ticket asociado (API pública booking).</summary>
+public sealed record HorarioTicketPublicoRow(
+    Guid HorGuid,
+    Guid TckGuid,
+    string TckTitulo,
+    string TckTipoParticipante,
+    decimal TckPrecio,
+    int HorCuposDisponibles,
+    DateOnly HorFecha,
+    DateOnly? HorFechaFin,
+    TimeOnly HorHoraInicio,
+    TimeOnly? HorHoraFin);
+
 /// <summary>Fila mínima para calcular filtros (equivalente a cargar muchas atracciones en memoria).</summary>
 public sealed record AtraccionFiltroSeedRow(
     Guid AtGuid,

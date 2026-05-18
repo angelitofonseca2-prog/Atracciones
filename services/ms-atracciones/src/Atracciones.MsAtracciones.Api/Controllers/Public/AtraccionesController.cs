@@ -53,8 +53,27 @@ public sealed class AtraccionesController : ControllerBase
         return Ok(new ApiItemResponse<IReadOnlyList<TicketDisponibleResponse>>(tickets));
     }
 
+    [HttpGet("{guid:guid}/horarios/{horarioId:guid}/tickets")]
+    [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<TicketHorarioDisponibleResponse>>), 200)]
+    [ProducesResponseType(typeof(ApiErrorResponse), 404)]
+    public async Task<IActionResult> ListarTicketsPorHorario(Guid guid, Guid horarioId)
+    {
+        var tickets = await _service.ListarTicketsPorHorarioAsync(guid, horarioId);
+        return Ok(new ApiItemResponse<IReadOnlyList<TicketHorarioDisponibleResponse>>(tickets));
+    }
+
+    [HttpGet("{guid:guid}/horarios")]
+    [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<HorarioProximoResponse>>), 200)]
+    [ProducesResponseType(typeof(ApiErrorResponse), 404)]
+    public async Task<IActionResult> ListarHorarios(Guid guid, [FromQuery] bool disponibles = false)
+    {
+        var horarios = await _service.ListarHorariosAsync(guid, disponibles);
+        return Ok(new ApiItemResponse<IReadOnlyList<HorarioProximoResponse>>(horarios));
+    }
+
     [HttpGet("{guid:guid}/horarios-disponibles")]
     [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<HorarioProximoResponse>>), 200)]
+    [Obsolete("Use GET /atracciones/{guid}/horarios?disponibles=true")]
     public async Task<IActionResult> ListarHorariosDisponibles(Guid guid)
     {
         var horarios = await _service.ListarHorariosDisponiblesAsync(guid);
