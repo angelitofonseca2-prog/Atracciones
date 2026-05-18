@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import * as reseniasApi from '../../api/reseniasApi'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Spinner from '../../components/common/Spinner'
 import { useAuthContext } from '../../context/AuthContext'
@@ -21,79 +20,11 @@ function Estrellas({ rating }) {
   )
 }
 
-function FormReseniaDetalle({ atraccionGuid, onEnviada }) {
-  const [rating, setRating] = useState(5)
-  const [comentario, setComentario] = useState('')
-  const [cargando, setCargando] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleEnviar = async () => {
-    setCargando(true)
-    setError('')
-    try {
-      await reseniasApi.crearResenia({ at_guid: atraccionGuid, rating, comentario })
-      onEnviada()
-    } catch (err) {
-      if (err?.response?.status === 409) {
-        setError('Ya registraste una reseña para esta atracción.')
-      } else {
-        setError(err?.response?.data?.message || err?.response?.data?.details?.[0] || 'No se pudo enviar la reseña.')
-      }
-    } finally {
-      setCargando(false)
-    }
-  }
-
-  return (
-    <div className="reserva-card" style={{ marginTop: '1rem' }}>
-      <h4>Escribir reseña</h4>
-      <div className="inline-form">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button
-            key={n}
-            type="button"
-            onClick={() => setRating(n)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '1.5rem',
-              color: n <= rating ? '#f5c518' : 'rgba(255,255,255,0.3)',
-              padding: '0',
-            }}
-          >
-            ★
-          </button>
-        ))}
-        <span>{rating}/5</span>
-      </div>
-      <textarea
-        value={comentario}
-        onChange={(e) => setComentario(e.target.value)}
-        rows={3}
-        style={{ width: '100%', marginTop: '0.5rem' }}
-        placeholder="Comparte tu experiencia..."
-      />
-      <ErrorMessage mensaje={error} />
-      <button
-        className="btn"
-        onClick={handleEnviar}
-        disabled={cargando}
-        style={{ marginTop: '0.75rem' }}
-      >
-        {cargando ? 'Enviando...' : 'Publicar reseña'}
-      </button>
-    </div>
-  )
-}
-
 function DetallePage() {
   const { guid } = useParams()
   const navigate = useNavigate()
   const { estaAutenticado, usuario } = useAuthContext()
   const { detalle, cargarDetalle, cargando, error } = useAtracciones({})
-  const [mostrarFormResenia, setMostrarFormResenia] = useState(false)
-
   const esCliente = estaAutenticado && !usuario?.roles?.includes('ADMIN')
 
   useEffect(() => {
@@ -185,26 +116,9 @@ function DetallePage() {
               )}
 
               {esCliente && (
-                <>
-                  {mostrarFormResenia ? (
-                    <FormReseniaDetalle
-                      atraccionGuid={guid}
-                      onEnviada={() => {
-                        setMostrarFormResenia(false)
-                        cargarDetalle(guid).catch(() => {})
-                      }}
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      className="btn btn-outline"
-                      style={{ marginTop: '0.5rem' }}
-                      onClick={() => setMostrarFormResenia(true)}
-                    >
-                      Escribir reseña
-                    </button>
-                  )}
-                </>
+                <p className="text-muted text-sm" style={{ marginTop: '0.5rem' }}>
+                  Puedes dejar una reseña desde <strong>Mis reservas</strong> después de completar una compra confirmada.
+                </p>
               )}
 
               <button

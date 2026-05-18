@@ -23,6 +23,16 @@ public interface IReservaOrquestacionService
         string correlationId,
         CancellationToken ct = default);
 
+    /// <summary>Reserva cupo y persiste reserva en estado pendiente (P).</summary>
+    Task<ReservaResponseDto> CrearReservaPendienteAsync(
+        CrearReservaOrquestadorDto request,
+        Guid? usuGuid,
+        string? authorizationBearer,
+        string usuarioAccion,
+        string ip,
+        string correlationId,
+        CancellationToken ct = default);
+
     Task<ReservaResponseDto> CrearReservaAsync(
         CrearReservaOrquestadorDto request,
         Guid? usuGuid,

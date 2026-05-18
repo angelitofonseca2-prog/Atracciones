@@ -51,11 +51,22 @@ export const crearOrdenPayPal = async (body) => {
 }
 
 /**
- * POST /api/v1/pagos/paypal/orders/capture — captura y confirma reserva + factura.
+ * POST /api/v1/reservas/{guid}/pagos/confirmacion — confirma pago (PayPal o pendiente legacy).
  */
-export const capturarOrdenPayPal = async (body) => {
-  const response = await apiClient.post('/pagos/paypal/orders/capture', body, {
+export const confirmarPagoReserva = async (revGuid, body) => {
+  const response = await apiClient.post(`/reservas/${revGuid}/pagos/confirmacion`, body, {
     headers: { 'Idempotency-Key': nuevaIdempotencyKey() },
   })
   return response.data
+}
+
+/**
+ * @deprecated Use confirmarPagoReserva
+ */
+export const capturarOrdenPayPal = async (body) => {
+  const revGuid = body?.rev_guid
+  if (!revGuid) {
+    throw new Error('rev_guid es obligatorio para confirmar el pago.')
+  }
+  return confirmarPagoReserva(revGuid, body)
 }

@@ -23,11 +23,16 @@ public sealed class ReservasController : ControllerBase
     };
 
     private readonly IReservaOrquestacionService _orq;
+    private readonly IPayPalPagosService _pagos;
     private readonly IIdempotencyRepository _idem;
 
-    public ReservasController(IReservaOrquestacionService orq, IIdempotencyRepository idem)
+    public ReservasController(
+        IReservaOrquestacionService orq,
+        IPayPalPagosService pagos,
+        IIdempotencyRepository idem)
     {
         _orq = orq;
+        _pagos = pagos;
         _idem = idem;
     }
 
@@ -103,29 +108,74 @@ public sealed class ReservasController : ControllerBase
         };
 
         var data = await _orq.CrearReservaAsync(dto, UsuGuidOpcional, BearerToken, UsuarioAccion, IpActual, CorrelationId, ct);
-        var envelope = new ApiItemResponse<object>(data, 201, "Cotización lista. Complete el pago con PayPal para confirmar la reserva.");
+        var envelope = new ApiItemResponse<object>(data, 201, "Reserva pendiente creada. Confirme el pago para finalizar.");
+        await SaveIdempotentAsync(idemKey, route, hash, 201, envelope, ct);
+        return StatusCode(201, envelope);
+    }
+
+    [HttpPost("{guid:guid}/pagos/confirmacion")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmarPagoReserva(Guid guid, CancellationToken ct)
+    {
+        var raw = await ReadBodyRawAsync(ct);
+        var idemKey = RequireIdempotencyKey();
+        if (idemKey is null)
+            return BadRequestIdempotency();
+
+        var route = HttpContext.Request.Path.ToString();
+        var hash = Sha256Hex(raw);
+        var cached = await _idem.ObtenerRespuestaSiExisteAsync(idemKey, route, hash, ct);
+        if (cached is not null)
+            return ReplayIdempotent(cached);
+
+        var request = JsonSerializer.Deserialize<ConfirmarPagoApiRequest>(raw, JsonOpts)
+            ?? throw new JsonException("JSON inválido.");
+
+        var dto = new ConfirmarPagoOrquestadorDto
+        {
+            NombreReceptor = request.NombreReceptor,
+            ApellidoReceptor = request.ApellidoReceptor,
+            CorreoReceptor = request.CorreoReceptor,
+            TelefonoReceptor = request.TelefonoReceptor,
+            Observacion = request.Observacion,
+        };
+
+        FacturaStubResponseDto factura;
+        if (!string.IsNullOrWhiteSpace(request.PaypalOrderId))
+        {
+            factura = await _pagos.CapturarYCompletarReservaAsync(
+                guid,
+                null,
+                UsuGuidOpcional,
+                request.PaypalOrderId.Trim(),
+                dto,
+                UsuarioAccion,
+                IpActual,
+                CorrelationId,
+                ct);
+        }
+        else
+        {
+            factura = await _orq.CompletarPagoReservaYFacturaAsync(
+                guid,
+                dto,
+                UsuarioAccion,
+                IpActual,
+                CorrelationId,
+                compensarSiFallaFactura: true,
+                ct);
+        }
+
+        var envelope = new ApiItemResponse<object>(factura, 201, "Pago confirmado y factura emitida");
         await SaveIdempotentAsync(idemKey, route, hash, 201, envelope, ct);
         return StatusCode(201, envelope);
     }
 
     [HttpPost("{guid:guid}/confirmar-pago")]
     [AllowAnonymous]
-    public IActionResult ConfirmarPago(Guid guid)
-    {
-        _ = guid;
-        var body = new ApiErrorResponse
-        {
-            Status = 410,
-            Message = "Este flujo de pago fue retirado.",
-            Details = new List<string>
-            {
-                "Use PayPal: POST /api/v1/pagos/paypal/orders y POST /api/v1/pagos/paypal/orders/capture.",
-                "El pago solo puede confirmarse con captura verificada en servidor o webhook firmado por PayPal.",
-            },
-            Path = HttpContext.Request.Path.ToString(),
-        };
-        return StatusCode(410, body);
-    }
+    [Obsolete("Use POST /api/v1/reservas/{guid}/pagos/confirmacion")]
+    public Task<IActionResult> ConfirmarPagoLegacy(Guid guid, CancellationToken ct) =>
+        ConfirmarPagoReserva(guid, ct);
 
     [HttpGet]
     [Authorize(Policy = "ClienteAutenticado")]

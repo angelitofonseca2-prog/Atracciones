@@ -1,26 +1,18 @@
 import { apiClient } from './atraccionesApi'
 
 /**
- * GET /api/v1/resenias?atraccionGuid={guid}
- * Devuelve reseñas de una atracción (sin autenticación requerida).
+ * GET /api/v1/atracciones/{atGuid}/resenias
  */
-export const listarResenias = async (params = {}) => {
-  const response = await apiClient.get('/resenias', { params })
+export const listarResenias = async (atGuid, params = {}) => {
+  const response = await apiClient.get(`/atracciones/${atGuid}/resenias`, { params })
   return response.data
 }
 
-export const crearResenia = async (body) => {
-  // body: { rev_guid, rating, comentario }
-  const response = await apiClient.post('/resenias', body)
-  return response.data
-}
-
-export const editarResenia = async (guid, body) => {
-  const response = await apiClient.put(`/resenias/${guid}`, body)
-  return response.data
-}
-
-export const eliminarResenia = async (guid) => {
-  const response = await apiClient.delete(`/resenias/${guid}`)
+/**
+ * POST /api/v1/atracciones/{atGuid}/resenias
+ * body: { rev_guid, rating, comentario }
+ */
+export const crearResenia = async (atGuid, body) => {
+  const response = await apiClient.post(`/atracciones/${atGuid}/resenias`, body)
   return response.data
 }

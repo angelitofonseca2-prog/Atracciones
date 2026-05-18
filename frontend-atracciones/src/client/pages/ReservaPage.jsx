@@ -174,19 +174,22 @@ function PantallaPago({
                 throw new Error('Completa los datos de facturación antes de pagar.')
               }
               setErrorPago('')
-              const resp = await reservasApi.crearOrdenPayPal({
-                reserva: {
-                  at_guid: checkoutReserva.at_guid,
-                  hor_guid: checkoutReserva.hor_guid,
-                  lineas: checkoutReserva.lineas,
-                  origen_canal: checkoutReserva.origen_canal || 'web',
-                  fecha_visita: checkoutReserva.fecha_visita,
-                },
+              const reservaResp = await reservasApi.crearReserva({
+                at_guid: checkoutReserva.at_guid,
+                hor_guid: checkoutReserva.hor_guid,
+                lineas: checkoutReserva.lineas,
+                origen_canal: checkoutReserva.origen_canal || 'web',
+                fecha_visita: checkoutReserva.fecha_visita,
               })
-              const data = resp?.data ?? resp
-              const orderId = data?.paypal_order_id
+              const reservaData = reservaResp?.data ?? reservaResp
+              const revGuid = reservaData?.rev_guid
+              if (!revGuid) throw new Error('No se recibió identificador de reserva.')
+              revGuidRef.current = revGuid
+
+              const ordenResp = await reservasApi.crearOrdenPayPal({ rev_guid: revGuid })
+              const ordenData = ordenResp?.data ?? ordenResp
+              const orderId = ordenData?.paypal_order_id
               if (!orderId) throw new Error('No se recibió orden de PayPal.')
-              revGuidRef.current = data?.rev_guid
               return orderId
             },
             onApprove: async (data) => {
@@ -211,7 +214,7 @@ function PantallaPago({
               setProcesandoCaptura(true)
               setErrorPago('')
               try {
-                const resp = await reservasApi.capturarOrdenPayPal(payload)
+                const resp = await reservasApi.confirmarPagoReserva(revGuidRef.current, payload)
                 const factura = resp?.data
                 onPagoRef.current(factura)
               } catch (err) {

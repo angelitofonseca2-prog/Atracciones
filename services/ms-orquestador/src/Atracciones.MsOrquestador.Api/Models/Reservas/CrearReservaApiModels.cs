@@ -40,6 +40,8 @@ public sealed class ConfirmarPagoApiRequest
     public string CorreoReceptor { get; set; } = string.Empty;
     public string? TelefonoReceptor { get; set; }
     public string? Observacion { get; set; }
+    /// <summary>Si el pago fue con PayPal, ID de la orden capturada en cliente.</summary>
+    public string? PaypalOrderId { get; set; }
 }
 
 public sealed class CancelarReservaApiRequest

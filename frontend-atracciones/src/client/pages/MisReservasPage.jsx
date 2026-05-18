@@ -77,7 +77,12 @@ function FormResenia({ reserva, onCerrar }) {
     setCargando(true)
     setError('')
     try {
-      await reseniasApi.crearResenia({ rev_guid: reserva.rev_guid, rating, comentario })
+      const atGuid = reserva.at_guid
+      if (!atGuid) {
+        setError('No se puede asociar la reseña a la atracción.')
+        return
+      }
+      await reseniasApi.crearResenia(atGuid, { rev_guid: reserva.rev_guid, rating, comentario })
       setEnviado(true)
     } catch (err) {
       if (err?.response?.status === 409) {

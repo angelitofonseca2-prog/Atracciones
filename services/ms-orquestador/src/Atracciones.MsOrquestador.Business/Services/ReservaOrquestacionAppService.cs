@@ -49,7 +49,116 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
         string ip,
         string correlationId,
         CancellationToken ct = default) =>
-        CotizarReservaAsync(request, usuGuid, authorizationBearer, usuarioAccion, ip, correlationId, ct);
+        CrearReservaPendienteAsync(request, usuGuid, authorizationBearer, usuarioAccion, ip, correlationId, ct);
+
+    public async Task<ReservaResponseDto> CrearReservaPendienteAsync(
+        CrearReservaOrquestadorDto request,
+        Guid? usuGuid,
+        string? authorizationBearer,
+        string usuarioAccion,
+        string ip,
+        string correlationId,
+        CancellationToken ct = default)
+    {
+        var revGuid = Guid.NewGuid();
+        var prep = await PrepararReservaAsync(request, usuGuid, authorizationBearer, usuarioAccion, ip, revGuid, ct);
+
+        var sagaId = await _saga.IniciarSagaAsync("CREAR_RESERVA", correlationId, ct);
+        var sagaTerminal = false;
+        var cupoReservado = false;
+
+        try
+        {
+            var cupo = await _inv.ValidarYReservarCupoAsync(new ValidarYReservarCupoRequest
+            {
+                HorGuid = prep.Request.HorGuid.ToString("D"),
+                CantidadPersonas = prep.TotalPersonas,
+                ReservaGuid = prep.RevGuid.ToString("D"),
+            }, cancellationToken: ct);
+
+            if (!cupo.Ok)
+            {
+                await _saga.RegistrarPasoAsync(sagaId, "CUPO", "FALLIDO", null, cupo.Mensaje, cupo.Mensaje, ct);
+                throw new ConflictOrchestadorException(string.IsNullOrWhiteSpace(cupo.Mensaje) ? "Sin cupos suficientes." : cupo.Mensaje);
+            }
+
+            cupoReservado = true;
+            await _saga.RegistrarPasoAsync(sagaId, "CUPO", "OK", null, cupo.CuposDisponiblesTrasOperacion.ToString(), null, ct);
+
+            var crea = new CrearReservaPendienteRequest
+            {
+                RevGuid = prep.RevGuid.ToString("D"),
+                CliGuid = prep.CliGuid.ToString("D"),
+                AtGuid = prep.Request.AtGuid.ToString("D"),
+                HorGuid = prep.Request.HorGuid.ToString("D"),
+                Subtotal = (double)prep.Subtotal,
+                ValorIva = (double)prep.Iva,
+                Total = (double)prep.Total,
+                OrigenCanal = prep.Request.OrigenCanal ?? "",
+                UsuarioIngreso = usuarioAccion,
+                IpIngreso = ip,
+                AtraccionNombreSnap = prep.AtraccionNombre,
+                HorFechaSnap = prep.HorFecha,
+                HorHoraInicioSnap = prep.HorHoraInicio,
+                HorHoraFinSnap = prep.HorHoraFin,
+            };
+            foreach (var lg in prep.LineasGrpc)
+                crea.Lineas.Add(lg);
+
+            ReservaReply creada;
+            try
+            {
+                creada = await _res.CrearReservaPendienteAsync(crea, cancellationToken: ct);
+                await _saga.RegistrarPasoAsync(sagaId, "RESERVA_DB", "OK", null, creada.RevGuid, null, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Compensación LiberarCupo tras fallo CrearReservaPendiente");
+                await _inv.LiberarCupoAsync(new LiberarCupoRequest
+                {
+                    HorGuid = prep.Request.HorGuid.ToString("D"),
+                    CantidadPersonas = prep.TotalPersonas,
+                    ReservaGuid = prep.RevGuid.ToString("D"),
+                }, cancellationToken: ct);
+                await _saga.CompletarSagaAsync(sagaId, "COMPENSADA", ct);
+                sagaTerminal = true;
+                throw;
+            }
+
+            await _saga.CompletarSagaAsync(sagaId, "COMPLETADA", ct);
+            sagaTerminal = true;
+
+            _audit.Registrar("RESERVA_CREADA", correlationId,
+                new { rev_guid = prep.RevGuid.ToString("D"), rev_codigo = creada.RevCodigo, estado = "P" });
+
+            var dto = MapReserva(creada);
+            dto.Links["confirmar_pago"] = $"/api/v1/reservas/{prep.RevGuid:D}/pagos/confirmacion";
+            return dto;
+        }
+        catch (Exception ex) when (ex is not ValidationOrchestadorException && ex is not ConflictOrchestadorException && ex is not NotFoundOrchestadorException)
+        {
+            if (cupoReservado && !sagaTerminal)
+            {
+                try
+                {
+                    await _inv.LiberarCupoAsync(new LiberarCupoRequest
+                    {
+                        HorGuid = prep.Request.HorGuid.ToString("D"),
+                        CantidadPersonas = prep.TotalPersonas,
+                        ReservaGuid = prep.RevGuid.ToString("D"),
+                    }, cancellationToken: ct);
+                }
+                catch (Exception libEx)
+                {
+                    _logger.LogError(libEx, "No se pudo liberar cupo tras error en CrearReservaPendiente {Rev}", prep.RevGuid);
+                }
+            }
+
+            if (!sagaTerminal)
+                await _saga.CompletarSagaAsync(sagaId, "ERROR", ct);
+            throw;
+        }
+    }
 
     public async Task<(PayPalCheckoutPayload Payload, decimal Total, string Moneda)> PrepararCheckoutPayPalAsync(
         CrearReservaOrquestadorDto request,
@@ -720,6 +829,7 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
         var dto = new ReservaResponseDto
         {
             RevGuid = r.RevGuid,
+            AtGuid = r.AtGuid,
             RevCodigo = r.RevCodigo,
             HorFecha = r.HorFechaSnap,
             HorHoraInicio = r.HorHoraInicioSnap,

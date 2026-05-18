@@ -49,6 +49,7 @@ public sealed class ReservaDetalleResponseDto
 public sealed class ReservaResponseDto
 {
     public string RevGuid { get; set; } = string.Empty;
+    public string AtGuid { get; set; } = string.Empty;
     public string RevCodigo { get; set; } = string.Empty;
     public string HorFecha { get; set; } = string.Empty;
     public string HorHoraInicio { get; set; } = string.Empty;
