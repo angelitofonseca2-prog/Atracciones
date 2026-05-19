@@ -1,17 +1,5 @@
 namespace Atracciones.MsOrquestador.Business.Models;
 
-public sealed class ClienteInvitadoOrquestadorDto
-{
-    public string TipoIdentificacion { get; set; } = string.Empty;
-    public string NumeroIdentificacion { get; set; } = string.Empty;
-    public string? Nombres { get; set; }
-    public string? Apellidos { get; set; }
-    public string? RazonSocial { get; set; }
-    public string Correo { get; set; } = string.Empty;
-    public string? Telefono { get; set; }
-    public string? Direccion { get; set; }
-}
-
 public sealed class CrearReservaOrquestadorDto
 {
     public Guid AtGuid { get; set; }
@@ -20,7 +8,6 @@ public sealed class CrearReservaOrquestadorDto
     public string? FechaVisita { get; set; }
     public IList<LineaTicketOrquestadorDto> Lineas { get; set; } = new List<LineaTicketOrquestadorDto>();
     public string? OrigenCanal { get; set; }
-    public ClienteInvitadoOrquestadorDto? ClienteInvitado { get; set; }
 }
 
 public sealed class LineaTicketOrquestadorDto

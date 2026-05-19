@@ -65,7 +65,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
         //  Descuenta cupos en HORARIO. IVA 15%.
         // ----------------------------------------------------------------
         [HttpPost]
-        [AllowAnonymous]
+        [Authorize(Policy = "ClienteAutenticado")]
         [EndpointName(EndpointNames.CrearReserva)]
         [ProducesResponseType(typeof(ApiItemResponse<ReservaResponse>), 201)]
         [ProducesResponseType(typeof(ApiErrorResponse), 400)]
@@ -73,13 +73,13 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
         [ProducesResponseType(typeof(ApiErrorResponse), 409)]
         public async Task<IActionResult> Crear([FromBody] CrearReservaRequest request)
         {
-            var reserva = await _service.CrearAsync(request, UsuGuidOpcional, UsuarioAccion, IpActual);
+            var reserva = await _service.CrearAsync(request, UsuGuidActual, UsuarioAccion, IpActual);
             var response = ReservasApiMapper.ToResponse(reserva, statusCode: 201);
             return StatusCode(201, response);
         }
 
         [HttpPost("{guid:guid}/confirmar-pago")]
-        [AllowAnonymous]
+        [Authorize(Policy = "ClienteAutenticado")]
         [ProducesResponseType(typeof(ApiItemResponse<FacturaResponse>), 201)]
         [ProducesResponseType(typeof(ApiErrorResponse), 400)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]

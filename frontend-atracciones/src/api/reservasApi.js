@@ -1,8 +1,7 @@
 import { apiClient } from './atraccionesApi'
 
 /**
- * POST /api/v1/reservas
- * Acepta cliente autenticado (token) o invitado (body.cliente_invitado).
+ * POST /api/v1/reservas — requiere JWT de cliente (Authorization).
  */
 const nuevaIdempotencyKey = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID

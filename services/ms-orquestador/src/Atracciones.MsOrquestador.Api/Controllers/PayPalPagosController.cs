@@ -35,16 +35,18 @@ public sealed class PayPalPagosController : ControllerBase
         _idem = idem;
     }
 
-    private Guid? UsuGuidOpcional
+    private Guid UsuGuidActual
     {
         get
         {
             var claim = User.FindFirstValue("usu_guid");
-            return Guid.TryParse(claim, out var g) ? g : null;
+            if (!Guid.TryParse(claim, out var g))
+                throw new UnauthorizedAccessException("El token no tiene un usuario válido.");
+            return g;
         }
     }
 
-    private string UsuarioAccion => User.FindFirstValue("login") ?? "invitado";
+    private string UsuarioAccion => User.FindFirstValue("login") ?? "sistema";
 
     private string IpActual => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
 
@@ -56,7 +58,7 @@ public sealed class PayPalPagosController : ControllerBase
         HttpContext.Request.Headers.Authorization.FirstOrDefault();
 
     [HttpPost("orders")]
-    [AllowAnonymous]
+    [Authorize(Policy = "ClienteAutenticado")]
     public async Task<IActionResult> CrearOrden(CancellationToken ct)
     {
         var raw = await ReadBodyRawAsync(ct);
@@ -75,19 +77,6 @@ public sealed class PayPalPagosController : ControllerBase
                 Lineas = request.Reserva.Lineas
                     .Select(l => new LineaTicketOrquestadorDto { TckGuid = l.TckGuid, Cantidad = l.Cantidad })
                     .ToList(),
-                ClienteInvitado = request.Reserva.ClienteInvitado is null
-                    ? null
-                    : new ClienteInvitadoOrquestadorDto
-                    {
-                        TipoIdentificacion = request.Reserva.ClienteInvitado.TipoIdentificacion,
-                        NumeroIdentificacion = request.Reserva.ClienteInvitado.NumeroIdentificacion,
-                        Nombres = request.Reserva.ClienteInvitado.Nombres,
-                        Apellidos = request.Reserva.ClienteInvitado.Apellidos,
-                        RazonSocial = request.Reserva.ClienteInvitado.RazonSocial,
-                        Correo = request.Reserva.ClienteInvitado.Correo,
-                        Telefono = request.Reserva.ClienteInvitado.Telefono,
-                        Direccion = request.Reserva.ClienteInvitado.Direccion,
-                    },
             };
         }
 
@@ -95,7 +84,7 @@ public sealed class PayPalPagosController : ControllerBase
             reservaDto,
             request.RevGuid == Guid.Empty ? null : request.RevGuid,
             request.RevCodigo,
-            UsuGuidOpcional,
+            UsuGuidActual,
             BearerToken,
             UsuarioAccion,
             IpActual,
@@ -112,7 +101,7 @@ public sealed class PayPalPagosController : ControllerBase
     }
 
     [HttpPost("orders/capture")]
-    [AllowAnonymous]
+    [Authorize(Policy = "ClienteAutenticado")]
     [Obsolete("Use POST /api/v1/reservas/{rev_guid}/pagos/confirmacion con paypal_order_id")]
     public async Task<IActionResult> Capturar(CancellationToken ct)
     {
@@ -147,7 +136,7 @@ public sealed class PayPalPagosController : ControllerBase
             var factura = await _pagos.CapturarYCompletarReservaAsync(
                 request.RevGuid,
                 request.RevCodigo,
-                UsuGuidOpcional,
+                UsuGuidActual,
                 request.PaypalOrderId.Trim(),
                 dto,
                 UsuarioAccion,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { obtenerHorariosDisponibles, obtenerTicketsAtraccion } from '../../api/atraccionesApi'
 import * as reservasApi from '../../api/reservasApi'
@@ -372,26 +372,6 @@ function PantallaPago({
   )
 }
 
-// ─── Pantalla de elección auth / invitado ─────────────────────────────────────
-function PantallaEleccion({ onRegistrarse, onIniciarSesion }) {
-  return (
-    <div className="auth-card fade-in" style={{ textAlign: 'center' }}>
-      <h2>Cuenta necesaria para reservar</h2>
-      <p className="text-muted" style={{ margin: '0.75rem 0 1.5rem' }}>
-        Crea una cuenta o inicia sesión. Al volver, tus datos personales se completarán solos.
-      </p>
-      <div className="inline-form" style={{ justifyContent: 'center', flexDirection: 'column', gap: '0.75rem' }}>
-        <button className="btn btn-full" type="button" onClick={onRegistrarse}>
-          Crear cuenta y continuar
-        </button>
-        <button className="btn btn-outline btn-full" type="button" onClick={onIniciarSesion}>
-          Ya tengo cuenta — Iniciar sesión
-        </button>
-      </div>
-    </div>
-  )
-}
-
 // ─── Datos personales (perfil autocompletado si hay sesión) ───────────────────
 function FormularioDatosCliente({
   onConfirmar,
@@ -566,7 +546,7 @@ function ReservaPage() {
   const location = useLocation()
   const { estaAutenticado } = useAuthContext()
 
-  // cargando | eleccion | formulario | datos | pago | confirmacion
+  // cargando | formulario | datos | pago | confirmacion
   const [paso, setPaso] = useState('cargando')
   const [datosCliente, setDatosCliente] = useState(null)
   const [horGuid, setHorGuid] = useState('')
@@ -627,10 +607,6 @@ function ReservaPage() {
   }, [guid]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (estaAutenticado && paso === 'eleccion') setPaso('formulario')
-  }, [estaAutenticado, paso])
-
-  useEffect(() => {
     if (paso === 'datos' && estaAutenticado) {
       cargarPerfil().catch(() => {})
     }
@@ -671,14 +647,6 @@ function ReservaPage() {
   const sinTickets = lineas.length === 0
   const sinHorario = !horGuid
   const sinFechaVisita = Boolean(horGuid) && !fechaVisita
-
-  const handleRegistrarse = () => {
-    navigate('/registro', { state: { from: location } })
-  }
-
-  const handleIniciarSesion = () => {
-    navigate('/login', { state: { from: location } })
-  }
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -773,13 +741,6 @@ function ReservaPage() {
       </div>
 
       <ErrorMessage mensaje={error} />
-
-      {paso === 'eleccion' && (
-        <PantallaEleccion
-          onRegistrarse={handleRegistrarse}
-          onIniciarSesion={handleIniciarSesion}
-        />
-      )}
 
       {paso === 'formulario' && (
         <>

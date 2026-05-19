@@ -54,9 +54,10 @@ namespace Microservicio.Atracciones.Business.Services.Public
             using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var cliId = usuGuid.HasValue
-                    ? await ObtenerCliIdAsync(usuGuid.Value)
-                    : await ObtenerOCrearClienteInvitadoAsync(request.ClienteInvitado, usuarioAccion, ip);
+                if (!usuGuid.HasValue)
+                    throw new UnauthorizedBusinessException("Debe iniciar sesión para reservar.");
+
+                var cliId = await ObtenerCliIdAsync(usuGuid.Value);
 
                 // 1. Validar y obtener tickets con precios actuales
                 var lineas = request.Lineas.Select(l => (l.TckGuid, l.Cantidad)).ToList();
@@ -299,62 +300,6 @@ namespace Microservicio.Atracciones.Business.Services.Public
                 ?? throw new NotFoundException("Cliente asociado al usuario", usuGuid);
 
             return cliente.CliId;
-        }
-
-        private async Task<int> ObtenerOCrearClienteInvitadoAsync(
-            ClienteInvitadoRequest? invitado,
-            string usuarioAccion,
-            string ip)
-        {
-            if (invitado is null)
-                throw new ValidationException(new[] { "Debe enviar los datos del cliente invitado o autenticarse para reservar." });
-
-            var errores = new List<string>();
-            if (string.IsNullOrWhiteSpace(invitado.TipoIdentificacion))
-                errores.Add("El tipo de identificación del cliente invitado es obligatorio.");
-            if (string.IsNullOrWhiteSpace(invitado.NumeroIdentificacion))
-                errores.Add("El número de identificación del cliente invitado es obligatorio.");
-            if (string.IsNullOrWhiteSpace(invitado.Correo))
-                errores.Add("El correo del cliente invitado es obligatorio.");
-            if (string.IsNullOrWhiteSpace(invitado.RazonSocial) &&
-                (string.IsNullOrWhiteSpace(invitado.Nombres) || string.IsNullOrWhiteSpace(invitado.Apellidos)))
-                errores.Add("Debe enviar nombres y apellidos, o razón social, para el cliente invitado.");
-
-            if (errores.Any())
-                throw new ValidationException(errores);
-
-            var existente = await _clienteService.ObtenerPorNumeroIdentificacionAsync(invitado.NumeroIdentificacion.Trim());
-            if (existente is not null)
-            {
-                if (string.IsNullOrWhiteSpace(existente.CliCorreo) && !string.IsNullOrWhiteSpace(invitado.Correo))
-                    existente.CliCorreo = invitado.Correo.Trim();
-                if (string.IsNullOrWhiteSpace(existente.CliTelefono) && !string.IsNullOrWhiteSpace(invitado.Telefono))
-                    existente.CliTelefono = invitado.Telefono.Trim();
-                if (string.IsNullOrWhiteSpace(existente.CliDireccion) && !string.IsNullOrWhiteSpace(invitado.Direccion))
-                    existente.CliDireccion = invitado.Direccion.Trim();
-
-                await _clienteService.ActualizarAsync(existente);
-                return existente.CliId;
-            }
-
-            var clienteModel = new ClienteDataModel
-            {
-                UsuId = null,
-                CliTipoIdentificacion = invitado.TipoIdentificacion.Trim().ToUpperInvariant(),
-                CliNumeroIdentificacion = invitado.NumeroIdentificacion.Trim(),
-                CliNombres = invitado.Nombres?.Trim(),
-                CliApellidos = invitado.Apellidos?.Trim(),
-                CliRazonSocial = invitado.RazonSocial?.Trim(),
-                CliCorreo = invitado.Correo.Trim(),
-                CliTelefono = invitado.Telefono?.Trim(),
-                CliDireccion = invitado.Direccion?.Trim(),
-                CliEstado = 'A',
-                CliUsuarioIngreso = usuarioAccion,
-                CliIpIngreso = ip
-            };
-
-            await _clienteService.CrearAsync(clienteModel);
-            return clienteModel.CliId;
         }
 
         private static void ValidarConfirmacionPago(ConfirmarPagoReservaRequest request)

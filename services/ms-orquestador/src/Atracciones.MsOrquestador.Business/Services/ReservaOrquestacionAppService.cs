@@ -421,7 +421,10 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
         if (request.Lineas.Count == 0)
             throw new ValidationOrchestadorException(new[] { "Debe incluir al menos una línea de ticket." });
 
-        var cliGuid = cliGuidFijo ?? await ResolverCliGuidAsync(request, usuGuid, authorizationBearer, usuarioAccion, ip, ct);
+        if (!usuGuid.HasValue)
+            throw new ValidationOrchestadorException(new[] { "Debe iniciar sesión para reservar." });
+
+        var cliGuid = cliGuidFijo ?? await ResolverCliGuidAsync(usuGuid.Value, authorizationBearer, ct);
 
         var hor = await _inv.ObtenerHorarioParaReservaAsync(new ObtenerHorarioParaReservaRequest
         {
@@ -702,93 +705,23 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
     }
 
     private async Task<Guid> ResolverCliGuidAsync(
-        CrearReservaOrquestadorDto request,
-        Guid? usuGuid,
+        Guid usuGuid,
         string? authorizationBearer,
-        string usuarioAccion,
-        string ip,
         CancellationToken ct)
     {
-        if (usuGuid.HasValue)
-        {
-            var md = AuthMetadata(authorizationBearer);
-            try
-            {
-                await _cli.ObtenerClientePorGuidAsync(new ObtenerClienteRequest { CliGuid = usuGuid.Value.ToString("D") }, md, cancellationToken: ct);
-                return usuGuid.Value;
-            }
-            catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
-            {
-                throw new NotFoundOrchestadorException("No existe perfil de cliente para este usuario.");
-            }
-        }
-
-        var inv = request.ClienteInvitado
-            ?? throw new ValidationOrchestadorException(new[] { "Debe enviar los datos del cliente invitado o autenticarse para reservar." });
-
-        ValidarInvitado(inv);
-
+        var md = AuthMetadata(authorizationBearer);
         try
         {
-            var existente = await _cli.ObtenerClientePorNumeroIdentificacionAsync(
-                new ObtenerClientePorDocRequest { NumeroIdentificacion = inv.NumeroIdentificacion.Trim() },
+            await _cli.ObtenerClientePorGuidAsync(
+                new ObtenerClienteRequest { CliGuid = usuGuid.ToString("D") },
+                md,
                 cancellationToken: ct);
-            return Guid.Parse(existente.CliGuid);
+            return usuGuid;
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
         {
-            var nuevoGuid = Guid.NewGuid();
-            try
-            {
-                await _cli.CrearClienteAsync(new CrearClienteRequest
-                {
-                    UsuGuid = nuevoGuid.ToString("D"),
-                    TipoIdentificacion = inv.TipoIdentificacion.Trim(),
-                    NumeroIdentificacion = inv.NumeroIdentificacion.Trim(),
-                    Nombres = inv.Nombres?.Trim() ?? "",
-                    Apellidos = inv.Apellidos?.Trim() ?? "",
-                    RazonSocial = inv.RazonSocial?.Trim() ?? "",
-                    Correo = inv.Correo.Trim(),
-                    Telefono = inv.Telefono?.Trim() ?? "",
-                    Direccion = inv.Direccion?.Trim() ?? "",
-                    CreadoPor = usuarioAccion,
-                    IpCreador = ip,
-                }, cancellationToken: ct);
-                return nuevoGuid;
-            }
-            catch (RpcException ex2) when (ex2.StatusCode == StatusCode.AlreadyExists)
-            {
-                var existente2 = await _cli.ObtenerClientePorNumeroIdentificacionAsync(
-                    new ObtenerClientePorDocRequest { NumeroIdentificacion = inv.NumeroIdentificacion.Trim() },
-                    cancellationToken: ct);
-                return Guid.Parse(existente2.CliGuid);
-            }
+            throw new NotFoundOrchestadorException("No existe perfil de cliente para este usuario. Regístrese o complete su perfil.");
         }
-    }
-
-    private static void ValidarInvitado(ClienteInvitadoOrquestadorDto inv)
-    {
-        var errores = new List<string>();
-        if (string.IsNullOrWhiteSpace(inv.TipoIdentificacion))
-            errores.Add("El tipo de identificación del cliente invitado es obligatorio.");
-        if (string.IsNullOrWhiteSpace(inv.NumeroIdentificacion))
-            errores.Add("El número de identificación del cliente invitado es obligatorio.");
-        if (string.IsNullOrWhiteSpace(inv.Correo))
-            errores.Add("El correo del cliente invitado es obligatorio.");
-        if (string.IsNullOrWhiteSpace(inv.RazonSocial) &&
-            (string.IsNullOrWhiteSpace(inv.Nombres) || string.IsNullOrWhiteSpace(inv.Apellidos)))
-            errores.Add("Debe enviar nombres y apellidos, o razón social, para el cliente invitado.");
-        try
-        {
-            _ = new MailAddress(inv.Correo.Trim());
-        }
-        catch
-        {
-            errores.Add("El correo del invitado no es válido.");
-        }
-
-        if (errores.Count > 0)
-            throw new ValidationOrchestadorException(errores);
     }
 
     private static void ValidarConfirmar(ConfirmarPagoOrquestadorDto request)

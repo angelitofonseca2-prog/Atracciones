@@ -372,6 +372,8 @@ paths:
     post:
       operationId: crearReserva
       tags: [Reservas]
+      security:
+        - bearerAuth: []
       parameters:
         - in: header
           name: Idempotency-Key
@@ -381,8 +383,7 @@ paths:
         Crea una reserva en estado **pendiente** (`P`), reserva cupo en inventario y devuelve `rev_guid`.
         El pago se confirma en `POST /reservas/{guid}/pagos/confirmacion`.
         Requiere cabecera `Idempotency-Key`.
-        - **Con JWT** (`ClienteAutenticado`): el `cli_id` se extrae del token; no se requiere `cliente_invitado`.
-        - **Sin JWT** (invitado): se debe incluir el objeto `cliente_invitado` en el body.
+        - Requiere JWT con policy `ClienteAutenticado`; el `cli_guid` se toma del claim `usu_guid` del token.
         - Canal externo Booking: enviar `origen_canal` = `BOOKING` (opcional; default habitual `web`).
       requestBody:
         required: true
@@ -421,6 +422,8 @@ paths:
     post:
       operationId: confirmarPagoReserva
       tags: [Reservas]
+      security:
+        - bearerAuth: []
       parameters:
         - in: path
           name: guid
@@ -702,20 +705,6 @@ components:
           type: array
           items: { $ref: "#/components/schemas/OpcionFiltro" }
 
-    ClienteInvitadoRequest:
-      type: object
-      description: Datos del cliente no registrado. Obligatorio cuando la petición no lleva JWT.
-      required: [tipo_identificacion, numero_identificacion, correo]
-      properties:
-        tipo_identificacion: { type: string, maxLength: 20 }
-        numero_identificacion: { type: string, maxLength: 20 }
-        nombres: { type: string, maxLength: 100, nullable: true }
-        apellidos: { type: string, maxLength: 100, nullable: true }
-        razon_social: { type: string, maxLength: 200, nullable: true }
-        correo: { type: string, format: email, maxLength: 150 }
-        telefono: { type: string, maxLength: 20, nullable: true }
-        direccion: { type: string, maxLength: 300, nullable: true }
-
     CrearReservaRequest:
       type: object
       required: [at_guid, hor_guid, lineas]
@@ -740,11 +729,6 @@ components:
           nullable: true
           description: Canal de origen. Integradores externos envían `BOOKING`; la web usa `web`.
           example: BOOKING
-        cliente_invitado:
-          description: Requerido si la petición no lleva JWT. Ignorado si el token está presente.
-          nullable: true
-          allOf:
-            - $ref: "#/components/schemas/ClienteInvitadoRequest"
 
     ReservaLineaRequest:
       type: object

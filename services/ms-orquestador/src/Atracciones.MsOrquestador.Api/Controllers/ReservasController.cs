@@ -36,15 +36,6 @@ public sealed class ReservasController : ControllerBase
         _idem = idem;
     }
 
-    private Guid? UsuGuidOpcional
-    {
-        get
-        {
-            var claim = User.FindFirstValue("usu_guid");
-            return Guid.TryParse(claim, out var g) ? g : null;
-        }
-    }
-
     private Guid UsuGuidActual
     {
         get
@@ -68,7 +59,7 @@ public sealed class ReservasController : ControllerBase
         HttpContext.Request.Headers.Authorization.FirstOrDefault();
 
     [HttpPost]
-    [AllowAnonymous]
+    [Authorize(Policy = "ClienteAutenticado")]
     public async Task<IActionResult> Crear(CancellationToken ct)
     {
         var raw = await ReadBodyRawAsync(ct);
@@ -92,29 +83,16 @@ public sealed class ReservasController : ControllerBase
             FechaVisita = request.FechaVisita,
             OrigenCanal = request.OrigenCanal,
             Lineas = request.Lineas.Select(l => new LineaTicketOrquestadorDto { TckGuid = l.TckGuid, Cantidad = l.Cantidad }).ToList(),
-            ClienteInvitado = request.ClienteInvitado is null
-                ? null
-                : new ClienteInvitadoOrquestadorDto
-                {
-                    TipoIdentificacion = request.ClienteInvitado.TipoIdentificacion,
-                    NumeroIdentificacion = request.ClienteInvitado.NumeroIdentificacion,
-                    Nombres = request.ClienteInvitado.Nombres,
-                    Apellidos = request.ClienteInvitado.Apellidos,
-                    RazonSocial = request.ClienteInvitado.RazonSocial,
-                    Correo = request.ClienteInvitado.Correo,
-                    Telefono = request.ClienteInvitado.Telefono,
-                    Direccion = request.ClienteInvitado.Direccion,
-                },
         };
 
-        var data = await _orq.CrearReservaAsync(dto, UsuGuidOpcional, BearerToken, UsuarioAccion, IpActual, CorrelationId, ct);
+        var data = await _orq.CrearReservaAsync(dto, UsuGuidActual, BearerToken, UsuarioAccion, IpActual, CorrelationId, ct);
         var envelope = new ApiItemResponse<object>(data, 201, "Reserva pendiente creada. Confirme el pago para finalizar.");
         await SaveIdempotentAsync(idemKey, route, hash, 201, envelope, ct);
         return StatusCode(201, envelope);
     }
 
     [HttpPost("{guid:guid}/pagos/confirmacion")]
-    [AllowAnonymous]
+    [Authorize(Policy = "ClienteAutenticado")]
     public async Task<IActionResult> ConfirmarPagoReserva(Guid guid, CancellationToken ct)
     {
         var raw = await ReadBodyRawAsync(ct);
@@ -146,7 +124,7 @@ public sealed class ReservasController : ControllerBase
             factura = await _pagos.CapturarYCompletarReservaAsync(
                 guid,
                 null,
-                UsuGuidOpcional,
+                UsuGuidActual,
                 request.PaypalOrderId.Trim(),
                 dto,
                 UsuarioAccion,
@@ -172,7 +150,7 @@ public sealed class ReservasController : ControllerBase
     }
 
     [HttpPost("{guid:guid}/confirmar-pago")]
-    [AllowAnonymous]
+    [Authorize(Policy = "ClienteAutenticado")]
     [Obsolete("Use POST /api/v1/reservas/{guid}/pagos/confirmacion")]
     public Task<IActionResult> ConfirmarPagoLegacy(Guid guid, CancellationToken ct) =>
         ConfirmarPagoReserva(guid, ct);

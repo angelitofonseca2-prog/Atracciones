@@ -3,21 +3,15 @@ import * as reservasApi from '../../api/reservasApi'
 import { emitirToast } from '../../components/common/Toast'
 
 /**
- * Hook que crea reservas alineadas con `CrearReservaRequest` (snake_case):
- *   {
- *     at_guid, hor_guid,
- *     lineas: [{ tck_guid, cantidad }],
- *     origen_canal?: 'web' | 'app',
- *     cliente_invitado?: { tipo_identificacion, numero_identificacion,
- *                          correo, telefono?, nombres?, apellidos?, ... }
- *   }
+ * Hook que crea reservas (requiere sesión activa):
+ *   { at_guid, hor_guid, lineas: [{ tck_guid, cantidad }], origen_canal? }
  */
 export function useReserva() {
   const [cargando, setCargando] = useState(false)
   const [error, setError] = useState('')
   const [reservaCreada, setReservaCreada] = useState(null)
 
-  const crearReserva = async (atGuid, horGuid, lineas, origenCanal = 'web', clienteInvitado = null) => {
+  const crearReserva = async (atGuid, horGuid, lineas, origenCanal = 'web', fechaVisita = undefined) => {
     setCargando(true)
     setError('')
 
@@ -30,8 +24,8 @@ export function useReserva() {
       })),
       origen_canal: origenCanal,
     }
-    if (clienteInvitado) {
-      body.cliente_invitado = clienteInvitado
+    if (fechaVisita) {
+      body.fecha_visita = fechaVisita
     }
 
     try {
@@ -42,7 +36,9 @@ export function useReserva() {
       return reserva
     } catch (err) {
       let mensaje
-      if (err?.response?.status === 409) {
+      if (err?.response?.status === 401) {
+        mensaje = 'Debes iniciar sesión para reservar.'
+      } else if (err?.response?.status === 409) {
         mensaje = 'No hay cupos suficientes para el horario seleccionado.'
       } else if (err?.response?.status === 400) {
         mensaje =
