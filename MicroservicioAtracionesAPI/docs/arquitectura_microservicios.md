@@ -194,7 +194,7 @@ CREATE TABLE inventario.horarios (
 
 #### c) Arquitectura interna
 - **Controladores:** `Public` (Búsqueda, Filtros), `Admin` (Gestión de inventario).
-- **Endpoints:** `GET /api/v1/atracciones`, `GET /api/v1/atracciones/{guid}/horarios-disponibles`.
+- **Endpoints Booking (vía gateway):** catálogo en `ms-atracciones` (`GET /api/v1/atracciones`, horarios, tickets, reseñas anidadas); ventas en `ms-orquestador` (`POST /reservas` → `POST .../pagos/confirmacion`). Contrato formal: [`docs/api/openapi-v2-booking-public.md`](api/openapi-v2-booking-public.md).
 
 #### d) Comunicación
 - **gRPC:**

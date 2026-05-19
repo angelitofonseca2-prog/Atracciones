@@ -41,3 +41,9 @@ export function esReservaActiva(codigo) {
 export function esReservaCancelable(codigo) {
   return esReservaActiva(codigo)
 }
+
+/** Reserva pagada/confirmada: apta para dejar reseña. */
+export function esReservaConfirmada(codigo) {
+  const c = String(codigo).toUpperCase()
+  return c === 'A' || c === 'ACTIVA' || c === 'ACTIVE' || c === 'CONFIRMADA'
+}

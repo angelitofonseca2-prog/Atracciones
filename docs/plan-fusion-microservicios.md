@@ -16,7 +16,9 @@ Rutas con controladores aún solo en [`Microservicio.Atracciones.Api`](Microserv
 |--------------|---------------------------|
 | `/api/v1/auth/*` (excepto login ya en identidad/registro ya en orquestador) | Consolidar comportamiento donde corresponda; **sin llamadas HTTP al monólito desde gateway** |
 | `/api/v1/admin/usuarios` | **`ms-identidad`** (gestión usuarios/auth) |
-| `/api/v1/resenias`, `/api/v1/admin/resenias` | **`ms-atracciones`** (tras fusión BD catálogo+inventario) |
+| `/api/v1/atracciones/{guid}/resenias` (público) | **`ms-atracciones`** — **hecho** |
+| `/api/v1/resenias` (plano, monolito) | **Obsoleto**; no enrutar en gateway |
+| `/api/v1/admin/resenias` | **`ms-atracciones`** (pendiente portar admin CRUD) |
 | Rutas `/api/v1/admin/destinos|…` | Ya suelen estar en **`ms-catalogos`** vía gateway; tras fusión **`ms-atracciones`** |
 | `/internal/v1/catalogos/mirror` | Obsoleto o reemplazar por proceso de migración datos (ETL/deploy), sin monólito receptor |
 
@@ -49,7 +51,9 @@ Las rutas que el gateway ya enruta a microservicios (atracciones, tickets, catá
 ### Fase A — Migración funcional rutas pendientes por servicio
 
 - **Usuario admin CRUD**, si el producto lo exige: portar desde [`UsuariosController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/UsuariosController.cs) a **`ms-identidad`** y añadir rutas gateway `Order` inferior al fallback (que ya no existirá).
-- **Reseñas públicas y admin**: portar lógica de [`ReseniasController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasController.cs) / [`ReseniasAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasAdminController.cs) a **`ms-atracciones`** (entidades EF ya cercanas al inventario).
+- **Reseñas públicas**: **hecho** en `ms-atracciones` (`GET/POST /api/v1/atracciones/{guid}/resenias`). Monolito [`ReseniasController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasController.cs) marcado obsoleto; sin ruta gateway.
+- **Reseñas admin**: portar [`ReseniasAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasAdminController.cs) a **`ms-atracciones`**.
+- **Reservas Booking**: orquestador expone `POST /reservas` (pendiente+cupo), `POST /reservas/{guid}/pagos/confirmacion`, PayPal auxiliar `POST /pagos/paypal/orders`. Ver [`openapi-v2-booking-public.md`](../MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md).
 - **Auth/registro**: confirmar que `POST /api/v1/auth/registro` sólo **`ms-orquestador`** → identidad/cliente(s) eventualmente fusionado; ningún código en gateway hacia puerto legacy.
 - Revisión **openapi**/`docs/api/` frente al monólito vs microservicios para no dejar rutas huérfanas.
 
@@ -111,7 +115,8 @@ No existe ruta desde `GW` ni `ORQ` hacia legacy.
 
 ## Checklist ejecutable antes de declarar terminado
 
-- [ ] Gateway: cero rutas/cluster `monolith`; Kestrel accesible en **5050** (Compose + `dotnet run`).
+- [x] Gateway: sin rutas/cluster `monolith` en [`appsettings.json`](../platform/gateway/appsettings.json) (reservas → orquestador, atracciones → ms-atracciones).
+- [ ] Kestrel gateway accesible en **5050** (Compose + `dotnet run` alineados).
 - [ ] Frontend: `.env*` solo `VITE_API_URL=http://localhost:5050/api/v1`.
 - [ ] Todas las URLs `5031`, `ReverseProxy`**monolith**, `CatalogMirror`/sync al monólito eliminadas o desactivadas.
 - [ ] Fusión BD/cliente+catálogo según fases anteriores del plan maestro.

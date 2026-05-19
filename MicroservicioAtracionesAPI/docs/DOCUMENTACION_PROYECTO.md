@@ -569,14 +569,15 @@ Microservicio.Atracciones.Api
 | `GET` | `/api/v1/atracciones/filtros` | Obtiene opciones de filtrado dinámico y estadísticas según la ciudad. |
 | `GET` | `/api/v1/atracciones/{guid}` | Detalle completo de una atracción específica. |
 | `GET` | `/api/v1/atracciones/{guid}/tickets` | Lista los tipos de tickets disponibles para una atracción. |
-| `GET` | `/api/v1/atracciones/{guid}/horarios-disponibles` | Consulta los próximos horarios con cupos para la atracción. |
-| `GET` | `/api/v1/reservas` | Historial de reservas del cliente autenticado. |
-| `POST` | `/api/v1/reservas` | Crea una reserva (cabecera + detalle) con descuento de cupos. |
-| `GET` | `/api/v1/reservas/{guid}` | Obtiene el detalle de una reserva específica. |
-| `POST` | `/api/v1/reservas/{guid}/confirmar-pago` | Procesa el pago y genera la factura legal (IVA 15%). |
-| `PUT` | `/api/v1/reservas/{guid}/cancelar` | Cancela una reserva pendiente y libera cupos. |
-| `GET` | `/api/v1/resenias?atraccionGuid={guid}` | Lista reseñas públicas de una atracción. |
-| `POST` | `/api/v1/resenias` | Permite a un cliente calificar una atracción tras su visita. |
+| `GET` | `/api/v1/atracciones/{guid}/horarios` | Horarios de la atracción (`?disponibles=true` solo con cupo). Legacy: `horarios-disponibles`. |
+| `GET` | `/api/v1/atracciones/{guid}/horarios/{horarioId}/tickets` | Tickets disponibles para un horario concreto. |
+| `GET` | `/api/v1/reservas` | Historial de reservas del cliente autenticado (orquestador). |
+| `POST` | `/api/v1/reservas` | Crea reserva **pendiente** (`P`), reserva cupo (`Idempotency-Key`). |
+| `GET` | `/api/v1/reservas/{guid}` | Detalle de reserva (orquestador). |
+| `POST` | `/api/v1/reservas/{guid}/pagos/confirmacion` | Confirma pago y emite factura (PayPal: `paypal_order_id`). |
+| `PUT` | `/api/v1/reservas/{guid}/cancelar` | Cancela reserva y libera cupos (orquestador). |
+| `GET` | `/api/v1/atracciones/{guid}/resenias` | Lista reseñas públicas de la atracción. |
+| `POST` | `/api/v1/atracciones/{guid}/resenias` | Crea reseña (`rev_guid` en body; cliente autenticado). |
 | `POST` | `/api/v1/auth/login` | Autenticación de usuarios para obtener token JWT. |
 
 

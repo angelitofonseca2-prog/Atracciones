@@ -4,7 +4,12 @@ import * as reservasApi from '../../api/reservasApi'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Spinner from '../../components/common/Spinner'
 import { emitirToast } from '../../components/common/Toast'
-import { esReservaCancelable, estadoBadgeClass, estadoLabel } from '../../utils/estadoReserva'
+import {
+  esReservaCancelable,
+  esReservaConfirmada,
+  estadoBadgeClass,
+  estadoLabel,
+} from '../../utils/estadoReserva'
 import { useMisReservas } from '../hooks/useMisReservas'
 
 // ──────────────────────────────────────────────
@@ -211,6 +216,7 @@ function MisReservasPage() {
               )}
               {reservas.map((reserva) => {
                 const puedeCancelar = esReservaCancelable(reserva.rev_estado)
+                const puedeResenar = esReservaConfirmada(reserva.rev_estado)
                 const mostrandoResenia = reseniaPara?.rev_guid === reserva.rev_guid
                 const key = reserva.rev_guid ?? reserva.rev_codigo ?? Math.random()
 
@@ -244,7 +250,7 @@ function MisReservasPage() {
                               Cancelar
                             </button>
                           )}
-                          {puedeCancelar && (
+                          {puedeResenar && (
                             <button
                               className="btn btn-outline btn-sm"
                               onClick={() => setReseniaPara(mostrandoResenia ? null : reserva)}

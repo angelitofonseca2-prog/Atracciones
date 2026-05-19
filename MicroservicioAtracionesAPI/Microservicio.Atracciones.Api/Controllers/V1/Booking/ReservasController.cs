@@ -12,6 +12,8 @@ using Microservicio.Atracciones.Business.Exceptions;
 
 namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
 {
+    /// <summary>Legacy: reservas públicas y sagas en ms-orquestador vía gateway.</summary>
+    [Obsolete("Reservas Booking migradas a ms-orquestador (/api/v1/reservas, pagos/confirmacion)")]
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v1/reservas")]

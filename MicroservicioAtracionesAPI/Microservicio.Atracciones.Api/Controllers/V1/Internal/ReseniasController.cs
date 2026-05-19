@@ -11,6 +11,8 @@ using Microservicio.Atracciones.Business.Exceptions;
 
 namespace Microservicio.Atracciones.Api.Controllers.V1.Internal
 {
+    /// <summary>Legacy: el gateway enruta reseñas públicas a ms-atracciones (GET/POST /api/v1/atracciones/{guid}/resenias).</summary>
+    [Obsolete("Reseñas públicas migradas a ms-atracciones bajo /api/v1/atracciones/{guid}/resenias")]
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v1/resenias")]

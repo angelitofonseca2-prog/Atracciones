@@ -59,14 +59,3 @@ export const confirmarPagoReserva = async (revGuid, body) => {
   })
   return response.data
 }
-
-/**
- * @deprecated Use confirmarPagoReserva
- */
-export const capturarOrdenPayPal = async (body) => {
-  const revGuid = body?.rev_guid
-  if (!revGuid) {
-    throw new Error('rev_guid es obligatorio para confirmar el pago.')
-  }
-  return confirmarPagoReserva(revGuid, body)
-}

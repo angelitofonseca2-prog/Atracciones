@@ -113,6 +113,7 @@ public sealed class PayPalPagosController : ControllerBase
 
     [HttpPost("orders/capture")]
     [AllowAnonymous]
+    [Obsolete("Use POST /api/v1/reservas/{rev_guid}/pagos/confirmacion con paypal_order_id")]
     public async Task<IActionResult> Capturar(CancellationToken ct)
     {
         var raw = await ReadBodyRawAsync(ct);

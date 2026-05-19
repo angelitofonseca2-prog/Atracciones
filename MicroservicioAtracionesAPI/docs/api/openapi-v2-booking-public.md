@@ -11,13 +11,21 @@ Este documento formaliza el contrato de integración pública para Booking sobre
 - `GET /api/v1/atracciones/{guid}/horarios/{horarioId}/tickets`
 - `GET /api/v1/atracciones/{guid}/horarios-disponibles` (legacy; usar `horarios?disponibles=true`)
 - `GET /api/v1/atracciones/filtros`
+- `GET /api/v1/atracciones/{guid}/resenias`
+- `POST /api/v1/atracciones/{guid}/resenias` (cliente autenticado; body con `rev_guid`)
 - `GET /api/v1/reservas` (Mis Reservas)
-- `POST /api/v1/reservas`
+- `POST /api/v1/reservas` (crea reserva **pendiente** `P`, reserva cupo; requiere `Idempotency-Key`)
 - `GET /api/v1/reservas/{guid}`
 - `PUT /api/v1/reservas/{guid}/cancelar`
-- `POST /api/v1/reservas/{guid}/confirmar-pago`
+- `POST /api/v1/reservas/{guid}/pagos/confirmacion` (confirma pago; requiere `Idempotency-Key`; PayPal vía `paypal_order_id`)
+- `POST /api/v1/reservas/{guid}/confirmar-pago` (legacy; alias de `pagos/confirmacion`)
+- `POST /api/v1/pagos/paypal/orders` (auxiliar: crear orden PayPal para `rev_guid` existente)
 - `GET /api/v1/facturas/mis-facturas`
 - `GET /api/v1/tickets/{guid}/horarios`
+
+**Flujo Booking recomendado:** `POST /reservas` → `POST /pagos/paypal/orders` (opcional) → `POST /reservas/{guid}/pagos/confirmacion`.
+
+**Nota:** No confundir con contratos de otros dominios (p. ej. alquiler de vehículos `/api/v2/booking/vehiculos`). Este repositorio implementa **atracciones y tickets**.
 
 Incluye reglas funcionales, códigos HTTP, estructura de errores y contrato OpenAPI 3.0.3 actualizado con reservas.
 
@@ -193,9 +201,59 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
 
+  /atracciones/{guid}/horarios:
+    get:
+      operationId: listarHorariosAtraccion
+      tags: [Atracciones]
+      parameters:
+        - in: path
+          name: guid
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: disponibles
+          schema: { type: boolean, default: false }
+          description: Si es `true`, solo horarios con cupo disponible.
+      responses:
+        "200":
+          description: Listado de horarios de la atracción
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: integer, example: 200 }
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/HorarioProximo" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /atracciones/{guid}/horarios/{horarioId}/tickets:
+    get:
+      operationId: listarTicketsPorHorarioAtraccion
+      tags: [Atracciones]
+      parameters:
+        - in: path
+          name: guid
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: horarioId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Tickets disponibles para el horario seleccionado
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
   /atracciones/{guid}/horarios-disponibles:
     get:
       operationId: listarHorariosDisponiblesAtraccion
+      deprecated: true
       tags: [Atracciones]
       parameters:
         - in: path
@@ -217,6 +275,55 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/HorarioProximo" }
         "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /atracciones/{guid}/resenias:
+    get:
+      operationId: listarReseniasAtraccion
+      tags: [Reseñas]
+      parameters:
+        - in: path
+          name: guid
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1, minimum: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, default: 10, minimum: 1, maximum: 50 }
+      responses:
+        "200": { description: Listado paginado de reseñas }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+    post:
+      operationId: crearReseniaAtraccion
+      tags: [Reseñas]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: guid
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rev_guid, rating, comentario]
+              properties:
+                rev_guid: { type: string, format: uuid }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comentario: { type: string }
+      responses:
+        "201": { description: Reseña creada }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
         "500": { $ref: "#/components/responses/InternalError" }
 
   /atracciones/filtros:
@@ -265,10 +372,18 @@ paths:
     post:
       operationId: crearReserva
       tags: [Reservas]
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, format: uuid }
       description: |
-        Crea una reserva. Acepta peticiones anónimas y autenticadas.
+        Crea una reserva en estado **pendiente** (`P`), reserva cupo en inventario y devuelve `rev_guid`.
+        El pago se confirma en `POST /reservas/{guid}/pagos/confirmacion`.
+        Requiere cabecera `Idempotency-Key`.
         - **Con JWT** (`ClienteAutenticado`): el `cli_id` se extrae del token; no se requiere `cliente_invitado`.
         - **Sin JWT** (invitado): se debe incluir el objeto `cliente_invitado` en el body.
+        - Canal externo Booking: enviar `origen_canal` = `BOOKING` (opcional; default habitual `web`).
       requestBody:
         required: true
         content:
@@ -302,9 +417,38 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
 
-  /reservas/{guid}/confirmar-pago:
+  /reservas/{guid}/pagos/confirmacion:
     post:
       operationId: confirmarPagoReserva
+      tags: [Reservas]
+      parameters:
+        - in: path
+          name: guid
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmarPagoReservaRequest"
+      responses:
+        "201": { $ref: "#/components/responses/FacturaItemOK" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "500": { $ref: "#/components/responses/InternalError" }
+
+  /reservas/{guid}/confirmar-pago:
+    post:
+      operationId: confirmarPagoReservaLegacy
+      deprecated: true
       tags: [Reservas]
       parameters:
         - in: path
@@ -581,6 +725,11 @@ components:
           format: uuid
           description: GUID de la atracción. Debe coincidir con la atracción del horario seleccionado.
         hor_guid: { type: string, format: uuid }
+        fecha_visita:
+          type: string
+          format: date
+          nullable: true
+          description: Día de visita (yyyy-MM-dd) si el horario abarca varias fechas.
         lineas:
           type: array
           minItems: 1
@@ -589,6 +738,8 @@ components:
         origen_canal:
           type: string
           nullable: true
+          description: Canal de origen. Integradores externos envían `BOOKING`; la web usa `web`.
+          example: BOOKING
         cliente_invitado:
           description: Requerido si la petición no lleva JWT. Ignorado si el token está presente.
           nullable: true
@@ -616,6 +767,7 @@ components:
       type: object
       properties:
         rev_guid: { type: string, format: uuid }
+        at_guid: { type: string, format: uuid }
         rev_codigo: { type: string }
         hor_fecha: { type: string, format: date }
         hor_hora_inicio: { type: string }
@@ -645,6 +797,10 @@ components:
         correo_receptor: { type: string, format: email, maxLength: 150 }
         telefono_receptor: { type: string, maxLength: 20, nullable: true }
         observacion: { type: string, maxLength: 500, nullable: true }
+        paypal_order_id:
+          type: string
+          nullable: true
+          description: ID de orden PayPal capturada en cliente. Si se omite, confirma pago sin pasarela (solo entornos controlados).
 
     CancelarReservaRequest:
       type: object
@@ -872,16 +1028,20 @@ Convenciones globales (salvo lo indicado):
 | `GET /api/v1/atracciones/filtros` | `200` + `ApiItemResponse` | `400`, `500` |
 | `GET /api/v1/atracciones/{guid}` | `200` + `ApiItemResponse` | `404`, `500` |
 | `GET /api/v1/atracciones/{guid}/tickets` | `200` | `404`, `500` |
-| `GET /api/v1/atracciones/{guid}/horarios-disponibles` | `200` | `404`, `500` |
+| `GET /api/v1/atracciones/{guid}/horarios` | `200` | `404`, `500` |
+| `GET /api/v1/atracciones/{guid}/horarios/{horarioId}/tickets` | `200` | `404`, `500` |
+| `GET /api/v1/atracciones/{guid}/horarios-disponibles` | `200` (legacy) | `404`, `500` |
+| `GET /api/v1/atracciones/{guid}/resenias` | `200` + paginación | `404`, `500` |
+| `POST /api/v1/atracciones/{guid}/resenias` | `201` + `ApiItemResponse` | `400`, `401`, `403`, `404`, `409`, `500` |
 | `GET /api/v1/tickets/{guid}/horarios` | `200` | `404`, `500` |
-| `POST /api/v1/reservas` | `201` + `ApiItemResponse` (`status` 201 en envelope) | `400`, `401`, `404`, `409`, `500` |
+| `POST /api/v1/reservas` | `201` + `ApiItemResponse` (`Idempotency-Key` obligatorio) | `400`, `401`, `404`, `409`, `500` |
 | `GET /api/v1/reservas` | `200` + `ApiListResponse` | `401`, `500` |
 | `GET /api/v1/reservas/{guid}` | `200` + `ApiItemResponse` | `401`, `403`, `404`, `500` |
 | `PUT /api/v1/reservas/{guid}/cancelar` | `204` | `401`, `403`, `404`, `409`, `500` |
-| `POST /api/v1/reservas/{guid}/confirmar-pago` | `201` + `ApiItemResponse` | `400`, `404`, `409`, `500` |
+| `POST /api/v1/reservas/{guid}/pagos/confirmacion` | `201` + factura (`Idempotency-Key`) | `400`, `404`, `409`, `500` |
+| `POST /api/v1/reservas/{guid}/confirmar-pago` | `201` (legacy; alias) | igual que confirmación |
+| `POST /api/v1/pagos/paypal/orders` | `200` + `paypal_order_id` | `400`, `404`, `409`, `500` |
 | `GET /api/v1/facturas/mis-facturas` | `200` + `ApiListResponse` | `401`, `403`, `500` |
-| `GET /api/v1/resenias` | `200` + `ApiItemResponse` | `404`, `500` |
-| `POST /api/v1/resenias` | `201` + `ApiItemResponse` (`status` 201) | `400`, `401`, `403`, `404`, `409`, `500` |
 | `GET /api/v1/admin/reservas` | `200` + `ApiListResponse` | `400`, `401`, `403`, `500` |
 | `GET /api/v1/admin/reservas/{guid}` | `200` + `ApiItemResponse` | `404`, `401`, `403`, `500` |
 | `PUT /api/v1/admin/reservas/{guid}/estado` | `204` | `400`, `404`, `409`, `401`, `403`, `500` |

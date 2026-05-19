@@ -83,6 +83,8 @@ export const obtenerTicketsAtraccion = async (guid) => {
 }
 
 export const obtenerHorariosDisponibles = async (guid) => {
-  const response = await apiClient.get(`/atracciones/${guid}/horarios-disponibles`)
-  return response.data.data
+  const response = await apiClient.get(`/atracciones/${guid}/horarios`, {
+    params: { disponibles: true },
+  })
+  return response.data?.data ?? response.data
 }

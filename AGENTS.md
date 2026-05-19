@@ -8,7 +8,7 @@ Este archivo resume el **plan de migración** acordado para el repositorio **Atr
 - [x] **Fase 1:** `ms-identidad` (login, JWT RS256, JWKS, gRPC `UsuarioService`, espejo interno); registro sigue en monolito + sync a `auth.*`; ETL SQL en `services/ms-identidad/db/`; gateway enruta solo `POST /api/v1/auth/login` a identidad.
 - [x] **Fase 2:** CRM/clientes (perfil REST, gRPC `ClienteService`, mirror HTTP, ETL `crm.*`) — **fusionado en `ms-reservas`** (BD `reservas_db`).
 - [x] **Fase 3:** catálogos (destinos/categorías/idiomas/incluye/imágenes, gRPC `CatalogoService`) — **fusionado en `ms-atracciones`** (BD `atracciones_db`).
-- [x] **Fase 4:** `ms-atracciones` (inventario + catálogo + tickets/horarios; gRPC `AtraccionInventarioService` + `CatalogoService` en el mismo proceso; REST público/admin vía gateway). **Pendiente opcional:** reseñas (`Resenas*`) y retirar rutas duplicadas del monolito.
+- [x] **Fase 4:** `ms-atracciones` (inventario + catálogo + tickets/horarios + reseñas públicas anidadas; gRPC `AtraccionInventarioService` + `CatalogoService` en el mismo proceso; REST público/admin vía gateway). **Pendiente opcional:** reseñas admin (`/admin/resenias`) y retirar controladores duplicados del monolito.
 - [x] **Fase 5:** `ms-orquestador` (sagas) + `ms-reservas` (ventas + CRM; gRPC `ReservaService` + `ClienteService` en el mismo proceso); `POST /api/v1/auth/registro` vía orquestador.
 - [x] **Fase 6:** extraer `ms-facturacion` (gRPC `EmitirFactura` llamado por orquestador).
 - [x] **Fase 7:** `ms-auditoria` (gRPC `RegistrarEvento`), OTel hacia Jaeger (gateway + orquestador + auditoría), correlación e idempotencia en gateway/frontend. *Pendiente operativo:* mTLS/B2B opcional, apagar monolito cuando todas las rutas estén migradas.
@@ -97,7 +97,7 @@ flowchart LR
 
 - **API Gateway:** YARP en .NET 10 con rutas por prefijo. CRUDs simples van directo al microservicio dueño; los **flujos saga** (`/api/v1/reservas/**`, registro completo de cliente, confirmar pago, cancelar) van al **orquestador**. CORS centralizado, `X-Correlation-ID` autogenerado, rate limiting básico, validación local de JWT.
 - **ms-orquestador (Middleware orquestador, Clean Architecture 4 capas):**
-  - **Api:** controladores REST que reciben los flujos compuestos (`POST /reservas`, `POST /reservas/{guid}/confirmar-pago`, `PUT /reservas/{guid}/cancelar`, `POST /auth/registro` orquestado).
+  - **Api:** controladores REST que reciben los flujos compuestos (`POST /reservas`, `POST /reservas/{guid}/pagos/confirmacion`, `PUT /reservas/{guid}/cancelar`, `POST /auth/registro` orquestado; alias legacy `confirmar-pago`).
   - **Business:** **Use Cases / Sagas** con pasos `Try / Confirm / Compensate`. Una clase `SagaCrearReserva`, `SagaConfirmarPago`, `SagaCancelarReserva`, `SagaRegistroCliente`.
   - **DataManagement:** Unit of Work local + repositorio del **estado de saga** (`saga_state`, `saga_pasos`, `idempotency_keys`).
   - **DataAccess:** EF Core Postgres propio para persistir el estado de saga e idempotencia; **clientes gRPC** generados a partir de los `.proto` compartidos.
@@ -193,7 +193,7 @@ Criterio: login con tokens RS256 de identidad; registro funcional con sync; usua
 ### Fase 4 — `ms-atracciones` (Core)
 
 - Nuevo `services/ms-atracciones/` con BD propia y `inventario.{atracciones, atraccion_categoria, atraccion_idioma, atraccion_imagen, atraccion_incluye, tickets, horarios, resenias}`. **Sin FK** a `catalogos.*`, solo `des_guid`/`cat_guid`/`id_guid`/`inc_guid`.
-- Migrar [`AtraccionesController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/AtraccionesController.cs), [`AtraccionesAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/AtraccionesAdminController.cs), [`TicketsController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsController.cs), [`TicketsPublicController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsPublicController.cs). Las rutas de [`ReseniasController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasController.cs) / [`ReseniasAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasAdminController.cs) pueden permanecer en el monolito hasta completar el mismo contrato en `ms-atracciones`.
+- Migrar [`AtraccionesController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/AtraccionesController.cs), [`AtraccionesAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/AtraccionesAdminController.cs), [`TicketsController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsController.cs), [`TicketsPublicController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsPublicController.cs). **Reseñas públicas** migradas en `ms-atracciones`: `GET/POST /api/v1/atracciones/{guid}/resenias` (ya no usar `/api/v1/resenias` plano vía gateway). Admin reseñas (`ReseniasAdminController`) puede seguir en monolito hasta portar CRUD admin.
 - Enriquecimiento catálogo en `GET /atracciones/{guid}` vía **`CatalogoService` in-process** (mismo `ms-atracciones`).
 - Exponer **gRPC** `AtraccionInventarioService.proto`:
   - `GetTicketPrecio(tck_guid)`
@@ -212,7 +212,7 @@ Criterio: login con tokens RS256 de identidad; registro funcional con sync; usua
     3. `ms-reservas.CrearReservaPendiente` con totales calculados.
     4. `ms-auditoria.RegistrarEvento("RESERVA_CREADA", payload)` (best-effort).
     5. **Compensación si falla 2/3:** `ms-atracciones.LiberarCupo` por cada cupo ya reservado.
-  - **`SagaConfirmarPago`** (POST `/api/v1/reservas/{guid}/confirmar-pago`, requiere `Idempotency-Key`):
+  - **`SagaConfirmarPago`** (POST `/api/v1/reservas/{guid}/pagos/confirmacion`, requiere `Idempotency-Key`; PayPal vía `paypal_order_id` o `POST /pagos/paypal/orders` + captura):
     1. `ms-reservas.ObtenerReserva(rev_guid)`.
     2. (Aquí iría la pasarela de pago — placeholder).
     3. `ms-reservas.ConfirmarReservaPagada(rev_guid)`.
@@ -243,8 +243,11 @@ Criterio: login con tokens RS256 de identidad; registro funcional con sync; usua
 
 ## 7. Cambios en el frontend
 
-- Único cambio funcional: [`.env.local`](frontend-atracciones/.env.local) y [`.env.example`](frontend-atracciones/.env.example) → `VITE_API_URL` al gateway (`:5000` con `dotnet run`, **`:5050`** con Docker Compose en Windows). Los paths en [`frontend-atracciones/src/api/`](frontend-atracciones/src/api/) **no cambian** porque YARP preserva las rutas.
-- Añadir interceptor en [`atraccionesApi.js`](frontend-atracciones/src/api/atraccionesApi.js) para enviar `X-Correlation-ID` (UUID por request).
+- [`.env.local`](frontend-atracciones/.env.local) y [`.env.example`](frontend-atracciones/.env.example) → `VITE_API_URL` al gateway (**`:5050`** con Docker Compose en Windows).
+- [`atraccionesApi.js`](frontend-atracciones/src/api/atraccionesApi.js): `X-Correlation-ID` por request; horarios vía `GET .../horarios?disponibles=true`.
+- **Checkout Booking:** [`reservasApi.js`](frontend-atracciones/src/api/reservasApi.js) — `crearReserva` → `crearOrdenPayPal({ rev_guid })` → `confirmarPagoReserva` en `/reservas/{guid}/pagos/confirmacion` (con `Idempotency-Key`).
+- **Reseñas:** [`reseniasApi.js`](frontend-atracciones/src/api/reseniasApi.js) — rutas anidadas `/atracciones/{atGuid}/resenias`; UI en Mis reservas solo si estado confirmado (`A`).
+- Contrato público de referencia: [`openapi-v2-booking-public.md`](MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md).
 
 ## 8. Riesgos y mitigaciones
 
