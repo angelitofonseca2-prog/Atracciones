@@ -28,6 +28,7 @@
     <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\auditoria_service.proto" GrpcServices="Client" Link="Protos\auditoria_service.proto" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\platform\shared\BuildingBlocks\Atracciones.Platform.BuildingBlocks.csproj" />
     <ProjectReference Include="..\Atracciones.MsOrquestador.DataManagement\Atracciones.MsOrquestador.DataManagement.csproj" />
   </ItemGroup>
 </Project>

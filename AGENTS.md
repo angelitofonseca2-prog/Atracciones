@@ -8,7 +8,7 @@ Este archivo resume el **plan de migración** acordado para el repositorio **Atr
 - [x] **Fase 1:** `ms-identidad` (login, JWT RS256, JWKS, gRPC `UsuarioService`, espejo interno); registro sigue en monolito + sync a `auth.*`; ETL SQL en `services/ms-identidad/db/`; gateway enruta solo `POST /api/v1/auth/login` a identidad.
 - [x] **Fase 2:** CRM/clientes (perfil REST, gRPC `ClienteService`, mirror HTTP, ETL `crm.*`) — **fusionado en `ms-reservas`** (BD `reservas_db`).
 - [x] **Fase 3:** catálogos (destinos/categorías/idiomas/incluye/imágenes, gRPC `CatalogoService`) — **fusionado en `ms-atracciones`** (BD `atracciones_db`).
-- [x] **Fase 4:** `ms-atracciones` (inventario + catálogo + tickets/horarios + reseñas públicas anidadas; gRPC `AtraccionInventarioService` + `CatalogoService` en el mismo proceso; REST público/admin vía gateway). **Pendiente opcional:** reseñas admin (`/admin/resenias`) y retirar controladores duplicados del monolito.
+- [x] **Fase 4:** `ms-atracciones` (inventario + catálogo + tickets/horarios + reseñas públicas anidadas y admin `/admin/resenias`; gRPC `AtraccionInventarioService` + `CatalogoService`; REST vía gateway). **Pendiente opcional:** retirar carpeta monolito del despliegue.
 - [x] **Fase 5:** `ms-orquestador` (sagas) + `ms-reservas` (ventas + CRM; gRPC `ReservaService` + `ClienteService` en el mismo proceso); `POST /api/v1/auth/registro` vía orquestador.
 - [x] **Fase 6:** extraer `ms-facturacion` (gRPC `EmitirFactura` llamado por orquestador).
 - [x] **Fase 7:** `ms-auditoria` (gRPC `RegistrarEvento`), OTel hacia Jaeger (gateway + orquestador + auditoría), correlación e idempotencia en gateway/frontend. *Pendiente operativo:* mTLS/B2B opcional, apagar monolito cuando todas las rutas estén migradas.
@@ -108,7 +108,7 @@ flowchart LR
 - **Persistencia:** Postgres en Railway, **una BD por servicio** (incluido el orquestador). En Railway puede ser una sola instancia con bases distintas si el plan no admite varias instancias; no se comparten esquemas entre servicios.
 - **Migraciones:** EF Core Migrations por servicio (sin `EnsureCreated`); cada servicio aplica las suyas en arranque controlado.
 - **Observabilidad:** OpenTelemetry (traces/logs/metrics) → exportador OTLP (Jaeger local; Grafana Cloud u otro en producción). Serilog estructurado; `correlation_id` se propaga por header HTTP y metadata gRPC y queda en cada `saga_pasos`.
-- **Resiliencia gRPC:** Polly v8 sobre cada cliente gRPC: timeout 2s, retry 2 (solo en `UNAVAILABLE` / `DEADLINE_EXCEEDED`), circuit breaker. Si un dependiente cae en pleno flujo, la saga compensa los pasos ya ejecutados.
+- **Resiliencia gRPC:** `GrpcClientDefaults` (BuildingBlocks): connect timeout 2s en canales del orquestador; deadline 2s vía `GrpcCallOptions` (aplicar en llamadas críticas). Retry/circuit breaker completo: mejora futura.
 - **Sin RabbitMQ ni outbox.** No hay eventos. Cualquier necesidad “asíncrona” (auditar, notificar) se modela como una **llamada gRPC adicional** desde el orquestador, opcionalmente disparada en `Task.Run` con su propio circuit breaker si no debe bloquear la respuesta al cliente.
 - **Secretos:** `dotnet user-secrets` en local; variables de entorno en Railway; **no** versionar `appsettings.*.json` con datos reales.
 - **Despliegue local:** `docker-compose.yml` en `platform/` con: gateway, orquestador, los microservicios extraídos (incl. facturación) y un Postgres por servicio + Jaeger. Sin Rabbit.

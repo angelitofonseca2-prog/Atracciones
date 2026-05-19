@@ -1045,6 +1045,7 @@ Convenciones globales (salvo lo indicado):
 | `GET /api/v1/admin/reservas` | `200` + `ApiListResponse` | `400`, `401`, `403`, `500` |
 | `GET /api/v1/admin/reservas/{guid}` | `200` + `ApiItemResponse` | `404`, `401`, `403`, `500` |
 | `PUT /api/v1/admin/reservas/{guid}/estado` | `204` | `400`, `404`, `409`, `401`, `403`, `500` |
+| `GET/PUT/DELETE /api/v1/admin/resenias` | `200` / `204` | `400`, `401`, `403`, `404`, `500` |
 | `GET/POST` facturas, tickets, clientes (admin) | `200` / `201` | `400`, `404`, `409`, `201` |
 | `GET/POST/PUT/DELETE` atracciones, destinos, reseñas admin, usuarios | según acción | `400`, `404`, `204`, `401`, `403`, `500` |
 | `POST /api/v1/admin/auth/login` | `200` | Sin cambios respecto a la configuración existente del controlador |

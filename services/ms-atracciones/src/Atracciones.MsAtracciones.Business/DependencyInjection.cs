@@ -19,6 +19,7 @@ public static class DependencyInjection
 
         services.AddScoped<ICatalogosAdminAppService, CatalogosAdminAppService>();
         services.AddScoped<IReseniaAppService, ReseniaAppService>();
+        services.AddScoped<IReseniaAdminAppService, ReseniaAdminAppService>();
 
         return services;
     }

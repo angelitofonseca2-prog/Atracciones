@@ -9,6 +9,21 @@ public interface IReseniaRepository
     Task<ReseniaDto?> ObtenerPorGuidAsync(Guid rsnGuid, CancellationToken ct = default);
     Task<bool> ExistePorRevGuidAsync(Guid revGuid, CancellationToken ct = default);
     Task<ReseniaDto> CrearAsync(CrearReseniaDto dto, CancellationToken ct = default);
+
+    Task<IReadOnlyList<ReseniaDto>> ListAdminPorAtraccionAsync(Guid atGuid, CancellationToken ct = default);
+
+    Task<ReseniaDto?> ObtenerAdminPorGuidAsync(Guid rsnGuid, CancellationToken ct = default);
+
+    Task<ReseniaDto> ActualizarAdminAsync(
+        Guid rsnGuid,
+        decimal? rating,
+        string? comentario,
+        char? estado,
+        string usuarioMod,
+        string ipMod,
+        CancellationToken ct = default);
+
+    Task EliminarLogicoAsync(Guid rsnGuid, string usuarioElim, string ipElim, CancellationToken ct = default);
 }
 
 public sealed class CrearReseniaDto

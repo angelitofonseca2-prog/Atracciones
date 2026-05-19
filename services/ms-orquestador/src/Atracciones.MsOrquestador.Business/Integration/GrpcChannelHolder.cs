@@ -1,5 +1,6 @@
 using System.Net.Http;
 using Atracciones.MsOrquestador.Business.Options;
+using Atracciones.Platform.BuildingBlocks.Grpc;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Options;
 
@@ -29,10 +30,8 @@ public sealed class GrpcChannelHolder : IDisposable
     private static GrpcChannel CreateChannel(string address)
     {
         var url = GrpcBaseUrlNormalizer.NormalizeGrpc(address).TrimEnd('/');
-        var handler = new SocketsHttpHandler
-        {
-            EnableMultipleHttp2Connections = true,
-        };
+        var handler = new SocketsHttpHandler();
+        GrpcClientDefaults.ConfigureHandler(handler);
 
         return GrpcChannel.ForAddress(url, new GrpcChannelOptions
         {

@@ -8,6 +8,7 @@ using System.Security.Claims;
 
 namespace Microservicio.Atracciones.Api.Controllers.V1.Internal
 {
+    [Obsolete("Admin reseñas migrado a ms-atracciones (/api/v1/admin/resenias)")]
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v1/admin/resenias")]

@@ -62,4 +62,64 @@ public sealed class ReseniaRepository : IReseniaRepository
         await _db.SaveChangesAsync(ct);
         return Map(entity);
     }
+
+    public async Task<IReadOnlyList<ReseniaDto>> ListAdminPorAtraccionAsync(Guid atGuid, CancellationToken ct = default)
+        => (await _db.Resenias.AsNoTracking()
+            .Where(r => r.AtGuid == atGuid && r.RsnEstado != 'I')
+            .OrderByDescending(r => r.RsnFechaCreacion)
+            .ToListAsync(ct))
+            .Select(Map).ToList();
+
+    public async Task<ReseniaDto?> ObtenerAdminPorGuidAsync(Guid rsnGuid, CancellationToken ct = default)
+    {
+        var x = await _db.Resenias.AsNoTracking()
+            .FirstOrDefaultAsync(r => r.RsnGuid == rsnGuid && r.RsnEstado != 'I', ct);
+        return x is null ? null : Map(x);
+    }
+
+    public async Task<ReseniaDto> ActualizarAdminAsync(
+        Guid rsnGuid,
+        decimal? rating,
+        string? comentario,
+        char? estado,
+        string usuarioMod,
+        string ipMod,
+        CancellationToken ct = default)
+    {
+        var entity = await _db.Resenias.FirstOrDefaultAsync(r => r.RsnGuid == rsnGuid && r.RsnEstado != 'I', ct)
+            ?? throw new InvalidOperationException("Reseña no encontrada.");
+
+        if (rating is not null)
+        {
+            if (rating < 1 || rating > 5)
+                throw new InvalidOperationException("El rating debe estar entre 1 y 5.");
+            entity.RsnRating = rating.Value;
+        }
+
+        if (comentario is not null)
+            entity.RsnComentario = comentario.Trim();
+
+        if (estado is not null)
+            entity.RsnEstado = estado.Value;
+
+        entity.RsnFechaMod = DateTime.UtcNow;
+        entity.RsnUsuarioMod = usuarioMod;
+        entity.RsnIpMod = ipMod;
+
+        await _db.SaveChangesAsync(ct);
+        return Map(entity);
+    }
+
+    public async Task EliminarLogicoAsync(Guid rsnGuid, string usuarioElim, string ipElim, CancellationToken ct = default)
+    {
+        var entity = await _db.Resenias.FirstOrDefaultAsync(r => r.RsnGuid == rsnGuid && r.RsnEstado != 'I', ct)
+            ?? throw new InvalidOperationException("Reseña no encontrada.");
+
+        entity.RsnEstado = 'I';
+        entity.RsnFechaEliminacion = DateTime.UtcNow;
+        entity.RsnUsuarioEliminacion = usuarioElim;
+        entity.RsnIpEliminacion = ipElim;
+
+        await _db.SaveChangesAsync(ct);
+    }
 }
