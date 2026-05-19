@@ -1,13 +1,26 @@
-# Desarrollo: Vite accesible desde el host en :5173 (API en el navegador → gateway :5050)
-FROM node:22-alpine
+# Producción (Railway o build manual). Contexto = carpeta frontend-atracciones.
+FROM node:22-alpine AS build
 WORKDIR /app
 
-COPY frontend-atracciones/package.json frontend-atracciones/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci
 
-COPY frontend-atracciones/ .
+COPY . .
 
-EXPOSE 5173
-ENV VITE_API_URL=http://localhost:5050/api/v2
+ARG VITE_API_URL=https://api-gateway-production-5c80b.up.railway.app/api/v2
+ENV VITE_API_URL=$VITE_API_URL
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
+RUN npm run build
+
+FROM node:22-alpine AS runtime
+WORKDIR /app
+
+ENV NODE_ENV=production
+RUN npm install -g serve@14
+
+COPY --from=build /app/dist ./dist
+
+ENV PORT=3000
+EXPOSE 3000
+
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-3000}"]

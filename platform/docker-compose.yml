@@ -239,12 +239,12 @@ services:
   frontend-atracciones:
     build:
       context: ..
-      dockerfile: frontend-atracciones/Dockerfile
+      dockerfile: frontend-atracciones/Dockerfile.dev
     ports:
       - "5173:5173"
     environment:
       # El navegador en tu PC llama al gateway publicado en localhost:5050
-      VITE_API_URL: http://localhost:5050/api/v1
+      VITE_API_URL: http://localhost:5050/api/v2
       VITE_PAYPAL_CLIENT_ID: ${VITE_PAYPAL_CLIENT_ID:-}
     depends_on:
       - gateway
