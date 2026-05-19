@@ -10,7 +10,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/admin/tickets")]
+    [Route("api/v2/admin/tickets")]
     [Authorize(Policy = "SoloAdmin")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(ApiErrorResponse), 401)]
@@ -43,7 +43,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
             return Ok(new ApiItemResponse<TicketResponse>(ticket));
         }
 
-        [HttpGet("~/api/v1/admin/atracciones/{atraccionGuid:guid}/tickets")]
+        [HttpGet("~/api/v2/admin/atracciones/{atraccionGuid:guid}/tickets")]
         [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<TicketResponse>>), 200)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]
         public async Task<IActionResult> ListarPorAtraccion(Guid atraccionGuid)
@@ -92,7 +92,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
             return StatusCode(201, new ApiItemResponse<HorarioResponse>(horario, 201));
         }
 
-        [HttpGet("~/api/v1/admin/horarios")]
+        [HttpGet("~/api/v2/admin/horarios")]
         [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<HorarioResponse>>), 200)]
         public async Task<IActionResult> ListarHorarios()
         {
@@ -100,7 +100,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
             return Ok(new ApiItemResponse<IReadOnlyList<HorarioResponse>>(horarios));
         }
 
-        [HttpGet("~/api/v1/admin/horarios/{guid:guid}")]
+        [HttpGet("~/api/v2/admin/horarios/{guid:guid}")]
         [ProducesResponseType(typeof(ApiItemResponse<HorarioResponse>), 200)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]
         public async Task<IActionResult> ObtenerHorarioPorGuid(Guid guid)
@@ -109,7 +109,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
             return Ok(new ApiItemResponse<HorarioResponse>(horario));
         }
 
-        [HttpPut("~/api/v1/admin/horarios/{guid:guid}")]
+        [HttpPut("~/api/v2/admin/horarios/{guid:guid}")]
         [ProducesResponseType(typeof(ApiItemResponse<HorarioResponse>), 200)]
         [ProducesResponseType(typeof(ApiErrorResponse), 400)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]
@@ -120,7 +120,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
             return Ok(new ApiItemResponse<HorarioResponse>(horario));
         }
 
-        [HttpDelete("~/api/v1/admin/horarios/{guid:guid}")]
+        [HttpDelete("~/api/v2/admin/horarios/{guid:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]
         [ProducesResponseType(typeof(ApiErrorResponse), 409)]
@@ -139,7 +139,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
             return Ok(new ApiItemResponse<IReadOnlyList<HorarioResponse>>(horarios));
         }
 
-        [HttpGet("~/api/v1/admin/atracciones/{atraccionGuid:guid}/horarios")]
+        [HttpGet("~/api/v2/admin/atracciones/{atraccionGuid:guid}/horarios")]
         [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<HorarioResponse>>), 200)]
         [ProducesResponseType(typeof(ApiErrorResponse), 404)]
         public async Task<IActionResult> ListarHorariosPorAtraccion(Guid atraccionGuid)

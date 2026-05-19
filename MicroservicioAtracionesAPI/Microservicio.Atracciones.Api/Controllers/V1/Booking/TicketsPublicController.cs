@@ -8,7 +8,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/tickets")]
+    [Route("api/v2/tickets")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(ApiErrorResponse), 500)]
     public class TicketsPublicController : ControllerBase

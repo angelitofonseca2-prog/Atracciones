@@ -43,8 +43,8 @@ public static class AtraccionPublicMapper
             },
             Links = new Dictionary<string, string?>
             {
-                ["self"] = $"{baseUrl}/api/v1/atracciones/{row.AtGuid}",
-                ["detalle"] = $"{baseUrl}/api/v1/atracciones/{row.AtGuid}",
+                ["self"] = $"{baseUrl}/api/v2/atracciones/{row.AtGuid}",
+                ["detalle"] = $"{baseUrl}/api/v2/atracciones/{row.AtGuid}",
             },
         };
     }
@@ -92,8 +92,8 @@ public static class AtraccionPublicMapper
             },
             Links = new Dictionary<string, string?>
             {
-                ["self"] = $"{baseUrl}/api/v1/atracciones/{m.AtGuid}",
-                ["detalle"] = $"{baseUrl}/api/v1/atracciones/{m.AtGuid}",
+                ["self"] = $"{baseUrl}/api/v2/atracciones/{m.AtGuid}",
+                ["detalle"] = $"{baseUrl}/api/v2/atracciones/{m.AtGuid}",
             },
         };
 
@@ -128,10 +128,10 @@ public static class AtraccionPublicMapper
             HorariosProximos = horariosProximos,
             Links = new Dictionary<string, string?>
             {
-                ["self"] = $"{baseUrl}/api/v1/atracciones/{m.AtGuid}",
+                ["self"] = $"{baseUrl}/api/v2/atracciones/{m.AtGuid}",
                 ["listado"] = ciudad is not null
-                    ? $"{baseUrl}/api/v1/atracciones?ciudad={Uri.EscapeDataString(ciudad)}"
-                    : $"{baseUrl}/api/v1/atracciones",
+                    ? $"{baseUrl}/api/v2/atracciones?ciudad={Uri.EscapeDataString(ciudad)}"
+                    : $"{baseUrl}/api/v2/atracciones",
             },
         };
     }

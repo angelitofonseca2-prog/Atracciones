@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsAtracciones.Api.Controllers.Public;
 
 [ApiController]
-[Route("api/v1/tickets")]
+[Route("api/v2/tickets")]
 [Produces("application/json")]
 public sealed class TicketsPublicController : ControllerBase
 {

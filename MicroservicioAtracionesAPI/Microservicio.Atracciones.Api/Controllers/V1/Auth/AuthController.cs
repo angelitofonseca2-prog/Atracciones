@@ -11,7 +11,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Auth
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/auth")]
+    [Route("api/v2/auth")]
     [Produces("application/json")]
     public class AuthController : ControllerBase
     {
@@ -40,7 +40,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Auth
             {
                 Status = 501,
                 Error = "Login no implementado en el monolito",
-                Details = new List<string> { "Use POST /api/v1/auth/login a través del API Gateway (ms-identidad)." },
+                Details = new List<string> { "Use POST /api/v2/auth/login a través del API Gateway (ms-identidad)." },
                 Timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                 Path = HttpContext.Request.Path.ToString(),
             });

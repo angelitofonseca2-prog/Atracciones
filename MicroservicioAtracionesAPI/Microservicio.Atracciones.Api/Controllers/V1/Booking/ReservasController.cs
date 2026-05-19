@@ -13,10 +13,10 @@ using Microservicio.Atracciones.Business.Exceptions;
 namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
 {
     /// <summary>Legacy: reservas públicas y sagas en ms-orquestador vía gateway.</summary>
-    [Obsolete("Reservas Booking migradas a ms-orquestador (/api/v1/reservas, pagos/confirmacion)")]
+    [Obsolete("Reservas Booking migradas a ms-orquestador (/api/v2/reservas, pagos/confirmacion)")]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/reservas")]
+    [Route("api/v2/reservas")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(ApiErrorResponse), 401)]
     [ProducesResponseType(typeof(ApiErrorResponse), 500)]
@@ -60,7 +60,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
         }
 
         // ----------------------------------------------------------------
-        //  POST /api/v1/reservas
+        //  POST /api/v2/reservas
         //  Crea reserva con cabecera + detalle en una sola transacción.
         //  Descuenta cupos en HORARIO. IVA 15%.
         // ----------------------------------------------------------------
@@ -94,7 +94,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Booking
         }
 
         // ----------------------------------------------------------------
-        //  GET /api/v1/reservas/{guid}
+        //  GET /api/v2/reservas/{guid}
         //  El cliente solo puede ver sus propias reservas.
         // ----------------------------------------------------------------
         [HttpGet("{guid:guid}")]

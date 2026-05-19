@@ -1,7 +1,7 @@
 import { apiClient } from './atraccionesApi'
 
 /**
- * POST /api/v1/auth/login
+ * POST /api/v2/auth/login
  * Body: { login, password } — `login` debe ser el correo del usuario.
  */
 export const login = async (loginValue, password) => {
@@ -13,7 +13,7 @@ export const login = async (loginValue, password) => {
 }
 
 /**
- * POST /api/v1/auth/registro
+ * POST /api/v2/auth/registro
  * Body completo del contrato `RegistroClienteRequest`:
  *   { login, password, tipo_identificacion, numero_identificacion,
  *     nombres, apellidos, correo, telefono? }

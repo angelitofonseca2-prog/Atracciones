@@ -4,9 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Atracciones.MsIdentidad.Api.Controllers;
 
-/// <summary>Listado administrativo de usuarios (auth.*). Expuesto vía gateway en /api/v1/admin/usuarios.</summary>
+/// <summary>Listado administrativo de usuarios (auth.*). Expuesto vía gateway en /api/v2/admin/usuarios.</summary>
 [ApiController]
-[Route("api/v1/admin/usuarios")]
+[Route("api/v2/admin/usuarios")]
 [Authorize(Policy = "SoloAdmin")]
 [Produces("application/json")]
 public sealed class AdminUsuariosController : ControllerBase

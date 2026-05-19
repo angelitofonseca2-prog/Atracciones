@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsReservas.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/clientes/perfil")]
+[Route("api/v2/clientes/perfil")]
 [Authorize(Policy = "ClienteAutenticado")]
 [Produces("application/json")]
 public sealed class PerfilController : ControllerBase

@@ -11,11 +11,11 @@ using Microservicio.Atracciones.Business.Exceptions;
 
 namespace Microservicio.Atracciones.Api.Controllers.V1.Internal
 {
-    /// <summary>Legacy: el gateway enruta reseñas públicas a ms-atracciones (GET/POST /api/v1/atracciones/{guid}/resenias).</summary>
-    [Obsolete("Reseñas públicas migradas a ms-atracciones bajo /api/v1/atracciones/{guid}/resenias")]
+    /// <summary>Legacy: el gateway enruta reseñas públicas a ms-atracciones (GET/POST /api/v2/atracciones/{guid}/resenias).</summary>
+    [Obsolete("Reseñas públicas migradas a ms-atracciones bajo /api/v2/atracciones/{guid}/resenias")]
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/resenias")]
+    [Route("api/v2/resenias")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(ApiErrorResponse), 500)]
     public class ReseniasController : ControllerBase
@@ -40,7 +40,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Internal
         private string IpActual => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
 
         // ----------------------------------------------------------------
-        //  GET /api/v1/resenias?atraccionGuid={guid}
+        //  GET /api/v2/resenias?atraccionGuid={guid}
         //  Público — no requiere token
         // ----------------------------------------------------------------
         [HttpGet]
@@ -54,7 +54,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Internal
         }
 
         // ----------------------------------------------------------------
-        //  POST /api/v1/resenias
+        //  POST /api/v2/resenias
         //  Requiere token de cliente — solo reseña reservas propias
         // ----------------------------------------------------------------
         [HttpPost]

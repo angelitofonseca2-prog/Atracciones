@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsOrquestador.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/pagos/paypal")]
+[Route("api/v2/pagos/paypal")]
 public sealed class PayPalPagosController : ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
@@ -102,7 +102,7 @@ public sealed class PayPalPagosController : ControllerBase
 
     [HttpPost("orders/capture")]
     [Authorize(Policy = "ClienteAutenticado")]
-    [Obsolete("Use POST /api/v1/reservas/{rev_guid}/pagos/confirmacion con paypal_order_id")]
+    [Obsolete("Use POST /api/v2/reservas/{rev_guid}/pagos/confirmacion con paypal_order_id")]
     public async Task<IActionResult> Capturar(CancellationToken ct)
     {
         var raw = await ReadBodyRawAsync(ct);

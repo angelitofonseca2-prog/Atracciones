@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsAtracciones.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/v1/admin")]
+[Route("api/v2/admin")]
 [Authorize(Policy = "SoloAdmin")]
 [Produces("application/json")]
 public sealed class CatalogosAdminController : ControllerBase

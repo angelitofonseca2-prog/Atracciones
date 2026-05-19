@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace Atracciones.MsAtracciones.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/v1/admin/tickets")]
+[Route("api/v2/admin/tickets")]
 [Authorize(Policy = "SoloAdmin")]
 [Produces("application/json")]
 public sealed class TicketsAdminController : ControllerBase
@@ -34,7 +34,7 @@ public sealed class TicketsAdminController : ControllerBase
         return Ok(new ApiItemResponse<TicketResponse>(ticket));
     }
 
-    [HttpGet("~/api/v1/admin/atracciones/{atraccionGuid:guid}/tickets")]
+    [HttpGet("~/api/v2/admin/atracciones/{atraccionGuid:guid}/tickets")]
     public async Task<IActionResult> ListarPorAtraccion(Guid atraccionGuid)
     {
         var tickets = await _service.ListarTicketsPorAtraccionAsync(atraccionGuid);
@@ -70,28 +70,28 @@ public sealed class TicketsAdminController : ControllerBase
         return StatusCode(201, new ApiItemResponse<HorarioResponse>(horario, 201));
     }
 
-    [HttpGet("~/api/v1/admin/horarios")]
+    [HttpGet("~/api/v2/admin/horarios")]
     public async Task<IActionResult> ListarHorarios()
     {
         var horarios = await _service.ListarHorariosAsync();
         return Ok(new ApiItemResponse<IReadOnlyList<HorarioResponse>>(horarios));
     }
 
-    [HttpGet("~/api/v1/admin/horarios/{guid:guid}")]
+    [HttpGet("~/api/v2/admin/horarios/{guid:guid}")]
     public async Task<IActionResult> ObtenerHorarioPorGuid(Guid guid)
     {
         var horario = await _service.ObtenerHorarioPorGuidAsync(guid);
         return Ok(new ApiItemResponse<HorarioResponse>(horario));
     }
 
-    [HttpPut("~/api/v1/admin/horarios/{guid:guid}")]
+    [HttpPut("~/api/v2/admin/horarios/{guid:guid}")]
     public async Task<IActionResult> ActualizarHorario(Guid guid, [FromBody] ActualizarHorarioRequest request)
     {
         var horario = await _service.ActualizarHorarioAsync(guid, request, UsuarioAccion, IpActual);
         return Ok(new ApiItemResponse<HorarioResponse>(horario));
     }
 
-    [HttpDelete("~/api/v1/admin/horarios/{guid:guid}")]
+    [HttpDelete("~/api/v2/admin/horarios/{guid:guid}")]
     [ProducesResponseType(204)]
     public async Task<IActionResult> EliminarHorario(Guid guid)
     {
@@ -106,7 +106,7 @@ public sealed class TicketsAdminController : ControllerBase
         return Ok(new ApiItemResponse<IReadOnlyList<HorarioResponse>>(horarios));
     }
 
-    [HttpGet("~/api/v1/admin/atracciones/{atraccionGuid:guid}/horarios")]
+    [HttpGet("~/api/v2/admin/atracciones/{atraccionGuid:guid}/horarios")]
     public async Task<IActionResult> ListarHorariosPorAtraccion(Guid atraccionGuid)
     {
         var horarios = await _service.ListarHorariosPorAtraccionAsync(atraccionGuid);

@@ -54,8 +54,8 @@ namespace Microservicio.Atracciones.Business.Mappers.Public
                 },
                 Links = new Dictionary<string, string?>
                 {
-                    ["self"] = $"{baseUrl}/api/v1/atracciones/{model.AtGuid}",
-                    ["detalle"] = $"{baseUrl}/api/v1/atracciones/{model.AtGuid}"
+                    ["self"] = $"{baseUrl}/api/v2/atracciones/{model.AtGuid}",
+                    ["detalle"] = $"{baseUrl}/api/v2/atracciones/{model.AtGuid}"
                 }
             };
         }
@@ -130,10 +130,10 @@ namespace Microservicio.Atracciones.Business.Mappers.Public
 
                 Links = new Dictionary<string, string?>
                 {
-                    ["self"] = $"{baseUrl}/api/v1/atracciones/{model.AtGuid}",
+                    ["self"] = $"{baseUrl}/api/v2/atracciones/{model.AtGuid}",
                     ["listado"] = ciudad is not null
-                                  ? $"{baseUrl}/api/v1/atracciones?ciudad={ciudad}"
-                                  : $"{baseUrl}/api/v1/atracciones"
+                                  ? $"{baseUrl}/api/v2/atracciones?ciudad={ciudad}"
+                                  : $"{baseUrl}/api/v2/atracciones"
                 }
             };
 

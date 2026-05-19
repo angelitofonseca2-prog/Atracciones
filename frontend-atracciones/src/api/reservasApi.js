@@ -1,7 +1,7 @@
 import { apiClient } from './atraccionesApi'
 
 /**
- * POST /api/v1/reservas — requiere JWT de cliente (Authorization).
+ * POST /api/v2/reservas — requiere JWT de cliente (Authorization).
  */
 const nuevaIdempotencyKey = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID
@@ -16,7 +16,7 @@ export const crearReserva = async (body) => {
 }
 
 /**
- * GET /api/v1/reservas/{guid} — el cliente solo puede consultar sus reservas.
+ * GET /api/v2/reservas/{guid} — el cliente solo puede consultar sus reservas.
  */
 export const obtenerReserva = async (guid) => {
   const response = await apiClient.get(`/reservas/${guid}`)
@@ -24,7 +24,7 @@ export const obtenerReserva = async (guid) => {
 }
 
 /**
- * GET /api/v1/reservas (cliente autenticado).
+ * GET /api/v2/reservas (cliente autenticado).
  * Devuelve envelope `{ status, message, data, pagination }`.
  */
 export const listarMisReservas = async (params = {}) => {
@@ -33,7 +33,7 @@ export const listarMisReservas = async (params = {}) => {
 }
 
 /**
- * PUT /api/v1/reservas/{guid}/cancelar
+ * PUT /api/v2/reservas/{guid}/cancelar
  * Body: { motivo: string }. El backend marca la reserva con estado 'C'.
  */
 export const cancelarReserva = async (guid, motivo) => {
@@ -42,7 +42,7 @@ export const cancelarReserva = async (guid, motivo) => {
 }
 
 /**
- * POST /api/v1/pagos/paypal/orders — crea orden PayPal (servidor).
+ * POST /api/v2/pagos/paypal/orders — crea orden PayPal (servidor).
  */
 export const crearOrdenPayPal = async (body) => {
   const response = await apiClient.post('/pagos/paypal/orders', body)
@@ -50,7 +50,7 @@ export const crearOrdenPayPal = async (body) => {
 }
 
 /**
- * POST /api/v1/reservas/{guid}/pagos/confirmacion — confirma pago (PayPal o pendiente legacy).
+ * POST /api/v2/reservas/{guid}/pagos/confirmacion — confirma pago (PayPal o pendiente legacy).
  */
 export const confirmarPagoReserva = async (revGuid, body) => {
   const response = await apiClient.post(`/reservas/${revGuid}/pagos/confirmacion`, body, {

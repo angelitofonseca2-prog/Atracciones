@@ -1,6 +1,6 @@
 # ms-identidad (Fase 1)
 
-Microservicio de autenticación: esquema PostgreSQL `auth`, JWT **RS256**, `/.well-known/jwks.json`, REST `POST /api/v1/auth/login`, gRPC `UsuarioService`, endpoint interno de espejo para el monolito.
+Microservicio de autenticación: esquema PostgreSQL `auth`, JWT **RS256**, `/.well-known/jwks.json`, REST `POST /api/v2/auth/login`, gRPC `UsuarioService`, endpoint interno de espejo para el monolito.
 
 ## Requisitos
 

@@ -5,7 +5,7 @@ import Spinner from '../../components/common/Spinner'
 
 /**
  * Listado de facturas del cliente autenticado.
- * Endpoint: GET /api/v1/facturas/mis-facturas
+ * Endpoint: GET /api/v2/facturas/mis-facturas
  * Respuesta: ApiListResponse<FacturaResponse>
  * Campos: fac_guid, fac_numero, rev_codigo, total, moneda, fecha_emision,
  *         estado, nombre_receptor, correo_receptor

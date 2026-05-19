@@ -5,11 +5,11 @@ Este archivo resume el **plan de migración** acordado para el repositorio **Atr
 ## Checklist de fases (Strangler Fig)
 
 - [x] **Fase 0:** docker-compose (gateway + Jaeger), BuildingBlocks (correlation + idempotency stub; Polly en fases posteriores), API Gateway YARP al monolito; frontend vía gateway y `X-Correlation-ID`.
-- [x] **Fase 1:** `ms-identidad` (login, JWT RS256, JWKS, gRPC `UsuarioService`, espejo interno); registro sigue en monolito + sync a `auth.*`; ETL SQL en `services/ms-identidad/db/`; gateway enruta solo `POST /api/v1/auth/login` a identidad.
+- [x] **Fase 1:** `ms-identidad` (login, JWT RS256, JWKS, gRPC `UsuarioService`, espejo interno); registro sigue en monolito + sync a `auth.*`; ETL SQL en `services/ms-identidad/db/`; gateway enruta solo `POST /api/v2/auth/login` a identidad.
 - [x] **Fase 2:** CRM/clientes (perfil REST, gRPC `ClienteService`, mirror HTTP, ETL `crm.*`) — **fusionado en `ms-reservas`** (BD `reservas_db`).
 - [x] **Fase 3:** catálogos (destinos/categorías/idiomas/incluye/imágenes, gRPC `CatalogoService`) — **fusionado en `ms-atracciones`** (BD `atracciones_db`).
 - [x] **Fase 4:** `ms-atracciones` (inventario + catálogo + tickets/horarios + reseñas públicas anidadas y admin `/admin/resenias`; gRPC `AtraccionInventarioService` + `CatalogoService`; REST vía gateway). **Pendiente opcional:** retirar carpeta monolito del despliegue.
-- [x] **Fase 5:** `ms-orquestador` (sagas) + `ms-reservas` (ventas + CRM; gRPC `ReservaService` + `ClienteService` en el mismo proceso); `POST /api/v1/auth/registro` vía orquestador.
+- [x] **Fase 5:** `ms-orquestador` (sagas) + `ms-reservas` (ventas + CRM; gRPC `ReservaService` + `ClienteService` en el mismo proceso); `POST /api/v2/auth/registro` vía orquestador.
 - [x] **Fase 6:** extraer `ms-facturacion` (gRPC `EmitirFactura` llamado por orquestador).
 - [x] **Fase 7:** `ms-auditoria` (gRPC `RegistrarEvento`), OTel hacia Jaeger (gateway + orquestador + auditoría), correlación e idempotencia en gateway/frontend. *Pendiente operativo:* mTLS/B2B opcional, apagar monolito cuando todas las rutas estén migradas.
 
@@ -26,9 +26,9 @@ Tras las fases B/C del [plan de fusión](docs/plan-fusion-microservicios.md), el
 
 - `Clientes` y `Reservas` → **misma URL gRPC** (host de `ms-reservas`, puerto **8081**; REST/JWKS en **8080**), p. ej. `http://ms-reservas:8081` o `http://servicesms-reservas.railway.internal:8081`.
 - `Atracciones` → host de `ms-atracciones` (inventario y catálogo en un solo Kestrel).
-- `Identidad` + `IdentidadHttp` → `ms-identidad` (gRPC + `POST /api/v1/auth/login` HTTP tras registro).
+- `Identidad` + `IdentidadHttp` → `ms-identidad` (gRPC + `POST /api/v2/auth/login` HTTP tras registro).
 
-**Gateway YARP:** `/api/v1/clientes/**` → clúster **reservas**; rutas admin de catálogo e inventario → clúster **atracciones**.
+**Gateway YARP:** `/api/v2/clientes/**` → clúster **reservas**; rutas admin de catálogo e inventario → clúster **atracciones**.
 
 ---
 
@@ -40,7 +40,7 @@ Hoy el repositorio es un monolito 4 capas con un único `DbContext`/proyecto API
 
 - **Proyectos en cadena:** [`Microservicio.Atracciones.Api`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/) → [`Business`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Business/) → [`DataManagement`](MicroservicioAtracionesAPI/Microservicio.Atracciones.DataManagement/) → [`DataAccess`](MicroservicioAtracionesAPI/Microservicio.Atracciones.DataAccess/).
 - **22 entidades** en 7 carpetas: `Atracciones`, `Auditoria`, `Catalogos`, `Clientes`, `Facturacion`, `Reservas`, `Seguridad`.
-- **17 controladores V1** (Internal/Booking/Auth) bajo `api/v1/...`.
+- **17 controladores V1** (Internal/Booking/Auth) bajo `api/v2/...`.
 - **JOINs y FKs cross-context que rompen los BC del .md** (deben sustituirse por GUIDs sin FK + gRPC orquestado):
   - `Cliente` 1–1 `Usuario` ([`ClienteConfiguration.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.DataAccess/Configurations/ClienteConfiguration.cs))
   - `Reserva` → `Cliente`/`Horario` ([`ReservaConfiguration.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.DataAccess/Configurations/ReservaConfiguration.cs))
@@ -48,7 +48,7 @@ Hoy el repositorio es un monolito 4 capas con un único `DbContext`/proyecto API
   - `Atraccion` → `Destino`/`Categoria`/`Idioma`/`Incluye` ([`AtraccionConfiguration.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.DataAccess/Configurations/AtraccionConfiguration.cs))
   - `Factura` 1–1 `Reserva` + `DatosFacturacion` ([`FacturaConfiguration.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.DataAccess/Configurations/FacturaConfiguration.cs))
   - `Resenia` → `Atraccion`/`Reserva` ([`ReseniaConfiguration.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.DataAccess/Configurations/ReseniaConfiguration.cs))
-- **Servicios “orquestadores” cross-context:** `ReservaPublicService` y `ReseniaPublicService` ([`Business/Services/Public/`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Business/Services/Public/)) inyectan 4–5 `IDataService` de BC distintos; `FacturaPublicService` también. El perfil de cliente lo sirve **`ms-reservas`** (`GET`/`PUT /api/v1/clientes/perfil`, CRM fusionado).
+- **Servicios “orquestadores” cross-context:** `ReservaPublicService` y `ReseniaPublicService` ([`Business/Services/Public/`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Business/Services/Public/)) inyectan 4–5 `IDataService` de BC distintos; `FacturaPublicService` también. El perfil de cliente lo sirve **`ms-reservas`** (`GET`/`PUT /api/v2/clientes/perfil`, CRM fusionado).
 - **No existe nada de:** gRPC, Polly, `IHttpClientFactory`, `Idempotency-Key`, `X-Correlation-ID` ni servicios separados (es un solo proceso).
 
 ## 2. Arquitectura objetivo
@@ -95,7 +95,7 @@ flowchart LR
 
 ## 3. Stack y decisiones técnicas
 
-- **API Gateway:** YARP en .NET 10 con rutas por prefijo. CRUDs simples van directo al microservicio dueño; los **flujos saga** (`/api/v1/reservas/**`, registro completo de cliente, confirmar pago, cancelar) van al **orquestador**. CORS centralizado, `X-Correlation-ID` autogenerado, rate limiting básico, validación local de JWT.
+- **API Gateway:** YARP en .NET 10 con rutas por prefijo. CRUDs simples van directo al microservicio dueño; los **flujos saga** (`/api/v2/reservas/**`, registro completo de cliente, confirmar pago, cancelar) van al **orquestador**. CORS centralizado, `X-Correlation-ID` autogenerado, rate limiting básico, validación local de JWT.
 - **ms-orquestador (Middleware orquestador, Clean Architecture 4 capas):**
   - **Api:** controladores REST que reciben los flujos compuestos (`POST /reservas`, `POST /reservas/{guid}/pagos/confirmacion`, `PUT /reservas/{guid}/cancelar`, `POST /auth/registro` orquestado; alias legacy `confirmar-pago`).
   - **Business:** **Use Cases / Sagas** con pasos `Try / Confirm / Compensate`. Una clase `SagaCrearReserva`, `SagaConfirmarPago`, `SagaCancelarReserva`, `SagaRegistroCliente`.
@@ -157,30 +157,31 @@ Cada fase termina con el sistema **funcionando end-to-end** desde el frontend a 
 
 - Crear carpeta `platform/` con:
   - `docker-compose.yml`: **gateway** + **Jaeger** (OTLP). Postgres por servicio se añade al aparecer `services/ms-*`. **Sin RabbitMQ.**
-  - `gateway/`: YARP enrutando **`/api/**`** (incluye `/api/v1/**`) al monolito existente.
+  - `gateway/`: YARP enrutando **`/api/**`** (incluye `/api/v2/**`) al monolito existente.
   - `shared/BuildingBlocks/`: middleware `X-Correlation-ID`, OpenTelemetry en el gateway, stub de idempotencia; Polly + fábrica gRPC en fases siguientes.
   - `shared/Contracts.Protos/`: estructura inicial + script placeholder de generación.
-- Cambiar `VITE_API_URL` del frontend al gateway: `http://localhost:5000/api/v1` si corres el gateway con `dotnet run`, o **`http://localhost:5050/api/v1`** si usas **Docker Compose** en Windows (el puerto 5000 en el host suele estar reservado).
+- Cambiar `VITE_API_URL` del frontend al gateway: `http://localhost:5000/api/v2` si corres el gateway con `dotnet run`, o **`http://localhost:5050/api/v2`** si usas **Docker Compose** en Windows (el puerto 5000 en el host suele estar reservado).
+- Contrato Booking público (10 endpoints): [`MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md`](MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md) y PDF [`docs/api/Contrato_API_Atracciones_V2.pdf`](docs/api/Contrato_API_Atracciones_V2.pdf).
 
 Criterio: el frontend funciona idéntico al actual, pero pasando por el gateway.
 
 ### Fase 1 — `ms-identidad` (extracción real) — **hecho**
 
-- [`services/ms-identidad/`](../services/ms-identidad/): EF + `auth.usuarios` / `auth.roles` / `auth.usuario_roles`, JWT RS256, `/.well-known/jwks.json`, `POST /api/v1/auth/login`, gRPC `UsuarioService`, `POST /internal/v1/auth/mirror` (cabecera `X-Monolith-Sync-Key`).
-- **Login** vía gateway → `ms-identidad`. **Registro** vía gateway → **`ms-orquestador`** (`POST /api/v1/auth/registro`): saga identidad (gRPC) + perfil CRM en **`ms-reservas`** (gRPC `ClienteService`) + login HTTP a identidad para el JWT.
+- [`services/ms-identidad/`](../services/ms-identidad/): EF + `auth.usuarios` / `auth.roles` / `auth.usuario_roles`, JWT RS256, `/.well-known/jwks.json`, `POST /api/v2/auth/login`, gRPC `UsuarioService`, `POST /internal/v1/auth/mirror` (cabecera `X-Monolith-Sync-Key`).
+- **Login** vía gateway → `ms-identidad`. **Registro** vía gateway → **`ms-orquestador`** (`POST /api/v2/auth/registro`): saga identidad (gRPC) + perfil CRM en **`ms-reservas`** (gRPC `ClienteService`) + login HTTP a identidad para el JWT.
 - Monolito: [`JwtSettings:JwksUrl`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/appsettings.Development.json) + [`Identidad`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/appsettings.Development.json) para sincronizar credenciales.
 - ETL: [`services/ms-identidad/db/etl_auth_desde_atracciones.sql`](../services/ms-identidad/db/etl_auth_desde_atracciones.sql).
-- YARP: ruta prioritaria `POST /api/v1/auth/login` → cluster `identidad`; el resto de `/api/**` → monolito.
+- YARP: ruta prioritaria `POST /api/v2/auth/login` → cluster `identidad`; el resto de `/api/**` → monolito.
 
 Criterio: login con tokens RS256 de identidad; registro funcional con sync; usuarios existentes pueden copiarse a `auth.*` con el ETL.
 
 ### Fase 2 — CRM / clientes — **fusionado en `ms-reservas`**
 
 - Lógica y `crm.clientes` viven en **`services/ms-reservas/`** (BD `reservas_db`). No existe carpeta `services/ms-clientes/` en el monorepo actual.
-- Gateway YARP: `/api/v1/clientes/{**catch-all}` → clúster **reservas**. El monolito puede seguir sincronizando con mirror HTTP hacia **`ms-reservas`** (`ClienteCrmSyncPublisher` → `internal/v1/clientes/mirror`).
+- Gateway YARP: `/api/v2/clientes/{**catch-all}` → clúster **reservas**. El monolito puede seguir sincronizando con mirror HTTP hacia **`ms-reservas`** (`ClienteCrmSyncPublisher` → `internal/v1/clientes/mirror`).
 - Exponer **gRPC** `ClienteService.proto`: `CrearCliente`, `EliminarCliente` (compensación), `ObtenerClientePorGuid`, `ActualizarCliente`. **Sin** consumidor de eventos (no hay bus): el alta de cliente la dispara el **orquestador** después de crear el usuario en `ms-identidad`.
-- REST: `GET/PUT /api/v1/clientes/perfil` (autenticado).
-- YARP enruta `/api/v1/clientes/**` al nuevo servicio.
+- REST: `GET/PUT /api/v2/clientes/perfil` (autenticado).
+- YARP enruta `/api/v2/clientes/**` al nuevo servicio.
 - Migración de datos: `atracciones.clientes` → `crm.clientes` mapeando por `usu_guid`.
 
 ### Fase 3 — Catálogos — **fusionado en `ms-atracciones`**
@@ -188,12 +189,12 @@ Criterio: login con tokens RS256 de identidad; registro funcional con sync; usua
 - Esquema `catalogos.*` y REST admin en **`services/ms-atracciones/`** (BD `atracciones_db`). No existe carpeta `services/ms-catalogos/` en el monorepo actual.
 - Migrar [`DestinosController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/DestinosController.cs), [`CatalogosAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/CatalogosAdminController.cs), [`ImagenesController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ImagenesController.cs).
 - Exponer **gRPC** `CatalogoService.proto`: `GetCatalogosPorGuids(guids[])` (lectura) para que `ms-atracciones` enriquezca respuestas. CRUDs admin se exponen solo en REST.
-- YARP enruta `/api/v1/admin/destinos`, `/api/v1/admin/categorias`, `/api/v1/admin/idiomas`, `/api/v1/admin/incluye`, `/api/v1/admin/imagenes`.
+- YARP enruta `/api/v2/admin/destinos`, `/api/v2/admin/categorias`, `/api/v2/admin/idiomas`, `/api/v2/admin/incluye`, `/api/v2/admin/imagenes`.
 
 ### Fase 4 — `ms-atracciones` (Core)
 
 - Nuevo `services/ms-atracciones/` con BD propia y `inventario.{atracciones, atraccion_categoria, atraccion_idioma, atraccion_imagen, atraccion_incluye, tickets, horarios, resenias}`. **Sin FK** a `catalogos.*`, solo `des_guid`/`cat_guid`/`id_guid`/`inc_guid`.
-- Migrar [`AtraccionesController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/AtraccionesController.cs), [`AtraccionesAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/AtraccionesAdminController.cs), [`TicketsController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsController.cs), [`TicketsPublicController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsPublicController.cs). **Reseñas públicas** migradas en `ms-atracciones`: `GET/POST /api/v1/atracciones/{guid}/resenias` (ya no usar `/api/v1/resenias` plano vía gateway). Admin reseñas (`ReseniasAdminController`) puede seguir en monolito hasta portar CRUD admin.
+- Migrar [`AtraccionesController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/AtraccionesController.cs), [`AtraccionesAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/AtraccionesAdminController.cs), [`TicketsController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsController.cs), [`TicketsPublicController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/TicketsPublicController.cs). **Reseñas públicas** migradas en `ms-atracciones`: `GET/POST /api/v2/atracciones/{guid}/resenias` (ya no usar `/api/v2/resenias` plano vía gateway). Admin reseñas (`ReseniasAdminController`) puede seguir en monolito hasta portar CRUD admin.
 - Enriquecimiento catálogo en `GET /atracciones/{guid}` vía **`CatalogoService` in-process** (mismo `ms-atracciones`).
 - Exponer **gRPC** `AtraccionInventarioService.proto`:
   - `GetTicketPrecio(tck_guid)`
@@ -206,30 +207,30 @@ Criterio: login con tokens RS256 de identidad; registro funcional con sync; usua
   - `CrearReservaPendiente(...)`, `ConfirmarReservaPagada(rev_guid)`, `AnularReserva(rev_guid)` (compensación), `ObtenerReserva(rev_guid)`, `ListarMisReservas(cli_guid)`.
 - Migrar [`ReservasController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/ReservasController.cs), [`ReservasAdminController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Booking/ReservasAdminController.cs) y desmontar [`ReservaPublicService.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Business/Services/Public/ReservaPublicService.cs): la **lógica de orquestación** se traslada al orquestador.
 - Nuevo `services/ms-orquestador/` (Clean Architecture 4 capas) con BD propia para `saga_state`, `saga_pasos`, `idempotency_keys`. Implementa:
-  - **`SagaCrearReserva`** (POST `/api/v1/reservas`):
+  - **`SagaCrearReserva`** (POST `/api/v2/reservas`):
     1. `ms-reservas` / `ClienteService.ObtenerClientePorGuid(cli_guid del JWT)` (valida que exista).
     2. Por cada detalle: `ms-atracciones.GetTicketPrecio` y `ms-atracciones.ValidarYReservarCupo`.
     3. `ms-reservas.CrearReservaPendiente` con totales calculados.
     4. `ms-auditoria.RegistrarEvento("RESERVA_CREADA", payload)` (best-effort).
     5. **Compensación si falla 2/3:** `ms-atracciones.LiberarCupo` por cada cupo ya reservado.
-  - **`SagaConfirmarPago`** (POST `/api/v1/reservas/{guid}/pagos/confirmacion`, requiere `Idempotency-Key`; PayPal vía `paypal_order_id` o `POST /pagos/paypal/orders` + captura):
+  - **`SagaConfirmarPago`** (POST `/api/v2/reservas/{guid}/pagos/confirmacion`, requiere `Idempotency-Key`; PayPal vía `paypal_order_id` o `POST /pagos/paypal/orders` + captura):
     1. `ms-reservas.ObtenerReserva(rev_guid)`.
     2. (Aquí iría la pasarela de pago — placeholder).
     3. `ms-reservas.ConfirmarReservaPagada(rev_guid)`.
     4. `ms-facturacion.EmitirFactura(rev_guid, …)` (saga 6).
     5. `ms-auditoria.RegistrarEvento("PAGO_CONFIRMADO", payload)`.
     6. **Compensación si falla 3/4:** `ms-reservas.AnularReserva` + `ms-atracciones.LiberarCupo`.
-  - **`SagaCancelarReserva`** (PUT `/api/v1/reservas/{guid}/cancelar`):
+  - **`SagaCancelarReserva`** (PUT `/api/v2/reservas/{guid}/cancelar`):
     1. `ms-reservas.AnularReserva`.
     2. `ms-atracciones.LiberarCupo` por cada detalle.
-  - **`SagaRegistroCliente`** (`POST /api/v1/auth/registro`): usuario en `ms-identidad` (gRPC) + perfil en **`ms-reservas`** (`ClienteService`); compensa con `EliminarUsuario` si falla el CRM; JWT vía login HTTP a identidad.
-- YARP: `/api/v1/reservas/**` y **`POST /api/v1/auth/registro`** → **orquestador**; CRUDs admin de reservas → `ms-reservas` directo.
+  - **`SagaRegistroCliente`** (`POST /api/v2/auth/registro`): usuario en `ms-identidad` (gRPC) + perfil en **`ms-reservas`** (`ClienteService`); compensa con `EliminarUsuario` si falla el CRM; JWT vía login HTTP a identidad.
+- YARP: `/api/v2/reservas/**` y **`POST /api/v2/auth/registro`** → **orquestador**; CRUDs admin de reservas → `ms-reservas` directo.
 
 ### Fase 6 — `ms-facturacion`
 
 - Nuevo `services/ms-facturacion/` con BD propia y `billing.{facturas, datos_facturacion}`.
 - Expone **gRPC** `FacturaService.proto`: `EmitirFactura(rev_guid, datos)` (idempotente por `rev_guid`), `ObtenerFacturaPorGuid`, `ListarMisFacturas(cli_guid)`.
-- REST: `GET /api/v1/facturas/mis-facturas` y `GET /api/v1/admin/facturas` (lectura puramente local, sin saga).
+- REST: `GET /api/v2/facturas/mis-facturas` y `GET /api/v2/admin/facturas` (lectura puramente local, sin saga).
 - El orquestador llama `EmitirFactura` desde `SagaConfirmarPago`. **Sin** suscripción a eventos.
 
 ### Fase 7 — `ms-auditoria` y endurecimiento

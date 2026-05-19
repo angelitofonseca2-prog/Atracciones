@@ -1,353 +1,308 @@
 # Documentación de Endpoints para Booking Externo — Sistema Atracciones
 
-Este documento describe los endpoints públicos del ecosistema **Atracciones** (monorepo con API Gateway YARP, microservicios y orquestador de sagas), tal como están implementados en el repositorio. Está alineado con `MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md`.
+Contrato de integración pública **v2.0.0** (base `/api/v2`). Referencia normativa: [`Contrato_API_Atracciones_V2.pdf`](Contrato_API_Atracciones_V2.pdf). Especificación extendida: [`MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md`](../../MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md).
 
-Todas las solicitudes de integración deben hacerse a través del **API Gateway**. No consumir directamente los microservicios internos (`ms-atracciones`, `ms-orquestador`, etc.).
+Todas las solicitudes deben hacerse al **API Gateway** (no llamar microservicios internos directamente).
 
 ---
 
 ## Base URL
 
-**Producción (Railway)**
+| Entorno | URL base |
+|---------|----------|
+| Producción (Railway) | `https://api-gateway-production-5c80b.up.railway.app/api/v2` |
+| Docker Compose (Windows) | `http://localhost:5050/api/v2` |
+| Gateway `dotnet run` | `http://localhost:5000/api/v2` |
 
-https://api-gateway-production-5c80b.up.railway.app
-
-Prefijo API: `/api/v1`
-
-URL base completa: `https://api-gateway-production-5c80b.up.railway.app/api/v1`
-
-**Frontend web (referencia)**
-
-https://frontend-atracciones-production.up.railway.app
-
-**Desarrollo local (Docker Compose en Windows)**
-
-http://localhost:5050/api/v1
-
-**Desarrollo local (gateway con dotnet run)**
-
-http://localhost:5000/api/v1
-
-**Comprobación de salud del gateway**
-
-GET https://api-gateway-production-5c80b.up.railway.app/health
+**Health:** `GET https://api-gateway-production-5c80b.up.railway.app/health`
 
 ---
 
 ## Convenciones técnicas
 
-- **Formato JSON:** snake_case en propiedades (`at_guid`, `rev_guid`, `origen_canal`).
-- **Envelope de respuesta:** `{ "status", "message", "data", "pagination?" }`.
-- **Errores:** `{ "status", "error", "details", "path" }`.
-- **Moneda por defecto:** USD.
-- **Estados de reserva:** `P` = pendiente de pago, `A` = confirmada (pagada), `C` = cancelada, `I` = inactiva.
-- **Idempotencia:** cabecera obligatoria `Idempotency-Key` (UUID) en `POST /reservas` y `POST /reservas/{guid}/pagos/confirmacion`.
-- **Correlación:** cabecera opcional `X-Correlation-ID` (UUID); si no se envía, el gateway puede generarla.
-- **Paginación en listados:** `page` (≥ 1), `limit` (1–50).
+- **Dominio (negocio):** snake_case (`rev_guid`, `at_guid`, `nombre_receptor`).
+- **Metadatos de listado/filtros:** camelCase (`filterStats`, `destinationFilters`, `defaultSorter`).
+- **Envelope:** `{ "status", "message", "data", "pagination?" }`.
+- **Errores:** `{ "status", "error", "details", "timestamp", "path" }`.
+- **Moneda:** USD.
+- **Estados de reserva (respuesta pública):** `PENDIENTE`, `PAGADA`, `CANCELADA`, `INACTIVA`.
+- **Paginación:** `page` (≥ 1), `limit` (1–50).
+- **Idempotencia:** cabecera `Idempotency-Key` (UUID) **recomendada** en `POST /reservas` y `POST .../pagos/confirmacion` (opcional en implementación v2).
+- **Correlación:** cabecera opcional `X-Correlation-ID`.
+
+---
+
+## Contrato Booking — 10 endpoints
+
+| # | Método | Ruta | Auth |
+|---|--------|------|------|
+| 1 | GET | `/api/v2/atracciones` | No |
+| 2 | GET | `/api/v2/atracciones/filtros` | No |
+| 3 | GET | `/api/v2/atracciones/{guid}` | No |
+| 4 | GET | `/api/v2/atracciones/{guid}/tickets` | No |
+| 5 | GET | `/api/v2/atracciones/{guid}/horarios` | No |
+| 6 | GET | `/api/v2/atracciones/{guid}/horarios/{horarioGuid}/tickets` | No |
+| 7 | POST | `/api/v2/reservas` | Opcional (ver abajo) |
+| 8 | GET | `/api/v2/reservas` | JWT |
+| 9 | GET | `/api/v2/reservas/{guid}` | JWT |
+| 10 | POST | `/api/v2/reservas/{guid}/pagos/confirmacion` | No |
 
 ---
 
 ## Autenticación
 
-**Regla general:** toda operación de **reserva, pago, facturas del cliente y reseñas** exige que el usuario esté **registrado e iniciado sesión** (JWT). No existe flujo de `cliente_invitado` ni reserva anónima.
+### POST /reservas (crear)
 
-Los endpoints de **catálogo** (GET de atracciones, tickets, horarios, listado público de reseñas) no requieren token.
+- **Sin JWT:** enviar objeto `cliente_invitado` en el body (obligatorio `tipo_identificacion`, `numero_identificacion`, `correo`).
+- **Con JWT:** `Authorization: Bearer {token}`; `cliente_invitado` se ignora; `cli_guid` = claim `usu_guid`.
 
-### Registro e inicio de sesión
+### POST /pagos/confirmacion
 
-**Login**
+- **No requiere** Bearer. El `guid` de la reserva identifica la operación.
 
-POST /api/v1/auth/login
+### GET /reservas y GET /reservas/{guid}
 
-Body: `{ "login": "usuario@ejemplo.com", "password": "********" }`
-
-Respuesta 200: JWT RS256. Usar en todas las rutas protegidas:
-
-`Authorization: Bearer {token}`
-
-**Registro (saga orquestada)**
-
-POST /api/v1/auth/registro
-
-Crea usuario en `ms-identidad`, perfil CRM en `ms-reservas` y devuelve token para continuar con la reserva.
-
-### Rutas que requieren JWT de cliente (`ClienteAutenticado`)
-
-- POST /api/v1/reservas
-- POST /api/v1/reservas/{guid}/pagos/confirmacion
-- POST /api/v1/pagos/paypal/orders
-- GET /api/v1/reservas (mis reservas)
-- GET /api/v1/reservas/{guid}
-- PUT /api/v1/reservas/{guid}/cancelar
-- GET /api/v1/facturas/mis-facturas
-- POST /api/v1/atracciones/{guid}/resenias
-- GET /api/v1/clientes/perfil
-- PUT /api/v1/clientes/perfil
-
-El claim `usu_guid` del token debe coincidir con `cli_guid` en CRM (mismo GUID al registrarse).
+- **JWT obligatorio.** Solo reservas del cliente del token.
 
 ---
 
-## Catálogo de atracciones
+## 1–6. Catálogo (ms-atracciones)
 
-Servicio detrás del gateway: **ms-atracciones**.
+### GET /atracciones
 
-### Listar atracciones
+Query opcionales: `ciudad`, `tipo`, `subtipo`, `etiqueta`, `idioma`, `calificacion_min`, `horario`, `disponible`, `ordenar_por`, `page`, `limit`.
 
-GET /api/v1/atracciones
+Respuesta 200 (extracto):
 
-Requiere token: No.
+```json
+{
+  "status": 200,
+  "message": "Consulta exitosa",
+  "data": [
+    {
+      "id": "uuid",
+      "nombre": "Tour Quito",
+      "ciudad": "Quito",
+      "pais": "Ecuador",
+      "precio_desde": 25.0,
+      "moneda": "USD",
+      "calificacion": 4.5,
+      "disponibilidad": { "disponible": true, "cupos_disponibles": 12 },
+      "_links": { "self": "/api/v2/atracciones/{guid}" }
+    }
+  ],
+  "pagination": { "page": 1, "limit": 10, "total": 85, "total_pages": 9 },
+  "filterStats": { "filteredProductCount": 85, "unfilteredProductCount": 210 },
+  "sorters": [{ "name": "Más populares", "value": "trending" }],
+  "defaultSorter": { "name": "Más populares", "value": "trending" }
+}
+```
 
-Query opcionales: ciudad, tipo, subtipo, etiqueta, page, limit.
+### GET /atracciones/filtros
 
-Respuesta 200: lista en `data` con atracciones activas; paginación en `pagination` si aplica.
+Query opcional: `ciudad`. Respuesta: `data.destinationFilters`, `typeFilters`, `labelFilters`, etc.
 
-### Obtener filtros de búsqueda
+### GET /atracciones/{guid}
 
-GET /api/v1/atracciones/filtros
+Detalle completo: descripción, imágenes, incluye, tickets, `horarios_proximos`.
 
-Requiere token: No.
+### GET /atracciones/{guid}/tickets
 
-Respuesta 200: `destination_filters`, `type_filters`, `supported_language_filters`, `label_filters`, `time_of_day_filters`.
+```json
+{
+  "status": 200,
+  "data": [
+    { "tck_guid": "uuid", "tipo": "Adulto", "precio": 25.0, "moneda": "USD" }
+  ]
+}
+```
 
-### Obtener detalle de atracción
+### GET /atracciones/{guid}/horarios
 
-GET /api/v1/atracciones/{guid}
+Por defecto solo horarios con cupo (`disponibles=true`). Query opcional: `disponibles=false` para ver todos.
 
-Requiere token: No.
+```json
+{
+  "status": 200,
+  "data": [
+    {
+      "hor_guid": "uuid",
+      "fecha": "2026-06-01",
+      "hora_inicio": "09:00",
+      "hora_fin": "11:00",
+      "cupos": 8
+    }
+  ]
+}
+```
 
-404 si el GUID no existe o no está disponible.
+### GET /atracciones/{guid}/horarios/{horarioGuid}/tickets
 
-### Listar tickets de una atracción
-
-GET /api/v1/atracciones/{guid}/tickets
-
-Requiere token: No.
-
-### Listar horarios de una atracción
-
-GET /api/v1/atracciones/{guid}/horarios
-
-Query: `disponibles=true` (recomendado; solo horarios con cupo).
-
-Requiere token: No.
-
-Legacy (evitar): GET /api/v1/atracciones/{guid}/horarios-disponibles — usar `horarios?disponibles=true`.
-
-### Listar tickets disponibles para un horario
-
-GET /api/v1/atracciones/{guid}/horarios/{horario_guid}/tickets
-
-Requiere token: No.
-
-404 si el horario no existe o no hay disponibilidad.
-
-### Horarios por ticket (auxiliar)
-
-GET /api/v1/tickets/{guid}/horarios
-
-Requiere token: No.
+```json
+{
+  "status": 200,
+  "message": "Consulta exitosa",
+  "data": {
+    "items": [
+      { "tck_guid": "uuid", "tipo": "Adulto", "precio": 25.0, "moneda": "USD" }
+    ]
+  }
+}
+```
 
 ---
 
-## Reservas y pagos
+## 7–10. Reservas (ms-orquestador)
 
-Servicio detrás del gateway: **ms-orquestador** (saga síncrona: inventario + ventas + facturación).
+### POST /reservas
 
-### Flujo recomendado
+**Body (sin JWT — Booking):**
 
-1. POST /api/v1/reservas → reserva en estado `P` (pendiente), cupo reservado.
-2. (Opcional) POST /api/v1/pagos/paypal/orders → orden PayPal para `rev_guid`.
-3. POST /api/v1/reservas/{rev_guid}/pagos/confirmacion → confirma pago, emite factura, estado `A`.
-
-### Crear reserva
-
-POST /api/v1/reservas
-
-Cabeceras obligatorias:
-
-- Content-Type: application/json
-- Idempotency-Key: {uuid}
-- Authorization: Bearer {token}
-
-Body (snake_case):
-
+```json
 {
   "at_guid": "40000000-0000-0000-0000-000000000001",
   "hor_guid": "50000000-0000-0000-0000-000000000001",
-  "fecha_visita": "2026-05-20",
   "lineas": [
     { "tck_guid": "60000000-0000-0000-0000-000000000001", "cantidad": 2 }
   ],
-  "origen_canal": "web"
+  "origen_canal": "BOOKING",
+  "cliente_invitado": {
+    "tipo_identificacion": "CEDULA",
+    "numero_identificacion": "1712345678",
+    "nombres": "Juan Carlos",
+    "apellidos": "Pérez Gómez",
+    "correo": "juan.perez@email.com",
+    "telefono": "0991234567",
+    "direccion": "Av. Principal 123"
+  }
 }
+```
 
-Notas:
+| Campo | Obligatorio | Notas |
+|-------|-------------|-------|
+| `at_guid` | Sí | Debe coincidir con la atracción del horario |
+| `hor_guid` | Sí | Del endpoint `/horarios` |
+| `lineas[].tck_guid` | Sí | |
+| `lineas[].cantidad` | Sí | ≥ 1 |
+| `origen_canal` | No | Enviar `BOOKING` |
+| `cliente_invitado` | Cond. | Obligatorio sin JWT |
+| `cliente_invitado.correo` | Sí* | |
+| `cliente_invitado.tipo_identificacion` | Sí* | |
+| `cliente_invitado.numero_identificacion` | Sí* | |
 
-- `origen_canal`: `web` en la aplicación propia; integradores pueden usar `BOOKING` si aplica.
-- Respuesta 201: `data` incluye `rev_guid`, `rev_estado` (`P`), totales (`rev_subtotal`, `rev_valor_iva`, `rev_total`), `rev_codigo`, enlaces HATEOAS en `_links` si aplica.
-- 409 si no hay cupos o regla de negocio (reserva duplicada pendiente, etc.).
+**Respuesta 201:**
 
-### Consultar reserva (cliente autenticado)
-
-GET /api/v1/reservas/{guid}
-
-Authorization: Bearer {token}
-
-Solo el cliente dueño de la reserva. 403 si no pertenece al usuario del token.
-
-### Listar mis reservas
-
-GET /api/v1/reservas?page=1&limit=10
-
-Authorization: Bearer {token}
-
-### Confirmar pago
-
-POST /api/v1/reservas/{guid}/pagos/confirmacion
-
-Cabeceras:
-
-- Content-Type: application/json
-- Idempotency-Key: {uuid}
-
-Body:
-
+```json
 {
-  "nombre_receptor": "Booking",
-  "apellido_receptor": "Tester",
-  "correo_receptor": "booking.tester@example.com",
-  "telefono_receptor": "0999999999",
-  "observacion": "Pago confirmado desde Booking",
-  "paypal_order_id": "ORDEN_PAYPAL_OPCIONAL"
+  "status": 201,
+  "message": "Operación exitosa",
+  "data": {
+    "rev_guid": "uuid",
+    "rev_codigo": "RES-2026-00123",
+    "rev_estado": "PENDIENTE",
+    "rev_total": 57.5,
+    "moneda": "USD",
+    "detalle": [{ "tck_tipo_participante": "Adulto", "cantidad": 2, "precio_unit": 25.0, "subtotal": 50.0 }],
+    "_links": {
+      "self": "/api/v2/reservas/{rev_guid}",
+      "confirmar_pago": "/api/v2/reservas/{rev_guid}/pagos/confirmacion"
+    }
+  }
 }
+```
 
-Notas:
+Códigos: `400`, `401` (si JWT inválido), `404`, `409` (cupos), `500`.
 
-- Si se envía `paypal_order_id`, se valida/captura con PayPal antes de completar la saga.
-- Si se omite `paypal_order_id`, confirma pago sin pasarela (solo entornos controlados / pruebas).
-- Respuesta 201: datos de factura en `data` (`fac_guid`, `fac_numero`, `rev_guid`, `total`, etc.).
+### GET /reservas
 
-### Crear orden PayPal (auxiliar)
+JWT. Query: `page`, `limit`. Listado con `rev_estado` (`PAGADA`, etc.).
 
-POST /api/v1/pagos/paypal/orders
+### GET /reservas/{guid}
 
-Body: incluye `rev_guid` de reserva pendiente existente (y datos según contrato del controlador PayPal).
+JWT. Detalle completo de la reserva del cliente.
 
-### Cancelar reserva (cliente autenticado)
+### POST /reservas/{guid}/pagos/confirmacion
 
-PUT /api/v1/reservas/{guid}/cancelar
+**Sin Authorization.**
 
-Authorization: Bearer {token}
-
-Body: { "motivo": "Cancelada por el cliente" }
-
-Respuesta: 204. Libera cupo en inventario vía orquestador.
-
-### Legacy
-
-POST /api/v1/reservas/{guid}/confirmar-pago — alias obsoleto de `pagos/confirmacion`.
-
----
-
-## Facturación
-
-Servicio: **ms-facturacion** (lectura REST vía gateway).
-
-### Mis facturas (cliente autenticado)
-
-GET /api/v1/facturas/mis-facturas?page=1&limit=10
-
-Authorization: Bearer {token}
-
-No existe en este proyecto `GET /api/v1/booking/facturas?reservaGuid=...`. Para integradores: usar la respuesta de confirmación de pago (`fac_guid`, `fac_numero`) o consultar con JWT del cliente en `mis-facturas`.
-
----
-
-## Reseñas
-
-Servicio: **ms-atracciones**.
-
-### Listar reseñas públicas
-
-GET /api/v1/atracciones/{guid}/resenias?page=1&page_size=10
-
-Requiere token: No.
-
-### Crear reseña
-
-POST /api/v1/atracciones/{guid}/resenias
-
-Authorization: Bearer {token} (cliente autenticado).
-
-Body:
-
+```json
 {
-  "rev_guid": "GUID_RESERVA_CONFIRMADA",
-  "rating": 5,
-  "comentario": "Excelente experiencia"
+  "nombre_receptor": "Juan Carlos",
+  "apellido_receptor": "Pérez Gómez",
+  "correo_receptor": "juan@email.com",
+  "telefono_receptor": "0991234567",
+  "observacion": "Pago Booking"
 }
+```
 
-Solo reservas en estado confirmado (`A`). El `guid` de la atracción va en la URL.
+| Campo | Obligatorio |
+|-------|-------------|
+| `nombre_receptor` | Sí |
+| `correo_receptor` | Sí |
+| `apellido_receptor` | No |
+| `telefono_receptor` | No |
+| `paypal_order_id` | No (si se usó PayPal) |
 
----
+**Respuesta 201:**
 
-## Códigos de error HTTP
-
-| Código | Significado | Cuándo |
-|--------|-------------|--------|
-| 200 | OK | Consulta exitosa |
-| 201 | Created | Reserva o confirmación de pago creada |
-| 204 | No Content | Cancelación admin/cliente sin body |
-| 400 | Bad Request | Body inválido, falta Idempotency-Key |
-| 401 | Unauthorized | Falta o token inválido |
-| 403 | Forbidden | Recurso de otro usuario |
-| 404 | Not Found | GUID inexistente |
-| 409 | Conflict | Cupos, estado de reserva, idempotencia |
-| 500 | Internal Server Error | Error no controlado |
-| 502 | Bad Gateway | Fallo entre gateway y microservicio |
-
----
-
-## Flujo recomendado (web o integrador con cuenta)
-
-1. POST /api/v1/auth/registro o POST /api/v1/auth/login → obtener JWT
-2. GET /api/v1/atracciones/filtros
-3. GET /api/v1/atracciones
-4. GET /api/v1/atracciones/{guid}
-5. GET /api/v1/atracciones/{guid}/horarios?disponibles=true
-6. GET /api/v1/atracciones/{guid}/horarios/{horario_guid}/tickets
-7. POST /api/v1/reservas (JWT + Idempotency-Key)
-8. (Opcional) POST /api/v1/pagos/paypal/orders
-9. POST /api/v1/reservas/{rev_guid}/pagos/confirmacion (JWT + Idempotency-Key)
-10. GET /api/v1/facturas/mis-facturas o usar `fac_guid` de la respuesta de confirmación
+```json
+{
+  "status": 201,
+  "message": "Operación exitosa",
+  "data": {
+    "fac_guid": "uuid",
+    "fac_numero": "FAC-2026-00456",
+    "rev_codigo": "RES-2026-00123",
+    "total": 57.5,
+    "moneda": "USD",
+    "estado": "E",
+    "nombre_receptor": "Juan Carlos",
+    "correo_receptor": "juan@email.com"
+  }
+}
+```
 
 ---
 
-## Consideraciones generales
+## Anexo — Ecosistema interno (fuera del PDF Booking)
 
-- Consumir siempre por **API Gateway** (URLs de Railway anteriores).
-- El **rev_guid** es la llave de integración para reserva, pago y factura.
-- **Toda reserva exige usuario registrado** con perfil CRM (`cli_guid` = `usu_guid` del token).
-- JSON en **snake_case**.
-- Estados de reserva como **un carácter**: `P`, `A`, `C`, `I`.
-- Microservicios desplegados: ms-identidad, ms-atracciones (catálogo + inventario), ms-reservas (CRM + ventas), ms-orquestador, ms-facturacion, ms-auditoria.
-- Documentación OpenAPI de referencia en el repositorio: `MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md`.
-
----
-
-## Endpoints de administración (fuera del contrato Booking público)
-
-Requieren rol Admin (JWT). Ejemplos:
-
-- GET/PUT/DELETE /api/v1/admin/reservas
-- CRUD /api/v1/admin/atracciones, horarios, tickets, destinos, categorías
-- POST /api/v1/admin/auth/login
-
-No deben usarse por el integrador Booking salvo acuerdo operativo explícito.
+| Método | Ruta | Auth |
+|--------|------|------|
+| POST | `/api/v2/auth/login` | No |
+| POST | `/api/v2/auth/registro` | No |
+| PUT | `/api/v2/reservas/{guid}/cancelar` | JWT |
+| POST | `/api/v2/pagos/paypal/orders` | JWT |
+| GET | `/api/v2/facturas/mis-facturas` | JWT |
+| GET/POST | `/api/v2/atracciones/{guid}/resenias` | GET no / POST JWT |
+| GET | `/api/v2/tickets/{guid}/horarios` | No |
 
 ---
 
-Documento generado para el proyecto Atracciones — arquitectura Strangler Fig / microservicios .NET 10.
+## Flujo Booking recomendado
 
-Versión: alineada al repositorio (mayo 2026).
+1. `GET /atracciones/filtros` y `GET /atracciones`
+2. `GET /atracciones/{guid}`
+3. `GET /atracciones/{guid}/horarios`
+4. `GET /atracciones/{guid}/horarios/{horarioGuid}/tickets` → usar `data.items`
+5. `POST /reservas` con `cliente_invitado` (sin JWT)
+6. `POST /reservas/{rev_guid}/pagos/confirmacion` (sin JWT)
+
+---
+
+## Códigos HTTP
+
+| Código | Uso |
+|--------|-----|
+| 200 | Consulta OK |
+| 201 | Reserva o factura creada |
+| 204 | Cancelación sin body |
+| 400 | Parámetros/body inválidos |
+| 401 | Token ausente o inválido |
+| 403 | Reserva de otro cliente |
+| 404 | GUID inexistente |
+| 409 | Cupos, estado inválido |
+| 500 | Error interno |
+
+---
+
+Versión: mayo 2026 — API v2 única.

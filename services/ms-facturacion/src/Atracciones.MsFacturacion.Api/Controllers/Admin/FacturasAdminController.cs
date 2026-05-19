@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsFacturacion.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/v1/admin/facturas")]
+[Route("api/v2/admin/facturas")]
 [Authorize(Policy = "SoloAdmin")]
 public sealed class FacturasAdminController : ControllerBase
 {

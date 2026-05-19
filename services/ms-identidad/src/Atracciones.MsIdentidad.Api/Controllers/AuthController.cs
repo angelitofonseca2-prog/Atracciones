@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsIdentidad.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/auth")]
+[Route("api/v2/auth")]
 [Produces("application/json")]
 public sealed class AuthController : ControllerBase
 {

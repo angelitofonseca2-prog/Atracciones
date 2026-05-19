@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsOrquestador.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/auth")]
+[Route("api/v2/auth")]
 [AllowAnonymous]
 public sealed class AuthOrquestadorController : ControllerBase
 {
@@ -23,7 +23,7 @@ public sealed class AuthOrquestadorController : ControllerBase
         HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
 
     /// <summary>
-    /// POST /api/v1/auth/registro
+    /// POST /api/v2/auth/registro
     /// SagaRegistroCliente: crea usuario en ms-identidad + perfil CRM (ClienteService en ms-reservas fusionado),
     /// compensa con EliminarUsuario si el alta de cliente falla, y devuelve el JWT.
     /// </summary>

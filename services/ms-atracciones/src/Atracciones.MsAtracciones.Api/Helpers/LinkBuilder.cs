@@ -10,12 +10,12 @@ public static class LinkBuilder
 
         return new Dictionary<string, string?>
         {
-            ["self"] = $"{baseUrl}/api/v1/atracciones{(queryString.Length > 0 ? queryString : string.Empty)}",
+            ["self"] = $"{baseUrl}/api/v2/atracciones{(queryString.Length > 0 ? queryString : string.Empty)}",
             ["next"] = page < totalPaginas
-                ? $"{baseUrl}/api/v1/atracciones{baseQuery}{sep}page={page + 1}"
+                ? $"{baseUrl}/api/v2/atracciones{baseQuery}{sep}page={page + 1}"
                 : null,
             ["prev"] = page > 1
-                ? $"{baseUrl}/api/v1/atracciones{baseQuery}{sep}page={page - 1}"
+                ? $"{baseUrl}/api/v2/atracciones{baseQuery}{sep}page={page - 1}"
                 : null,
         };
     }

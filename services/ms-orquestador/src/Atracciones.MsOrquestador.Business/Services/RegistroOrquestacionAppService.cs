@@ -126,7 +126,7 @@ public sealed class RegistroOrquestacionAppService : IRegistroOrquestacionServic
         using var http = _httpFactory.CreateClient("identidad");
         var body = JsonSerializer.Serialize(new { login, password }, JsonOpts);
         using var content = new StringContent(body, Encoding.UTF8, "application/json");
-        using var resp = await http.PostAsync($"{_identidadHttpBase}/api/v1/auth/login", content, ct);
+        using var resp = await http.PostAsync($"{_identidadHttpBase}/api/v2/auth/login", content, ct);
 
         if (!resp.IsSuccessStatusCode)
         {

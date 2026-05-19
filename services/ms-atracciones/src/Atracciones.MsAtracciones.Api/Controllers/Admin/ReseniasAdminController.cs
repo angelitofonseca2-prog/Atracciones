@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace Atracciones.MsAtracciones.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/v1/admin/resenias")]
+[Route("api/v2/admin/resenias")]
 [Authorize(Policy = "SoloAdmin")]
 [Produces("application/json")]
 public sealed class ReseniasAdminController : ControllerBase

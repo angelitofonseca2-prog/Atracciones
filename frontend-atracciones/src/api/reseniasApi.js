@@ -1,7 +1,7 @@
 import { apiClient } from './atraccionesApi'
 
 /**
- * GET /api/v1/atracciones/{atGuid}/resenias
+ * GET /api/v2/atracciones/{atGuid}/resenias
  */
 export const listarResenias = async (atGuid, params = {}) => {
   const response = await apiClient.get(`/atracciones/${atGuid}/resenias`, { params })
@@ -9,7 +9,7 @@ export const listarResenias = async (atGuid, params = {}) => {
 }
 
 /**
- * POST /api/v1/atracciones/{atGuid}/resenias
+ * POST /api/v2/atracciones/{atGuid}/resenias
  * body: { rev_guid, rating, comentario }
  */
 export const crearResenia = async (atGuid, body) => {

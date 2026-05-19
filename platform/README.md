@@ -9,8 +9,9 @@
 
 ## URL única de desarrollo
 
-- **Gateway:** `http://localhost:5050/api/v1` (Docker Compose y `dotnet run` del gateway con perfil `http`).
-- **Frontend:** `VITE_API_URL=http://localhost:5050/api/v1` en [`frontend-atracciones/.env.local`](../frontend-atracciones/.env.local).
+- **Gateway:** `http://localhost:5050/api/v2` (Docker Compose y `dotnet run` del gateway con perfil `http`).
+- **Frontend:** `VITE_API_URL=http://localhost:5050/api/v2` en [`frontend-atracciones/.env.local`](../frontend-atracciones/.env.local).
+- **Booking externo:** misma base `/api/v2`; ver [`docs/api/Endpoints-Booking-Atracciones.md`](../docs/api/Endpoints-Booking-Atracciones.md).
 
 El monolito (`MicroservicioAtracionesAPI`, puerto 5031) es **legacy** y no se enruta desde el gateway. Solo usarlo como referencia o para ETL puntual.
 

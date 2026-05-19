@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsOrquestador.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/reservas")]
+[Route("api/v2/reservas")]
 public sealed class ReservasController : ControllerBase
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
@@ -36,6 +36,15 @@ public sealed class ReservasController : ControllerBase
         _idem = idem;
     }
 
+    private Guid? UsuGuidOpcional
+    {
+        get
+        {
+            var claim = User.FindFirstValue("usu_guid");
+            return Guid.TryParse(claim, out var g) ? g : null;
+        }
+    }
+
     private Guid UsuGuidActual
     {
         get
@@ -47,7 +56,7 @@ public sealed class ReservasController : ControllerBase
         }
     }
 
-    private string UsuarioAccion => User.FindFirstValue("login") ?? "sistema";
+    private string UsuarioAccion => User.FindFirstValue("login") ?? "booking";
 
     private string IpActual => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
 
@@ -59,19 +68,20 @@ public sealed class ReservasController : ControllerBase
         HttpContext.Request.Headers.Authorization.FirstOrDefault();
 
     [HttpPost]
-    [Authorize(Policy = "ClienteAutenticado")]
+    [AllowAnonymous]
     public async Task<IActionResult> Crear(CancellationToken ct)
     {
         var raw = await ReadBodyRawAsync(ct);
-        var idemKey = RequireIdempotencyKey();
-        if (idemKey is null)
-            return BadRequestIdempotency();
-
+        var idemKey = TryGetIdempotencyKey();
         var route = HttpContext.Request.Path.ToString();
         var hash = Sha256Hex(raw);
-        var cached = await _idem.ObtenerRespuestaSiExisteAsync(idemKey, route, hash, ct);
-        if (cached is not null)
-            return ReplayIdempotent(cached);
+
+        if (idemKey is not null)
+        {
+            var cached = await _idem.ObtenerRespuestaSiExisteAsync(idemKey, route, hash, ct);
+            if (cached is not null)
+                return ReplayIdempotent(cached);
+        }
 
         var request = JsonSerializer.Deserialize<CrearReservaApiRequest>(raw, JsonOpts)
             ?? throw new JsonException("JSON inválido.");
@@ -81,30 +91,46 @@ public sealed class ReservasController : ControllerBase
             AtGuid = request.AtGuid,
             HorGuid = request.HorGuid,
             FechaVisita = request.FechaVisita,
-            OrigenCanal = request.OrigenCanal,
+            OrigenCanal = string.IsNullOrWhiteSpace(request.OrigenCanal) ? "BOOKING" : request.OrigenCanal,
             Lineas = request.Lineas.Select(l => new LineaTicketOrquestadorDto { TckGuid = l.TckGuid, Cantidad = l.Cantidad }).ToList(),
+            ClienteInvitado = request.ClienteInvitado is null
+                ? null
+                : new ClienteInvitadoOrquestadorDto
+                {
+                    TipoIdentificacion = request.ClienteInvitado.TipoIdentificacion,
+                    NumeroIdentificacion = request.ClienteInvitado.NumeroIdentificacion,
+                    Nombres = request.ClienteInvitado.Nombres,
+                    Apellidos = request.ClienteInvitado.Apellidos,
+                    Correo = request.ClienteInvitado.Correo,
+                    Telefono = request.ClienteInvitado.Telefono,
+                    Direccion = request.ClienteInvitado.Direccion,
+                },
         };
 
-        var data = await _orq.CrearReservaAsync(dto, UsuGuidActual, BearerToken, UsuarioAccion, IpActual, CorrelationId, ct);
-        var envelope = new ApiItemResponse<object>(data, 201, "Reserva pendiente creada. Confirme el pago para finalizar.");
-        await SaveIdempotentAsync(idemKey, route, hash, 201, envelope, ct);
+        var data = await _orq.CrearReservaAsync(dto, UsuGuidOpcional, BearerToken, UsuarioAccion, IpActual, CorrelationId, ct);
+        var envelope = new ApiItemResponse<object>(data, 201, "Operación exitosa");
+
+        if (idemKey is not null)
+            await SaveIdempotentAsync(idemKey, route, hash, 201, envelope, ct);
+
         return StatusCode(201, envelope);
     }
 
     [HttpPost("{guid:guid}/pagos/confirmacion")]
-    [Authorize(Policy = "ClienteAutenticado")]
+    [AllowAnonymous]
     public async Task<IActionResult> ConfirmarPagoReserva(Guid guid, CancellationToken ct)
     {
         var raw = await ReadBodyRawAsync(ct);
-        var idemKey = RequireIdempotencyKey();
-        if (idemKey is null)
-            return BadRequestIdempotency();
-
+        var idemKey = TryGetIdempotencyKey();
         var route = HttpContext.Request.Path.ToString();
         var hash = Sha256Hex(raw);
-        var cached = await _idem.ObtenerRespuestaSiExisteAsync(idemKey, route, hash, ct);
-        if (cached is not null)
-            return ReplayIdempotent(cached);
+
+        if (idemKey is not null)
+        {
+            var cached = await _idem.ObtenerRespuestaSiExisteAsync(idemKey, route, hash, ct);
+            if (cached is not null)
+                return ReplayIdempotent(cached);
+        }
 
         var request = JsonSerializer.Deserialize<ConfirmarPagoApiRequest>(raw, JsonOpts)
             ?? throw new JsonException("JSON inválido.");
@@ -124,7 +150,7 @@ public sealed class ReservasController : ControllerBase
             factura = await _pagos.CapturarYCompletarReservaAsync(
                 guid,
                 null,
-                UsuGuidActual,
+                UsuGuidOpcional,
                 request.PaypalOrderId.Trim(),
                 dto,
                 UsuarioAccion,
@@ -144,23 +170,20 @@ public sealed class ReservasController : ControllerBase
                 ct);
         }
 
-        var envelope = new ApiItemResponse<object>(factura, 201, "Pago confirmado y factura emitida");
-        await SaveIdempotentAsync(idemKey, route, hash, 201, envelope, ct);
+        var envelope = new ApiItemResponse<object>(factura, 201, "Operación exitosa");
+
+        if (idemKey is not null)
+            await SaveIdempotentAsync(idemKey, route, hash, 201, envelope, ct);
+
         return StatusCode(201, envelope);
     }
-
-    [HttpPost("{guid:guid}/confirmar-pago")]
-    [Authorize(Policy = "ClienteAutenticado")]
-    [Obsolete("Use POST /api/v1/reservas/{guid}/pagos/confirmacion")]
-    public Task<IActionResult> ConfirmarPagoLegacy(Guid guid, CancellationToken ct) =>
-        ConfirmarPagoReserva(guid, ct);
 
     [HttpGet]
     [Authorize(Policy = "ClienteAutenticado")]
     public async Task<IActionResult> ListarMisReservas([FromQuery] int page = 1, [FromQuery] int limit = 10, CancellationToken ct = default)
     {
         var (items, total) = await _orq.ListarMisReservasAsync(UsuGuidActual, page, limit, ct);
-        return Ok(new ApiListResponse<object>(items, total, page, limit));
+        return Ok(new ApiListResponse<object>(items, total, page, limit) { Message = "Operación exitosa" });
     }
 
     [HttpGet("{guid:guid}")]
@@ -168,7 +191,7 @@ public sealed class ReservasController : ControllerBase
     public async Task<IActionResult> ObtenerPorGuid(Guid guid, CancellationToken ct)
     {
         var data = await _orq.ObtenerReservaAsync(guid, UsuGuidActual, ct);
-        return Ok(new ApiItemResponse<object>(data));
+        return Ok(new ApiItemResponse<object>(data, 200, "Operación exitosa"));
     }
 
     [HttpPut("{guid:guid}/cancelar")]
@@ -179,22 +202,10 @@ public sealed class ReservasController : ControllerBase
         return NoContent();
     }
 
-    private string? RequireIdempotencyKey() =>
+    private string? TryGetIdempotencyKey() =>
         HttpContext.Request.Headers.TryGetValue("Idempotency-Key", out var v)
             ? v.FirstOrDefault()?.Trim()
             : null;
-
-    private IActionResult BadRequestIdempotency()
-    {
-        var body = new ApiErrorResponse
-        {
-            Status = 400,
-            Message = "Falta Idempotency-Key",
-            Details = new List<string> { "Las operaciones POST del orquestador requieren el header Idempotency-Key." },
-            Path = HttpContext.Request.Path.ToString(),
-        };
-        return BadRequest(body);
-    }
 
     private async Task<string> ReadBodyRawAsync(CancellationToken ct)
     {

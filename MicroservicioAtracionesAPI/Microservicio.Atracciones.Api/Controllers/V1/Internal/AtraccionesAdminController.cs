@@ -10,7 +10,7 @@ namespace Microservicio.Atracciones.Api.Controllers.V1.Internal
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v1/admin/atracciones")]
+    [Route("api/v2/admin/atracciones")]
     [Authorize(Policy = "SoloAdmin")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(ApiErrorResponse), 401)]

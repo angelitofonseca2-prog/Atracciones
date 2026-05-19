@@ -80,8 +80,8 @@ CREATE TABLE auth.usuario_roles (
 - **Carpetas:** `Api`, `Business`, `DataManagement`, `DataAccess`.
 - **Controladores:** `Public` (Login, Register).
 - **Endpoints:**
-  - `POST /api/v1/auth/login` - Autentica y retorna JWT.
-  - `POST /api/v1/auth/register` - Crea cuenta de usuario.
+  - `POST /api/v2/auth/login` - Autentica y retorna JWT.
+  - `POST /api/v2/auth/register` - Crea cuenta de usuario.
 
 #### d) Comunicación
 - **gRPC:** Servidor (Valida tokens si es necesario, aunque se prefiere validación asimétrica local).
@@ -117,8 +117,8 @@ CREATE TABLE crm.clientes (
 #### c) Arquitectura interna
 - **Controladores:** `Cliente` (Mi Perfil), `Admin` (Gestión de clientes).
 - **Endpoints:**
-  - `GET /api/v1/clientes/me` (Protegido: JWT)
-  - `PUT /api/v1/clientes/me` (Protegido: JWT)
+  - `GET /api/v2/clientes/me` (Protegido: JWT)
+  - `PUT /api/v2/clientes/me` (Protegido: JWT)
 
 #### d) Comunicación
 - **gRPC:** Servidor para que `ms-reservas` consulte datos del cliente al crear una reserva.
@@ -153,7 +153,7 @@ CREATE TABLE catalogos.destino (
 
 #### c) Arquitectura interna
 - **Controladores:** `Public` (Lectura), `Admin` (CRUD).
-- **Endpoints:** `GET /api/v1/destinos`, `GET /api/v1/categorias`.
+- **Endpoints:** `GET /api/v2/destinos`, `GET /api/v2/categorias`.
 
 #### d) Comunicación
 - **gRPC:** Servidor para que `ms-atracciones` obtenga los nombres de categorías/destinos para visualización.
@@ -194,7 +194,7 @@ CREATE TABLE inventario.horarios (
 
 #### c) Arquitectura interna
 - **Controladores:** `Public` (Búsqueda, Filtros), `Admin` (Gestión de inventario).
-- **Endpoints Booking (vía gateway):** catálogo en `ms-atracciones` (`GET /api/v1/atracciones`, horarios, tickets, reseñas anidadas); ventas en `ms-orquestador` (`POST /reservas` → `POST .../pagos/confirmacion`). Contrato formal: [`docs/api/openapi-v2-booking-public.md`](api/openapi-v2-booking-public.md).
+- **Endpoints Booking (vía gateway):** catálogo en `ms-atracciones` (`GET /api/v2/atracciones`, horarios, tickets, reseñas anidadas); ventas en `ms-orquestador` (`POST /reservas` → `POST .../pagos/confirmacion`). Contrato formal: [`docs/api/openapi-v2-booking-public.md`](api/openapi-v2-booking-public.md).
 
 #### d) Comunicación
 - **gRPC:**
@@ -229,7 +229,7 @@ CREATE TABLE ventas.reservas (
 
 #### c) Arquitectura interna
 - **Controladores:** `Cliente` (Mis reservas, Crear reserva).
-- **Endpoints:** `POST /api/v1/reservas` (Expuesto a Booking Externo).
+- **Endpoints:** `POST /api/v2/reservas` (Expuesto a Booking Externo).
 
 #### d) Comunicación
 - **gRPC:** Cliente de `ms-atracciones` (Valida si el `hor_guid` tiene cupos y el precio actual). Cliente de `ms-clientes`.

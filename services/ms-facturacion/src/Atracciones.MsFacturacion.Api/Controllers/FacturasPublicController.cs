@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsFacturacion.Api.Controllers;
 
 [ApiController]
-[Route("api/v1/facturas")]
+[Route("api/v2/facturas")]
 [Authorize(Policy = "ClienteAutenticado")]
 public sealed class FacturasPublicController : ControllerBase
 {

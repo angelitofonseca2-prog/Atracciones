@@ -1,43 +1,43 @@
-ï»¿namespace Microservicio.Atracciones.Api.Helpers
+namespace Microservicio.Atracciones.Api.Helpers
 {
     public static class LinkBuilder
     {
-        /// <summary>Links de un Ã­tem dentro del listado (self + detalle).</summary>
+        /// <summary>Links de un ítem dentro del listado (self + detalle).</summary>
         public static Dictionary<string, string?> ParaItemListado(string baseUrl, Guid atGuid)
             => new()
             {
-                ["self"] = $"{baseUrl}/api/v1/atracciones/{atGuid}",
-                ["detalle"] = $"{baseUrl}/api/v1/atracciones/{atGuid}"
+                ["self"] = $"{baseUrl}/api/v2/atracciones/{atGuid}",
+                ["detalle"] = $"{baseUrl}/api/v2/atracciones/{atGuid}"
             };
 
         /// <summary>Links de la envoltura del listado (self, next, prev).</summary>
         public static Dictionary<string, string?> ParaListado(
             string baseUrl, string queryString, int page, int limit, int totalPaginas)
         {
-            // Reconstruye la query sin el parÃ¡metro page para poder aÃ±adirlo limpio
+            // Reconstruye la query sin el parámetro page para poder añadirlo limpio
             var baseQuery = RemoverParametro(queryString, "page");
             var sep = baseQuery.Length > 0 ? "&" : "?";
 
             return new Dictionary<string, string?>
             {
-                ["self"] = $"{baseUrl}/api/v1/atracciones{(queryString.Length > 0 ? queryString : string.Empty)}",
+                ["self"] = $"{baseUrl}/api/v2/atracciones{(queryString.Length > 0 ? queryString : string.Empty)}",
                 ["next"] = page < totalPaginas
-                           ? $"{baseUrl}/api/v1/atracciones{baseQuery}{sep}page={page + 1}"
+                           ? $"{baseUrl}/api/v2/atracciones{baseQuery}{sep}page={page + 1}"
                            : null,
                 ["prev"] = page > 1
-                           ? $"{baseUrl}/api/v1/atracciones{baseQuery}{sep}page={page - 1}"
+                           ? $"{baseUrl}/api/v2/atracciones{baseQuery}{sep}page={page - 1}"
                            : null
             };
         }
 
-        /// <summary>Links del detalle de una atracciÃ³n (self + listado).</summary>
+        /// <summary>Links del detalle de una atracción (self + listado).</summary>
         public static Dictionary<string, string?> ParaDetalle(string baseUrl, Guid atGuid, string? ciudad)
             => new()
             {
-                ["self"] = $"{baseUrl}/api/v1/atracciones/{atGuid}",
+                ["self"] = $"{baseUrl}/api/v2/atracciones/{atGuid}",
                 ["listado"] = ciudad is not null
-                              ? $"{baseUrl}/api/v1/atracciones?ciudad={ciudad}"
-                              : $"{baseUrl}/api/v1/atracciones"
+                              ? $"{baseUrl}/api/v2/atracciones?ciudad={ciudad}"
+                              : $"{baseUrl}/api/v2/atracciones"
             };
 
         private static string RemoverParametro(string queryString, string param)

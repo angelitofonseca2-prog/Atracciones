@@ -546,38 +546,38 @@ Microservicio.Atracciones.Api
 ### Endpoints Administrativos (Requieren Rol: Admin)
 | Método | Endpoint | Funcionalidad Breve |
 | :--- | :--- | :--- |
-| `GET` | `/api/v1/admin/atracciones` | Lista atracciones con filtros detallados para gestión. |
-| `POST` | `/api/v1/admin/atracciones` | Crea una nueva atracción con sus imágenes, idiomas y categorías. |
-| `PUT` | `/api/v1/admin/atracciones/{guid}` | Actualiza todos los datos de una atracción existente. |
-| `DELETE` | `/api/v1/admin/atracciones/{guid}` | Elimina de forma lógica una atracción. |
-| `GET` | `/api/v1/admin/categorias` | Lista todas las categorías maestras. |
-| `POST` | `/api/v1/admin/categorias` | Crea una nueva categoría (soporta jerarquías). |
-| `PUT` | `/api/v1/admin/categorias/{guid}` | Actualiza el nombre o padre de una categoría. |
-| `DELETE` | `/api/v1/admin/categorias/{guid}` | Elimina de forma lógica una categoría. |
-| `GET` | `/api/v1/admin/idiomas` | Lista todos los idiomas disponibles. |
-| `POST` | `/api/v1/admin/idiomas` | Registra un nuevo idioma. |
-| `PUT` | `/api/v1/admin/idiomas/{guid}` | Actualiza la descripción de un idioma. |
-| `DELETE` | `/api/v1/admin/idiomas/{guid}` | Elimina un idioma del catálogo. |
-| `GET` | `/api/v1/admin/incluye` | Lista los ítems de inclusión (lo que incluye la entrada). |
-| `POST` | `/api/v1/admin/incluye` | Crea un nuevo ítem de inclusión. |
-| `GET` | `/api/v1/admin/reservas` | Consulta el historial global de reservas realizadas. |
+| `GET` | `/api/v2/admin/atracciones` | Lista atracciones con filtros detallados para gestión. |
+| `POST` | `/api/v2/admin/atracciones` | Crea una nueva atracción con sus imágenes, idiomas y categorías. |
+| `PUT` | `/api/v2/admin/atracciones/{guid}` | Actualiza todos los datos de una atracción existente. |
+| `DELETE` | `/api/v2/admin/atracciones/{guid}` | Elimina de forma lógica una atracción. |
+| `GET` | `/api/v2/admin/categorias` | Lista todas las categorías maestras. |
+| `POST` | `/api/v2/admin/categorias` | Crea una nueva categoría (soporta jerarquías). |
+| `PUT` | `/api/v2/admin/categorias/{guid}` | Actualiza el nombre o padre de una categoría. |
+| `DELETE` | `/api/v2/admin/categorias/{guid}` | Elimina de forma lógica una categoría. |
+| `GET` | `/api/v2/admin/idiomas` | Lista todos los idiomas disponibles. |
+| `POST` | `/api/v2/admin/idiomas` | Registra un nuevo idioma. |
+| `PUT` | `/api/v2/admin/idiomas/{guid}` | Actualiza la descripción de un idioma. |
+| `DELETE` | `/api/v2/admin/idiomas/{guid}` | Elimina un idioma del catálogo. |
+| `GET` | `/api/v2/admin/incluye` | Lista los ítems de inclusión (lo que incluye la entrada). |
+| `POST` | `/api/v2/admin/incluye` | Crea un nuevo ítem de inclusión. |
+| `GET` | `/api/v2/admin/reservas` | Consulta el historial global de reservas realizadas. |
 
 ### Endpoints Públicos (Acceso Abierto / Cliente)
 | Método | Endpoint | Funcionalidad Breve |
 | :--- | :--- | :--- |
-| `GET` | `/api/v1/atracciones` | Listado paginado de atracciones con filtros avanzados (ciudad, calificacion, etc). |
-| `GET` | `/api/v1/atracciones/filtros` | Obtiene opciones de filtrado dinámico y estadísticas según la ciudad. |
-| `GET` | `/api/v1/atracciones/{guid}` | Detalle completo de una atracción específica. |
-| `GET` | `/api/v1/atracciones/{guid}/tickets` | Lista los tipos de tickets disponibles para una atracción. |
-| `GET` | `/api/v1/atracciones/{guid}/horarios` | Horarios de la atracción (`?disponibles=true` solo con cupo). Legacy: `horarios-disponibles`. |
-| `GET` | `/api/v1/atracciones/{guid}/horarios/{horarioId}/tickets` | Tickets disponibles para un horario concreto. |
-| `GET` | `/api/v1/reservas` | Historial de reservas del cliente autenticado (orquestador). |
-| `POST` | `/api/v1/reservas` | Crea reserva **pendiente** (`P`), reserva cupo (`Idempotency-Key`). |
-| `GET` | `/api/v1/reservas/{guid}` | Detalle de reserva (orquestador). |
-| `POST` | `/api/v1/reservas/{guid}/pagos/confirmacion` | Confirma pago y emite factura (PayPal: `paypal_order_id`). |
-| `PUT` | `/api/v1/reservas/{guid}/cancelar` | Cancela reserva y libera cupos (orquestador). |
-| `GET` | `/api/v1/atracciones/{guid}/resenias` | Lista reseñas públicas de la atracción. |
-| `POST` | `/api/v1/atracciones/{guid}/resenias` | Crea reseña (`rev_guid` en body; cliente autenticado). |
-| `POST` | `/api/v1/auth/login` | Autenticación de usuarios para obtener token JWT. |
+| `GET` | `/api/v2/atracciones` | Listado paginado de atracciones con filtros avanzados (ciudad, calificacion, etc). |
+| `GET` | `/api/v2/atracciones/filtros` | Obtiene opciones de filtrado dinámico y estadísticas según la ciudad. |
+| `GET` | `/api/v2/atracciones/{guid}` | Detalle completo de una atracción específica. |
+| `GET` | `/api/v2/atracciones/{guid}/tickets` | Lista los tipos de tickets disponibles para una atracción. |
+| `GET` | `/api/v2/atracciones/{guid}/horarios` | Horarios de la atracción (`?disponibles=true` solo con cupo). Legacy: `horarios-disponibles`. |
+| `GET` | `/api/v2/atracciones/{guid}/horarios/{horarioId}/tickets` | Tickets disponibles para un horario concreto. |
+| `GET` | `/api/v2/reservas` | Historial de reservas del cliente autenticado (orquestador). |
+| `POST` | `/api/v2/reservas` | Crea reserva **pendiente** (`P`), reserva cupo (`Idempotency-Key`). |
+| `GET` | `/api/v2/reservas/{guid}` | Detalle de reserva (orquestador). |
+| `POST` | `/api/v2/reservas/{guid}/pagos/confirmacion` | Confirma pago y emite factura (PayPal: `paypal_order_id`). |
+| `PUT` | `/api/v2/reservas/{guid}/cancelar` | Cancela reserva y libera cupos (orquestador). |
+| `GET` | `/api/v2/atracciones/{guid}/resenias` | Lista reseñas públicas de la atracción. |
+| `POST` | `/api/v2/atracciones/{guid}/resenias` | Crea reseña (`rev_guid` en body; cliente autenticado). |
+| `POST` | `/api/v2/auth/login` | Autenticación de usuarios para obtener token JWT. |
 
 

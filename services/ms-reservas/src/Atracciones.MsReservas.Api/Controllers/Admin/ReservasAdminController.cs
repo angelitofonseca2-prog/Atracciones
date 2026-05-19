@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsReservas.Api.Controllers.Admin;
 
 [ApiController]
-[Route("api/v1/admin/reservas")]
+[Route("api/v2/admin/reservas")]
 [Authorize(Policy = "SoloAdmin")]
 public sealed class ReservasAdminController : ControllerBase
 {

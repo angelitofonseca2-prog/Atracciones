@@ -14,12 +14,12 @@ Rutas con controladores aún solo en [`Microservicio.Atracciones.Api`](Microserv
 
 | Prefijo REST | Migración objetivo típica |
 |--------------|---------------------------|
-| `/api/v1/auth/*` (excepto login ya en identidad/registro ya en orquestador) | Consolidar comportamiento donde corresponda; **sin llamadas HTTP al monólito desde gateway** |
-| `/api/v1/admin/usuarios` | **`ms-identidad`** (gestión usuarios/auth) |
-| `/api/v1/atracciones/{guid}/resenias` (público) | **`ms-atracciones`** — **hecho** |
-| `/api/v1/resenias` (plano, monolito) | **Obsoleto**; no enrutar en gateway |
-| `/api/v1/admin/resenias` | **`ms-atracciones`** — **hecho** |
-| Rutas `/api/v1/admin/destinos|…` | Ya suelen estar en **`ms-catalogos`** vía gateway; tras fusión **`ms-atracciones`** |
+| `/api/v2/auth/*` (excepto login ya en identidad/registro ya en orquestador) | Consolidar comportamiento donde corresponda; **sin llamadas HTTP al monólito desde gateway** |
+| `/api/v2/admin/usuarios` | **`ms-identidad`** (gestión usuarios/auth) |
+| `/api/v2/atracciones/{guid}/resenias` (público) | **`ms-atracciones`** — **hecho** |
+| `/api/v2/resenias` (plano, monolito) | **Obsoleto**; no enrutar en gateway |
+| `/api/v2/admin/resenias` | **`ms-atracciones`** — **hecho** |
+| Rutas `/api/v2/admin/destinos|…` | Ya suelen estar en **`ms-catalogos`** vía gateway; tras fusión **`ms-atracciones`** |
 | `/internal/v1/catalogos/mirror` | Obsoleto o reemplazar por proceso de migración datos (ETL/deploy), sin monólito receptor |
 
 Las rutas que el gateway ya enruta a microservicios (atracciones, tickets, catálogo admin, clientes, reservas saga, facturas…) se mantienen; el trabajo crítico es **cerrar el fallback** (`Order = 10` monolith).
@@ -51,24 +51,24 @@ Las rutas que el gateway ya enruta a microservicios (atracciones, tickets, catá
 ### Fase A — Migración funcional rutas pendientes por servicio
 
 - **Usuario admin CRUD**, si el producto lo exige: portar desde [`UsuariosController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/UsuariosController.cs) a **`ms-identidad`** y añadir rutas gateway `Order` inferior al fallback (que ya no existirá).
-- **Reseñas públicas**: **hecho** en `ms-atracciones` (`GET/POST /api/v1/atracciones/{guid}/resenias`). Monolito [`ReseniasController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasController.cs) marcado obsoleto; sin ruta gateway.
+- **Reseñas públicas**: **hecho** en `ms-atracciones` (`GET/POST /api/v2/atracciones/{guid}/resenias`). Monolito [`ReseniasController.cs`](MicroservicioAtracionesAPI/Microservicio.Atracciones.Api/Controllers/V1/Internal/ReseniasController.cs) marcado obsoleto; sin ruta gateway.
 - **Reseñas admin**: **hecho** en `ms-atracciones` (`ReseniasAdminController`). Monolito obsoleto.
 - **Reservas Booking**: orquestador expone `POST /reservas` (pendiente+cupo), `POST /reservas/{guid}/pagos/confirmacion`, PayPal auxiliar `POST /pagos/paypal/orders`. Ver [`openapi-v2-booking-public.md`](../MicroservicioAtracionesAPI/docs/api/openapi-v2-booking-public.md).
-- **Auth/registro**: confirmar que `POST /api/v1/auth/registro` sólo **`ms-orquestador`** → identidad/cliente(s) eventualmente fusionado; ningún código en gateway hacia puerto legacy.
+- **Auth/registro**: confirmar que `POST /api/v2/auth/registro` sólo **`ms-orquestador`** → identidad/cliente(s) eventualmente fusionado; ningún código en gateway hacia puerto legacy.
 - Revisión **openapi**/`docs/api/` frente al monólito vs microservicios para no dejar rutas huérfanas.
 
 ### Fase B — Fusión `ms-clientes` dentro de `ms-reservas` (BD única `reservas_db`)
 
 - Unificar `DbContext` con tablas clientes + reserva + detalle; **gRPC**: mantener **`ClienteService` + `ReservaService`** en el mismo proceso (misma app, mismo puerto gRPC si aplica).
 - Orquestador: `GrpcClients:Clientes` → host de **`ms-reservas`** únicamente.
-- Gateway: `/api/v1/clientes/{**catch-all}` → mismo host que ms-reservas (resto igual).
+- Gateway: `/api/v2/clientes/{**catch-all}` → mismo host que ms-reservas (resto igual).
 - Retirar contenedor/proj `ms-clientes` y Postgres `crm` cuando ETL OK.
 
 ### Fase C — Fusión `ms-catalogos` dentro de `ms-atracciones` (BD única `atracciones_db`)
 
 - Incorporar entidades/migraciones de catálogo; quitar cliente `CatalogGrpc` de [`appsettings`](services/ms-atracciones/src/Atracciones.MsAtracciones.Api/appsettings.Development.json).
 - Registrar **`CatalogoService` gRPC** en el proceso **`ms-atracciones`**.
-- Rutas `/api/v1/admin/destinos|…` siguen igual en path pero clusters YARP solo `atracciones`.
+- Rutas `/api/v2/admin/destinos|…` siguen igual en path pero clusters YARP solo `atracciones`.
 - Eliminar **`MonolithCatalogLegacy`**/`CatalogMirrorIngress` dirigidos al monólito — sustituir por **solo ETL inicial** entre entornos o por flujo admin contra el servicio único.
 
 ### Fase D — Rename BD y Compose
@@ -78,7 +78,7 @@ Las rutas que el gateway ya enruta a microservicios (atracciones, tickets, catá
 
 ### Fase E — QA “sin monólito”
 
-- Tabla smoke: cada endpoint público que listaste + `PUT /api/v1/reservas/{guid}/cancelar` + cliente admin habitual.
+- Tabla smoke: cada endpoint público que listaste + `PUT /api/v2/reservas/{guid}/cancelar` + cliente admin habitual.
 - Observabilidad: trazas orquestador → servicios fusionados sin hop monólito.
 
 ---

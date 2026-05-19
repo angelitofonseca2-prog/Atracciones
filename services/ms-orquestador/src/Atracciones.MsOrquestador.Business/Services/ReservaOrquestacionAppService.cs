@@ -131,9 +131,7 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
             _audit.Registrar("RESERVA_CREADA", correlationId,
                 new { rev_guid = prep.RevGuid.ToString("D"), rev_codigo = creada.RevCodigo, estado = "P" });
 
-            var dto = MapReserva(creada);
-            dto.Links["confirmar_pago"] = $"/api/v1/reservas/{prep.RevGuid:D}/pagos/confirmacion";
-            return dto;
+            return MapReserva(creada);
         }
         catch (Exception ex) when (ex is not ValidationOrchestadorException && ex is not ConflictOrchestadorException && ex is not NotFoundOrchestadorException)
         {
@@ -421,10 +419,18 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
         if (request.Lineas.Count == 0)
             throw new ValidationOrchestadorException(new[] { "Debe incluir al menos una línea de ticket." });
 
-        if (!usuGuid.HasValue)
-            throw new ValidationOrchestadorException(new[] { "Debe iniciar sesión para reservar." });
+        Guid cliGuid;
+        if (usuGuid.HasValue)
+        {
+            cliGuid = cliGuidFijo ?? await ResolverCliGuidAsync(usuGuid.Value, authorizationBearer, ct);
+        }
+        else
+        {
+            if (request.ClienteInvitado is null)
+                throw new ValidationOrchestadorException(new[] { "Debe enviar cliente_invitado o autenticarse con JWT." });
 
-        var cliGuid = cliGuidFijo ?? await ResolverCliGuidAsync(usuGuid.Value, authorizationBearer, ct);
+            cliGuid = cliGuidFijo ?? await ResolverCliGuidInvitadoAsync(request.ClienteInvitado, usuarioAccion, ip, ct);
+        }
 
         var hor = await _inv.ObtenerHorarioParaReservaAsync(new ObtenerHorarioParaReservaRequest
         {
@@ -724,6 +730,63 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
         }
     }
 
+    private async Task<Guid> ResolverCliGuidInvitadoAsync(
+        ClienteInvitadoOrquestadorDto invitado,
+        string usuarioAccion,
+        string ip,
+        CancellationToken ct)
+    {
+        var errores = new List<string>();
+        if (string.IsNullOrWhiteSpace(invitado.TipoIdentificacion))
+            errores.Add("cliente_invitado.tipo_identificacion es obligatorio.");
+        if (string.IsNullOrWhiteSpace(invitado.NumeroIdentificacion))
+            errores.Add("cliente_invitado.numero_identificacion es obligatorio.");
+        if (string.IsNullOrWhiteSpace(invitado.Correo))
+            errores.Add("cliente_invitado.correo es obligatorio.");
+        if (errores.Count > 0)
+            throw new ValidationOrchestadorException(errores);
+
+        try
+        {
+            var existente = await _cli.ObtenerClientePorNumeroIdentificacionAsync(
+                new ObtenerClientePorDocRequest { NumeroIdentificacion = invitado.NumeroIdentificacion.Trim() },
+                cancellationToken: ct);
+            if (Guid.TryParse(existente.CliGuid, out var g))
+                return g;
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            // crear nuevo
+        }
+
+        var cliGuid = Guid.NewGuid();
+        await _cli.CrearClienteAsync(new CrearClienteRequest
+        {
+            UsuGuid = cliGuid.ToString("D"),
+            TipoIdentificacion = invitado.TipoIdentificacion.Trim(),
+            NumeroIdentificacion = invitado.NumeroIdentificacion.Trim(),
+            Nombres = invitado.Nombres?.Trim() ?? string.Empty,
+            Apellidos = invitado.Apellidos?.Trim() ?? string.Empty,
+            Correo = invitado.Correo.Trim(),
+            Telefono = invitado.Telefono?.Trim() ?? string.Empty,
+            Direccion = invitado.Direccion?.Trim() ?? string.Empty,
+            CreadoPor = usuarioAccion,
+            IpCreador = ip,
+        }, cancellationToken: ct);
+
+        return cliGuid;
+    }
+
+    private static string MapEstadoPublico(string estado) =>
+        estado switch
+        {
+            "P" => "PENDIENTE",
+            "A" => "PAGADA",
+            "C" => "CANCELADA",
+            "I" => "INACTIVA",
+            _ => estado,
+        };
+
     private static void ValidarConfirmar(ConfirmarPagoOrquestadorDto request)
     {
         var errores = new List<string>();
@@ -772,10 +835,14 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
             RevValorIva = (decimal)r.ValorIva,
             RevTotal = (decimal)r.Total,
             Moneda = string.IsNullOrWhiteSpace(r.Moneda) ? "USD" : r.Moneda,
-            RevEstado = r.Estado,
+            RevEstado = MapEstadoPublico(r.Estado),
             RevFechaReservaUtc = DateTime.TryParse(r.RevFechaReservaUtc, out var fecha) ? fecha : DateTime.UtcNow,
             Links = new Dictionary<string, string?>(),
         };
+
+        dto.Links["self"] = $"/api/v2/reservas/{r.RevGuid}";
+        if (string.Equals(r.Estado, "P", StringComparison.OrdinalIgnoreCase))
+            dto.Links["confirmar_pago"] = $"/api/v2/reservas/{r.RevGuid}/pagos/confirmacion";
 
         foreach (var d in r.Detalle)
         {

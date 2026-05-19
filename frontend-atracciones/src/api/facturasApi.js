@@ -1,7 +1,7 @@
 import { apiClient } from './atraccionesApi'
 
 /**
- * GET /api/v1/facturas/mis-facturas (cliente autenticado).
+ * GET /api/v2/facturas/mis-facturas (cliente autenticado).
  * Backend: FacturasPublicController. Devuelve `ApiListResponse<FacturaResponse>`.
  */
 export const listarMisFacturas = async (params = {}) => {

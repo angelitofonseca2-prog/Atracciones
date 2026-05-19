@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Atracciones.MsAtracciones.Api.Controllers.Public;
 
 [ApiController]
-[Route("api/v1/atracciones")]
+[Route("api/v2/atracciones")]
 [Produces("application/json")]
 public sealed class AtraccionesController : ControllerBase
 {
@@ -49,16 +49,17 @@ public sealed class AtraccionesController : ControllerBase
     public async Task<IActionResult> ObtenerPorGuid(Guid guid)
     {
         var detalle = await _service.ObtenerPorGuidAsync(guid, BaseUrl);
-        var response = AtraccionesApiMapper.ToDetalleResponse(detalle);
-        return Ok(response);
+        var payload = BookingPublicResponseMapper.ToDetalleBooking(detalle);
+        return Ok(new ApiItemResponse<object>(payload, 200, "Operación exitosa"));
     }
 
     [HttpGet("{guid:guid}/tickets")]
-    [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<TicketDisponibleResponse>>), 200)]
+    [ProducesResponseType(200)]
     public async Task<IActionResult> ListarTickets(Guid guid)
     {
         var tickets = await _service.ListarTicketsAsync(guid);
-        return Ok(new ApiItemResponse<IReadOnlyList<TicketDisponibleResponse>>(tickets));
+        var items = tickets.Select(BookingPublicResponseMapper.ToTicketSimple).ToList();
+        return Ok(new { status = 200, data = items });
     }
 
     [HttpGet("{guid:guid}/horarios/{horarioId:guid}/tickets")]
@@ -67,25 +68,24 @@ public sealed class AtraccionesController : ControllerBase
     public async Task<IActionResult> ListarTicketsPorHorario(Guid guid, Guid horarioId)
     {
         var tickets = await _service.ListarTicketsPorHorarioAsync(guid, horarioId);
-        return Ok(new ApiItemResponse<IReadOnlyList<TicketHorarioDisponibleResponse>>(tickets));
+        var items = tickets.Select(t => new
+        {
+            tck_guid = t.TckGuid,
+            tipo = t.Tipo,
+            precio = t.Precio,
+            moneda = t.Moneda,
+        }).ToList();
+        return Ok(new ApiItemResponse<object>(new { items }, 200, "Consulta exitosa"));
     }
 
     [HttpGet("{guid:guid}/horarios")]
     [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<HorarioProximoResponse>>), 200)]
     [ProducesResponseType(typeof(ApiErrorResponse), 404)]
-    public async Task<IActionResult> ListarHorarios(Guid guid, [FromQuery] bool disponibles = false)
+    public async Task<IActionResult> ListarHorarios(Guid guid, [FromQuery] bool disponibles = true)
     {
         var horarios = await _service.ListarHorariosAsync(guid, disponibles);
-        return Ok(new ApiItemResponse<IReadOnlyList<HorarioProximoResponse>>(horarios));
-    }
-
-    [HttpGet("{guid:guid}/horarios-disponibles")]
-    [ProducesResponseType(typeof(ApiItemResponse<IReadOnlyList<HorarioProximoResponse>>), 200)]
-    [Obsolete("Use GET /atracciones/{guid}/horarios?disponibles=true")]
-    public async Task<IActionResult> ListarHorariosDisponibles(Guid guid)
-    {
-        var horarios = await _service.ListarHorariosDisponiblesAsync(guid);
-        return Ok(new ApiItemResponse<IReadOnlyList<HorarioProximoResponse>>(horarios));
+        var items = horarios.Select(BookingPublicResponseMapper.ToHorarioSimple).ToList();
+        return Ok(new { status = 200, data = items });
     }
 
     [HttpGet("{guid:guid}/resenias")]
