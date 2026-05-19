@@ -23,4 +23,12 @@ public interface IReservaRepository
     Task<ReservaDetalladaDto?> ConfirmarPagadaAsync(Guid revGuid, string usuario, string ip, CancellationToken ct = default);
 
     Task<bool> AnularAsync(Guid revGuid, string motivo, string usuario, string ip, CancellationToken ct = default);
+
+    Task<bool> ActualizarEstadoAsync(
+        Guid revGuid,
+        char nuevoEstado,
+        string motivo,
+        string usuario,
+        string ip,
+        CancellationToken ct = default);
 }

@@ -32,8 +32,12 @@ public sealed class ExceptionHandlingMiddleware
                 body = new ApiErrorResponse { Status = 400, Error = "Solicitud inválida", Details = new List<string> { ae.Message }, Path = context.Request.Path.ToString() };
                 break;
             case InvalidOperationException ie:
-                context.Response.StatusCode = 400;
-                body = new ApiErrorResponse { Status = 400, Error = "Solicitud inválida", Details = new List<string> { ie.Message }, Path = context.Request.Path.ToString() };
+                context.Response.StatusCode = 409;
+                body = new ApiErrorResponse { Status = 409, Error = "Conflicto", Details = new List<string> { ie.Message }, Path = context.Request.Path.ToString() };
+                break;
+            case KeyNotFoundException knf:
+                context.Response.StatusCode = 404;
+                body = new ApiErrorResponse { Status = 404, Error = "No encontrado", Details = new List<string> { knf.Message }, Path = context.Request.Path.ToString() };
                 break;
             default:
                 context.Response.StatusCode = 500;

@@ -21,6 +21,7 @@
   <ItemGroup>
     <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\reserva_service.proto" GrpcServices="Server" Link="Protos\reserva_service.proto" />
     <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\cliente_service.proto" GrpcServices="Server" Link="Protos\cliente_service.proto" />
+    <Protobuf Include="..\..\..\..\platform\shared\Contracts.Protos\atraccion_inventario_service.proto" GrpcServices="Client" Link="Protos\atraccion_inventario_service.proto" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\platform\shared\BuildingBlocks\Atracciones.Platform.BuildingBlocks.csproj" />

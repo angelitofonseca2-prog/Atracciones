@@ -4,7 +4,7 @@ import ErrorMessage from '../../components/common/ErrorMessage'
 import ModalConfirmacion from '../../components/common/ModalConfirmacion'
 import Spinner from '../../components/common/Spinner'
 import { emitirToast } from '../../components/common/Toast'
-import { estadoBadgeClass, estadoLabel } from '../../utils/estadoReserva'
+import { estadoBadgeClass, estadoLabel, esReservaCancelable } from '../../utils/estadoReserva'
 import { useGestionReservas } from '../hooks/useGestionReservas'
 
 /**
@@ -12,11 +12,21 @@ import { useGestionReservas } from '../hooks/useGestionReservas'
  *   - "Cancelar" → PUT /admin/reservas/{guid}/cancelar { nuevo_estado:'C', motivo }
  *   - "Anular"   → DELETE /admin/reservas/{guid}     body { nuevo_estado:'I', motivo }
  *   - "Reactivar"→ PUT /admin/reservas/{guid}/estado { nuevo_estado:'A', motivo }
+ *   - "Confirmar"→ PUT /admin/reservas/{guid}/estado { nuevo_estado:'A', motivo } (solo pendiente)
  *
- * Estado actual del backend usa caracteres: 'A' (activa), 'C' (cancelada), 'I' (inactiva).
+ * Estado actual del backend usa caracteres: 'P' (pendiente), 'A' (confirmada), 'C' (cancelada), 'I' (inactiva).
  */
 
 const ACCIONES = {
+  confirmar: {
+    titulo: '¿Confirmar pago?',
+    descripcion: 'La reserva pasará a estado confirmada (como si el pago se hubiera completado).',
+    boton: 'Confirmar pago',
+    variante: 'primary',
+    metodo: (guid, motivo) => adminApi.actualizarEstadoReserva(guid, 'A', motivo),
+    exito: 'Reserva confirmada correctamente.',
+    error: 'No se pudo confirmar la reserva.',
+  },
   cancelar: {
     titulo: '¿Cancelar reserva?',
     descripcion: 'La reserva se marcará como cancelada y los cupos volverán a estar disponibles.',
@@ -122,7 +132,9 @@ function GestionReservasPage() {
             {items.map((item) => {
               const estado = String(item.rev_estado ?? '').toUpperCase()
               const estaActiva = estado === 'A'
+              const estaPendiente = estado === 'P'
               const estaCancelada = estado === 'C' || estado === 'I'
+              const puedeCancelar = esReservaCancelable(item.rev_estado)
               const fechaReserva = item.rev_fecha_reserva_utc
                 ? String(item.rev_fecha_reserva_utc).slice(0, 10) : '—'
               const horarioFecha = item.hor_fecha
@@ -147,8 +159,14 @@ function GestionReservasPage() {
                   </td>
                   <td><strong>${Number(item.rev_total ?? 0).toFixed(2)}</strong></td>
                   <td style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                    {estaActiva && (
+                    {estaPendiente && (
                       <>
+                        <button
+                          className="btn btn-outline btn-sm"
+                          onClick={() => abrirAccion('confirmar', item)}
+                        >
+                          Confirmar pago
+                        </button>
                         <button
                           className="btn btn-outline btn-sm"
                           style={{ color: 'var(--danger, #e55)' }}
@@ -156,6 +174,19 @@ function GestionReservasPage() {
                         >
                           Cancelar
                         </button>
+                      </>
+                    )}
+                    {estaActiva && (
+                      <>
+                        {puedeCancelar && (
+                          <button
+                            className="btn btn-outline btn-sm"
+                            style={{ color: 'var(--danger, #e55)' }}
+                            onClick={() => abrirAccion('cancelar', item)}
+                          >
+                            Cancelar
+                          </button>
+                        )}
                         <button
                           className="btn btn-outline btn-sm"
                           style={{ color: 'var(--danger, #e55)' }}

@@ -151,6 +151,23 @@ public sealed class ReservaRepository : IReservaRepository
         return true;
     }
 
+    public async Task<bool> ActualizarEstadoAsync(
+        Guid revGuid,
+        char nuevoEstado,
+        string motivo,
+        string usuario,
+        string ip,
+        CancellationToken ct = default)
+    {
+        var entity = await _db.Reservas.FirstOrDefaultAsync(r => r.RevGuid == revGuid, ct);
+        if (entity is null)
+            return false;
+
+        entity.RevEstado = nuevoEstado;
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
     private static ReservaDetalladaDto Map(ReservaEntity r) =>
         new()
         {

@@ -101,9 +101,11 @@ services:
       Jwt__Audience: booking-prototipo-dev
       Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
       ClientesMirror__MonolithApiKey: dev-monolith-sync-key
+      GrpcClients__Atracciones: http://ms-atracciones:8081
     depends_on:
       - postgres-reservas
       - ms-identidad
+      - ms-atracciones
 
   # ── Orquestador ───────────────────────────────────────────
   postgres-orquestador:
