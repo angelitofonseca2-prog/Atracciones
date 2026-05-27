@@ -3,6 +3,7 @@ using Atracciones.MsReservas.DataAccess.Entities;
 using Atracciones.MsReservas.DataManagement.Interfaces;
 using Atracciones.MsReservas.DataManagement.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Atracciones.MsReservas.DataAccess.Repositories;
 
@@ -96,29 +97,139 @@ public sealed class ReservaRepository : IReservaRepository
     {
         page = Math.Max(1, page);
         limit = Math.Clamp(limit, 1, 100);
+        try
+        {
+            var q = _db.Reservas.AsNoTracking().AsQueryable();
+            if (estado.HasValue)
+                q = q.Where(r => r.RevEstado == estado.Value);
 
-        var q = _db.Reservas.AsNoTracking().AsQueryable();
+            var total = await q.CountAsync(ct);
+            var items = await q
+                .OrderByDescending(r => r.RevFechaReservaUtc)
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .Select(r => new ReservaAdminRowDto
+                {
+                    RevGuid = r.RevGuid,
+                    RevCodigo = r.RevCodigo,
+                    CliGuid = r.CliGuid,
+                    Estado = r.RevEstado,
+                    Total = r.RevTotal,
+                    FechaReserva = r.RevFechaReservaUtc,
+                    AtraccionNombreSnap = r.AtraccionNombreSnap,
+                    HorFechaSnap = r.HorFechaSnap,
+                    HorHoraInicioSnap = r.HorHoraInicioSnap,
+                })
+                .ToListAsync(ct);
+
+            return (items, total);
+        }
+        catch
+        {
+            // Fallback defensivo para entornos con filas legacy/inconsistentes
+            // que pueden romper el mapeo fuerte de EF (Guid/char(1)/DateTime).
+            return await ListarAdminFallbackSqlAsync(page, limit, estado, ct);
+        }
+    }
+
+    private async Task<(IReadOnlyList<ReservaAdminRowDto> Items, int Total)> ListarAdminFallbackSqlAsync(
+        int page,
+        int limit,
+        char? estado,
+        CancellationToken ct)
+    {
+        var conn = _db.Database.GetDbConnection();
+        if (conn.State != ConnectionState.Open)
+            await conn.OpenAsync(ct);
+
+        var whereEstado = estado.HasValue
+            ? " WHERE LEFT(COALESCE(rev_estado::text, ''), 1) = @estado"
+            : string.Empty;
+
+        await using var countCmd = conn.CreateCommand();
+        countCmd.CommandText = $"SELECT COUNT(*) FROM ventas.reservas{whereEstado};";
         if (estado.HasValue)
-            q = q.Where(r => r.RevEstado == estado.Value);
+        {
+            var p = countCmd.CreateParameter();
+            p.ParameterName = "@estado";
+            p.Value = estado.Value.ToString();
+            countCmd.Parameters.Add(p);
+        }
 
-        var total = await q.CountAsync(ct);
-        var items = await q
-            .OrderByDescending(r => r.RevFechaReservaUtc)
-            .Skip((page - 1) * limit)
-            .Take(limit)
-            .Select(r => new ReservaAdminRowDto
+        var countObj = await countCmd.ExecuteScalarAsync(ct);
+        var total = 0;
+        if (countObj is not null && int.TryParse(countObj.ToString(), out var parsedTotal))
+            total = parsedTotal;
+
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = $@"
+SELECT
+  rev_guid::text,
+  rev_codigo,
+  COALESCE(cli_guid::text, ''),
+  LEFT(COALESCE(rev_estado::text, 'P'), 1),
+  COALESCE(rev_total, 0)::text,
+  COALESCE(rev_fecha_reserva_utc::text, ''),
+  COALESCE(atraccion_nombre_snap, ''),
+  COALESCE(hor_fecha_snap, ''),
+  COALESCE(hor_hora_inicio_snap, '')
+FROM ventas.reservas
+{whereEstado}
+ORDER BY rev_fecha_reserva_utc DESC NULLS LAST
+OFFSET @offset
+LIMIT @limit;";
+
+        var pOffset = cmd.CreateParameter();
+        pOffset.ParameterName = "@offset";
+        pOffset.Value = (page - 1) * limit;
+        cmd.Parameters.Add(pOffset);
+
+        var pLimit = cmd.CreateParameter();
+        pLimit.ParameterName = "@limit";
+        pLimit.Value = limit;
+        cmd.Parameters.Add(pLimit);
+
+        if (estado.HasValue)
+        {
+            var pEstado = cmd.CreateParameter();
+            pEstado.ParameterName = "@estado";
+            pEstado.Value = estado.Value.ToString();
+            cmd.Parameters.Add(pEstado);
+        }
+
+        var items = new List<ReservaAdminRowDto>();
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            var revGuidTxt = reader.GetString(0);
+            if (!Guid.TryParse(revGuidTxt, out var revGuid))
+                continue;
+
+            var cliGuidTxt = reader.GetString(2);
+            var cliGuid = Guid.TryParse(cliGuidTxt, out var cg) ? cg : Guid.Empty;
+
+            var estadoTxt = reader.GetString(3);
+            var estadoChar = string.IsNullOrWhiteSpace(estadoTxt) ? 'P' : char.ToUpperInvariant(estadoTxt[0]);
+
+            var totalTxt = reader.GetString(4);
+            var totalDec = decimal.TryParse(totalTxt, out var td) ? td : 0m;
+
+            var fechaTxt = reader.GetString(5);
+            var fecha = DateTime.TryParse(fechaTxt, out var dt) ? dt : DateTime.UtcNow;
+
+            items.Add(new ReservaAdminRowDto
             {
-                RevGuid = r.RevGuid,
-                RevCodigo = r.RevCodigo,
-                CliGuid = r.CliGuid,
-                Estado = r.RevEstado,
-                Total = r.RevTotal,
-                FechaReserva = r.RevFechaReservaUtc,
-                AtraccionNombreSnap = r.AtraccionNombreSnap,
-                HorFechaSnap = r.HorFechaSnap,
-                HorHoraInicioSnap = r.HorHoraInicioSnap,
-            })
-            .ToListAsync(ct);
+                RevGuid = revGuid,
+                RevCodigo = reader.GetString(1),
+                CliGuid = cliGuid,
+                Estado = estadoChar,
+                Total = totalDec,
+                FechaReserva = fecha,
+                AtraccionNombreSnap = reader.GetString(6),
+                HorFechaSnap = reader.GetString(7),
+                HorHoraInicioSnap = reader.GetString(8),
+            });
+        }
 
         return (items, total);
     }
