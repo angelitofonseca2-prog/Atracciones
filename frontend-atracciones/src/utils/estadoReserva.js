@@ -34,7 +34,7 @@ export function estadoBadgeClass(codigo) {
 /** Reservas visibles en "Mis reservas": pendiente de pago o confirmada. */
 export function esReservaActiva(codigo) {
   const c = String(codigo).toUpperCase()
-  return c === 'P' || c === 'A'
+  return c === 'P' || c === 'A' || c === 'PENDIENTE' || c === 'CONFIRMADA' || c === 'PAGADA' || c === 'ACTIVA' || c === 'ACTIVE'
 }
 
 /** El backend permite anular en P o A. */
