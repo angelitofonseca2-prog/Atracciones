@@ -42,15 +42,7 @@ export const cancelarReserva = async (guid, motivo) => {
 }
 
 /**
- * POST /api/v2/pagos/paypal/orders — crea orden PayPal (servidor).
- */
-export const crearOrdenPayPal = async (body) => {
-  const response = await apiClient.post('/pagos/paypal/orders', body)
-  return response.data
-}
-
-/**
- * POST /api/v2/reservas/{guid}/pagos/confirmacion — confirma pago (PayPal o pendiente legacy).
+ * POST /api/v2/reservas/{guid}/pagos/confirmacion — confirma pago simulado.
  */
 export const confirmarPagoReserva = async (revGuid, body) => {
   const response = await apiClient.post(`/reservas/${revGuid}/pagos/confirmacion`, body, {

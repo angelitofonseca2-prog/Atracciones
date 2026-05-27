@@ -29,32 +29,6 @@ import { mapPerfilAFormulario, mapPerfilAPago, usePerfilCliente } from '../hooks
 
 const TIPOS_IDENTIFICACION = ['CEDULA', 'PASAPORTE', 'RUC', 'OTRO']
 
-function loadPayPalScript(clientId, currency) {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined') {
-      reject(new Error('Sin window'))
-      return
-    }
-    if (window.paypal) {
-      resolve()
-      return
-    }
-    const existing = document.querySelector('script[data-paypal-sdk]')
-    if (existing) {
-      existing.addEventListener('load', () => resolve(), { once: true })
-      existing.addEventListener('error', () => reject(new Error('PayPal SDK')), { once: true })
-      return
-    }
-    const s = document.createElement('script')
-    s.setAttribute('data-paypal-sdk', '1')
-    s.async = true
-    s.src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=${encodeURIComponent(currency)}`
-    s.onload = () => resolve()
-    s.onerror = () => reject(new Error('No se pudo cargar el SDK de PayPal'))
-    document.body.appendChild(s)
-  })
-}
-
 // ─── Confirmación final con factura ──────────────────────────────────────────
 function ConfirmacionConFactura({ reserva, factura }) {
   return (
@@ -109,7 +83,7 @@ function ConfirmacionConFactura({ reserva, factura }) {
   )
 }
 
-// ─── Pago con PayPal (orden y captura en servidor) ───────────────────────────
+// ─── Pago simulado (sin proveedor externo) ────────────────────────────────────
 function PantallaPago({
   checkoutReserva,
   resumen,
@@ -153,101 +127,54 @@ function PantallaPago({
     return e
   }
 
-  const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID
   const moneda = 'USD'
   const onPagoRef = useRef(onPagoExitoso)
   onPagoRef.current = onPagoExitoso
-  const revGuidRef = useRef(null)
 
-  useEffect(() => {
-    if (!clientId || !checkoutReserva?.at_guid) return undefined
-    const el = document.getElementById('paypal-button-container')
-    if (!el) return undefined
-    let cancelled = false
-    ;(async () => {
-      try {
-        await loadPayPalScript(clientId, moneda)
-        if (cancelled || !window.paypal) return
-        el.innerHTML = ''
-        window.paypal
-          .Buttons({
-            createOrder: async () => {
-              const errs = validar()
-              if (Object.keys(errs).length) {
-                setErrores(errs)
-                throw new Error('Completa los datos de facturación antes de pagar.')
-              }
-              setErrorPago('')
-              const reservaResp = await reservasApi.crearReserva({
-                at_guid: checkoutReserva.at_guid,
-                hor_guid: checkoutReserva.hor_guid,
-                lineas: checkoutReserva.lineas,
-                origen_canal: checkoutReserva.origen_canal || 'web',
-                fecha_visita: checkoutReserva.fecha_visita,
-              })
-              const reservaData = reservaResp?.data ?? reservaResp
-              const revGuid = reservaData?.rev_guid
-              if (!revGuid) throw new Error('No se recibió identificador de reserva.')
-              revGuidRef.current = revGuid
-
-              const ordenResp = await reservasApi.crearOrdenPayPal({ rev_guid: revGuid })
-              const ordenData = ordenResp?.data ?? ordenResp
-              const orderId = ordenData?.paypal_order_id
-              if (!orderId) throw new Error('No se recibió orden de PayPal.')
-              return orderId
-            },
-            onApprove: async (data) => {
-              const errs = validar()
-              if (Object.keys(errs).length) {
-                setErrores(errs)
-                throw new Error('Datos de facturación incompletos.')
-              }
-              const f = formRef.current
-              const payload = {
-                rev_guid: revGuidRef.current,
-                paypal_order_id: data.orderID,
-                nombre_receptor: f.nombre_receptor.trim(),
-                correo_receptor: f.correo_receptor.trim(),
-              }
-              if (!revGuidRef.current) {
-                throw new Error('Sesión de pago incompleta. Vuelve a intentar con PayPal.')
-              }
-              if (f.apellido_receptor.trim()) payload.apellido_receptor = f.apellido_receptor.trim()
-              if (f.telefono_receptor.trim()) payload.telefono_receptor = f.telefono_receptor.trim()
-              if (f.observacion.trim()) payload.observacion = f.observacion.trim()
-              setProcesandoCaptura(true)
-              setErrorPago('')
-              try {
-                const resp = await reservasApi.confirmarPagoReserva(revGuidRef.current, payload)
-                const factura = resp?.data
-                onPagoRef.current(factura)
-              } catch (err) {
-                const msg =
-                  err?.response?.data?.message ||
-                  err?.response?.data?.details?.[0] ||
-                  err?.message ||
-                  'No se pudo completar el pago.'
-                setErrorPago(msg)
-                throw err
-              } finally {
-                setProcesandoCaptura(false)
-              }
-            },
-            onError: (err) => {
-              const msg = err?.message || 'Error en el checkout de PayPal.'
-              setErrorPago(msg)
-            },
-          })
-          .render(el)
-      } catch (e) {
-        if (!cancelled) setErrorPago(e?.message || 'No se pudo iniciar PayPal.')
-      }
-    })()
-    return () => {
-      cancelled = true
-      el.innerHTML = ''
+  const confirmarReservaSimulada = async () => {
+    const errs = validar()
+    if (Object.keys(errs).length) {
+      setErrores(errs)
+      return
     }
-  }, [clientId, checkoutReserva?.at_guid, checkoutReserva?.hor_guid, moneda])
+    setErrorPago('')
+    setProcesandoCaptura(true)
+    try {
+      const reservaResp = await reservasApi.crearReserva({
+        at_guid: checkoutReserva.at_guid,
+        hor_guid: checkoutReserva.hor_guid,
+        lineas: checkoutReserva.lineas,
+        origen_canal: checkoutReserva.origen_canal || 'web',
+        fecha_visita: checkoutReserva.fecha_visita,
+      })
+      const reservaData = reservaResp?.data ?? reservaResp
+      const revGuid = reservaData?.rev_guid
+      if (!revGuid) throw new Error('No se recibió identificador de reserva.')
+
+      const f = formRef.current
+      const payload = {
+        rev_guid: revGuid,
+        nombre_receptor: f.nombre_receptor.trim(),
+        correo_receptor: f.correo_receptor.trim(),
+      }
+      if (f.apellido_receptor.trim()) payload.apellido_receptor = f.apellido_receptor.trim()
+      if (f.telefono_receptor.trim()) payload.telefono_receptor = f.telefono_receptor.trim()
+      if (f.observacion.trim()) payload.observacion = f.observacion.trim()
+
+      const resp = await reservasApi.confirmarPagoReserva(revGuid, payload)
+      const factura = resp?.data ?? resp
+      onPagoRef.current(factura)
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.details?.[0] ||
+        err?.message ||
+        'No se pudo completar la reserva.'
+      setErrorPago(msg)
+    } finally {
+      setProcesandoCaptura(false)
+    }
+  }
 
   const revSubtotal = Number(subtotal ?? 0)
   const revIva = Number(iva ?? 0)
@@ -257,9 +184,9 @@ function PantallaPago({
     <section className="page-section">
       <div className="confirmacion-card fade-in">
         <div className="check-icon">💳</div>
-        <h1>Pago con PayPal</h1>
+        <h1>Pago simulado</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-          Completa los datos de facturación y usa el botón de PayPal. La reserva y los cupos se confirman solo cuando el pago se complete correctamente.
+          Completa los datos de facturación para confirmar la reserva en modo simulado.
         </p>
 
         {resumen?.atraccion_nombre && (
@@ -356,19 +283,20 @@ function PantallaPago({
           </div>
         </form>
 
-        {!clientId && (
-          <div className="info-message" style={{ marginTop: '1rem' }}>
-            Falta configurar <code>VITE_PAYPAL_CLIENT_ID</code> en el entorno del frontend (clave pública de sandbox o live).
-          </div>
-        )}
-
         <ErrorMessage mensaje={errorPago} />
-
-        <div id="paypal-button-container" style={{ marginTop: '1.25rem' }} />
+        <button
+          type="button"
+          className="btn btn-full"
+          style={{ marginTop: '1rem' }}
+          disabled={procesandoCaptura}
+          onClick={confirmarReservaSimulada}
+        >
+          {procesandoCaptura ? 'Confirmando reserva...' : 'Confirmar reserva (pago simulado)'}
+        </button>
 
         {procesandoCaptura && (
           <p className="text-muted text-sm" style={{ marginTop: '0.75rem' }}>
-            <span className="spinner spinner-sm" /> Confirmando pago en el servidor…
+            <span className="spinner spinner-sm" /> Confirmando reserva y generando factura…
           </p>
         )}
       </div>

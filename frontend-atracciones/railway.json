@@ -4,9 +4,7 @@
     "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile",
     "buildArgs": {
-      "VITE_API_URL": "https://api-gateway-production-0afd.up.railway.app/api/v2",
-      "VITE_PAYPAL_CLIENT_ID": "AaNKjJfCbXL71-T0gGA1e-t8Hfffl3Wl0_jUXNY6oQ2I1E_ZhoVc0Cx5bz938Qe-qBb931u2QG1p0LPb"
-      
+      "VITE_API_URL": "https://api-gateway-production-0afd.up.railway.app/api/v2"
     }
   },
   "deploy": {
