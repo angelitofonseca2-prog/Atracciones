@@ -9,42 +9,24 @@ const normalizarRoles = (raw) => {
 }
 
 export function AuthProvider({ children }) {
+  const [usuario, setUsuario] = useState(null)
+  const [token, setToken] = useState(null)
+
   const estaExpirado = (tokenJWT) => {
     try {
+      // JWT usa base64url (- y _ en lugar de + y /) sin padding.
+      // atob solo acepta base64 estándar, así que se normaliza antes de decodificar.
       const base64Url = tokenJWT.split('.')[1]
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
       const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=')
       const payload = JSON.parse(atob(padded))
       return typeof payload.exp === 'number' && payload.exp < Date.now() / 1000
     } catch {
+      // Si no se puede decodificar el token, dejarlo pasar
+      // (el servidor lo rechazará con 401 si es inválido)
       return false
     }
   }
-
-  const [hydrated, setHydrated] = useState(false)
-  const [usuario, setUsuario] = useState(() => {
-    try {
-      const usuarioGuardado = localStorage.getItem('usuario')
-      if (!usuarioGuardado) return null
-      const usuarioParseado = JSON.parse(usuarioGuardado)
-      return {
-        login: usuarioParseado?.login || '',
-        roles: normalizarRoles(usuarioParseado?.roles ?? usuarioParseado?.rol),
-      }
-    } catch {
-      return null
-    }
-  })
-  const [token, setToken] = useState(() => {
-    try {
-      const tokenGuardado = localStorage.getItem('token')
-      if (!tokenGuardado) return null
-      if (estaExpirado(tokenGuardado)) return null
-      return tokenGuardado
-    } catch {
-      return null
-    }
-  })
 
   useEffect(() => {
     const tokenGuardado = localStorage.getItem('token')
@@ -54,9 +36,6 @@ export function AuthProvider({ children }) {
       if (estaExpirado(tokenGuardado)) {
         localStorage.removeItem('token')
         localStorage.removeItem('usuario')
-        setToken(null)
-        setUsuario(null)
-        setHydrated(true)
         return
       }
       setToken(tokenGuardado)
@@ -70,10 +49,8 @@ export function AuthProvider({ children }) {
         })
       } catch {
         localStorage.removeItem('usuario')
-        setUsuario(null)
       }
     }
-    setHydrated(true)
   }, [])
 
   const login = (nuevoToken, nuevoUsuario) => {
@@ -101,9 +78,8 @@ export function AuthProvider({ children }) {
       login,
       logout,
       estaAutenticado: Boolean(token),
-      hydrated,
     }),
-    [token, usuario, hydrated],
+    [token, usuario],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

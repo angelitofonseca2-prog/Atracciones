@@ -9,10 +9,8 @@ function esRolAdmin(roles) {
 }
 
 function RutaAdmin({ children }) {
-  const { estaAutenticado, usuario, hydrated } = useAuthContext()
+  const { estaAutenticado, usuario } = useAuthContext()
   const esAdministrador = esRolAdmin(usuario?.roles)
-
-  if (!hydrated) return null
 
   if (!estaAutenticado) {
     return <Navigate to="/login" replace />
