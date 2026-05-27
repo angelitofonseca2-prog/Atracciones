@@ -6,6 +6,22 @@ import {
 } from '../../api/atraccionesApi'
 
 export function useAtracciones(filtrosActivos = {}) {
+  const ciudad = filtrosActivos?.ciudad || undefined
+  const tipo = filtrosActivos?.tipo || undefined
+  const subtipo = filtrosActivos?.subtipo || undefined
+  const idioma = filtrosActivos?.idioma || undefined
+  const calificacionMin =
+    filtrosActivos?.calificacion_min != null && filtrosActivos?.calificacion_min !== ''
+      ? Number(filtrosActivos.calificacion_min)
+      : undefined
+  const disponible =
+    typeof filtrosActivos?.disponible === 'boolean'
+      ? filtrosActivos.disponible
+      : undefined
+  const ordenarPor = filtrosActivos?.ordenar_por || undefined
+  const page = filtrosActivos?.page || 1
+  const limit = filtrosActivos?.limit || 8
+
   const [atracciones, setAtracciones] = useState([])
   const [paginacion, setPaginacion] = useState({
     page: 1,
@@ -23,27 +39,22 @@ export function useAtracciones(filtrosActivos = {}) {
     setError('')
     try {
       const params = {
-        Ciudad:          filtrosActivos.ciudad           || undefined,
-        Tipo:            filtrosActivos.tipo             || undefined,
-        Subtipo:         filtrosActivos.subtipo          || undefined,
-        Idioma:          filtrosActivos.idioma           || undefined,
-        CalificacionMin: filtrosActivos.calificacion_min != null && filtrosActivos.calificacion_min !== ''
-          ? Number(filtrosActivos.calificacion_min)
-          : undefined,
-        Disponible:
-          typeof filtrosActivos.disponible === 'boolean'
-            ? filtrosActivos.disponible
-            : undefined,
-        OrdenarPor:      filtrosActivos.ordenar_por      || undefined,
-        Page:            filtrosActivos.page             || 1,
-        Limit:           filtrosActivos.limit            || 8,
+        Ciudad: ciudad,
+        Tipo: tipo,
+        Subtipo: subtipo,
+        Idioma: idioma,
+        CalificacionMin: calificacionMin,
+        Disponible: disponible,
+        OrdenarPor: ordenarPor,
+        Page: page,
+        Limit: limit,
       }
       const data = await listarAtracciones(params)
       setAtracciones(data.data || [])
       const pagination = data.pagination || {}
       setPaginacion({
-        page: pagination.page || filtrosActivos.page || 1,
-        limit: pagination.limit || filtrosActivos.limit || 8,
+        page: pagination.page || page,
+        limit: pagination.limit || limit,
         total: pagination.total || 0,
         // El backend puede devolver total_pages (snake_case) o totalPages (camelCase)
         totalPages: pagination.total_pages ?? pagination.totalPages ?? 1,
@@ -53,7 +64,7 @@ export function useAtracciones(filtrosActivos = {}) {
     } finally {
       setCargando(false)
     }
-  }, [filtrosActivos])
+  }, [ciudad, tipo, subtipo, idioma, calificacionMin, disponible, ordenarPor, page, limit])
 
   useEffect(() => {
     cargarAtracciones()

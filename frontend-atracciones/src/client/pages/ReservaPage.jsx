@@ -579,7 +579,8 @@ function ReservaPage() {
   const [factura, setFactura] = useState(null)
   const [errorPago, setErrorPago] = useState('')
 
-  const { detalle, cargarDetalle, cargando, error } = useAtracciones({})
+  const filtrosVacios = useMemo(() => ({}), [])
+  const { detalle, cargarDetalle, cargando, error } = useAtracciones(filtrosVacios)
   const [checkoutReserva, setCheckoutReserva] = useState(null)
   const [resumenPago, setResumenPago] = useState(null)
   const { perfil, cargando: cargandoPerfil, error: errorPerfil, cargarPerfil } = usePerfilCliente()
