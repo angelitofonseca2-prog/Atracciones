@@ -7,7 +7,7 @@ RUN npm ci
 
 COPY . .
 
-ARG VITE_API_URL=https://api-gateway-production-5c80b.up.railway.app/api/v2
+ARG VITE_API_URL=https://api-gateway-production-0afd.up.railway.app/api/v2
 ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build

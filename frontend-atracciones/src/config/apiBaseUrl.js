@@ -1,6 +1,6 @@
 /** Gateway público en Railway (build sin VITE_API_URL). */
 const DEFAULT_PRODUCTION_API =
-  'https://api-gateway-production-5c80b.up.railway.app/api/v2'
+  'https://api-gateway-production-0afd.up.railway.app/api/v2'
 
 const DEFAULT_LOCAL_API = 'http://localhost:5050/api/v2'
 
