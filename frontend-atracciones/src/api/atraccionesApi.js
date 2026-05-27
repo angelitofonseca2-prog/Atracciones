@@ -80,7 +80,7 @@ export const obtenerAtraccion = async (guid) => {
 
 export const obtenerTicketsAtraccion = async (guid) => {
   const response = await apiClient.get(`/atracciones/${guid}/tickets`)
-  return response.data.data
+  return response.data?.data ?? []
 }
 
 export const obtenerHorariosDisponibles = async (guid) => {
@@ -88,4 +88,10 @@ export const obtenerHorariosDisponibles = async (guid) => {
     params: { disponibles: true },
   })
   return response.data?.data ?? response.data
+}
+
+export const obtenerTicketsPorHorario = async (guid, horGuid) => {
+  const response = await apiClient.get(`/atracciones/${guid}/horarios/${horGuid}/tickets`)
+  const payload = response.data?.data ?? response.data
+  return payload?.items ?? payload ?? []
 }

@@ -1,6 +1,10 @@
 ﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { obtenerHorariosDisponibles, obtenerTicketsAtraccion } from '../../api/atraccionesApi'
+import {
+  obtenerHorariosDisponibles,
+  obtenerTicketsAtraccion,
+  obtenerTicketsPorHorario,
+} from '../../api/atraccionesApi'
 import * as reservasApi from '../../api/reservasApi'
 import CalendarioDiasVisita from '../../components/common/CalendarioDiasVisita'
 import ErrorMessage from '../../components/common/ErrorMessage'
@@ -554,6 +558,7 @@ function ReservaPage() {
   const [cantidades, setCantidades] = useState({})
   const [intentoEnvio, setIntentoEnvio] = useState(false)
   const [tickets, setTickets] = useState([])
+  const [ticketsHorario, setTicketsHorario] = useState([])
   const [horarios, setHorarios] = useState([])
 
   const horarioSeleccionado = useMemo(
@@ -623,10 +628,21 @@ function ReservaPage() {
       .catch(() => setHorarios([]))
   }, [guid])
 
+  useEffect(() => {
+    if (!guid || !horGuid) {
+      setTicketsHorario([])
+      return
+    }
+    obtenerTicketsPorHorario(guid, horGuid)
+      .then((data) => setTicketsHorario(Array.isArray(data) ? data : []))
+      .catch(() => setTicketsHorario([]))
+  }, [guid, horGuid])
+
   const ticketsFiltrados = useMemo(() => {
-    if (!horarioSeleccionado?.tck_guid) return []
+    if (ticketsHorario.length > 0) return ticketsHorario
+    if (!horarioSeleccionado?.tck_guid) return tickets
     return tickets.filter((t) => t.tck_guid === horarioSeleccionado.tck_guid)
-  }, [tickets, horarioSeleccionado])
+  }, [tickets, ticketsHorario, horarioSeleccionado])
 
   const lineas = useMemo(
     () =>
