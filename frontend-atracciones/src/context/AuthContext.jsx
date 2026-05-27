@@ -2,6 +2,12 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 const AuthContext = createContext(null)
 
+const normalizarRoles = (raw) => {
+  if (Array.isArray(raw)) return raw.filter(Boolean).map((r) => String(r).trim())
+  if (typeof raw === 'string' && raw.trim()) return [raw.trim()]
+  return []
+}
+
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null)
   const [token, setToken] = useState(null)
@@ -39,9 +45,7 @@ export function AuthProvider({ children }) {
         const usuarioParseado = JSON.parse(usuarioGuardado)
         setUsuario({
           login: usuarioParseado?.login || '',
-          roles:
-            usuarioParseado?.roles ||
-            (usuarioParseado?.rol ? [usuarioParseado.rol] : []),
+          roles: normalizarRoles(usuarioParseado?.roles ?? usuarioParseado?.rol),
         })
       } catch {
         localStorage.removeItem('usuario')
@@ -52,7 +56,7 @@ export function AuthProvider({ children }) {
   const login = (nuevoToken, nuevoUsuario) => {
     const usuarioNormalizado = {
       login: nuevoUsuario?.login || '',
-      roles: nuevoUsuario?.roles || [],
+      roles: normalizarRoles(nuevoUsuario?.roles ?? nuevoUsuario?.rol),
     }
     setToken(nuevoToken)
     setUsuario(usuarioNormalizado)
