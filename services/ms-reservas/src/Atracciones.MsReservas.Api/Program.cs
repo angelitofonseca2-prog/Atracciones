@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Atracciones.Contracts.Inventario.V1;
 using Atracciones.MsReservas.Api.Configuration;
+using Atracciones.MsReservas.Api.EventBus;
 using Atracciones.MsReservas.Api.Extensions;
 using Atracciones.MsReservas.Api.Grpc;
 using Atracciones.MsReservas.Api.Integration;
@@ -10,6 +11,7 @@ using Atracciones.MsReservas.Api.Services;
 using Atracciones.MsReservas.DataAccess;
 using Atracciones.MsReservas.DataAccess.Context;
 using Atracciones.Platform.BuildingBlocks.Kestrel;
+using Atracciones.Platform.BuildingBlocks.EventBus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -39,6 +41,13 @@ builder.Services.AddSingleton(sp =>
     new AtraccionInventarioService.AtraccionInventarioServiceClient(
         sp.GetRequiredService<InventarioGrpcChannelHolder>().Atracciones));
 builder.Services.AddScoped<ReservaAdminAppService>();
+builder.Services.AddScoped<MarketplaceReservaEventHandler>();
+builder.Services.AddScoped<ReservaPagadaOutboxPublisher>();
+builder.Services.AddAtraccionesEventBus(builder.Configuration, services =>
+{
+    services.AddHostedService<MarketplaceReservaConsumerHostedService>();
+    services.AddHostedService<CrmMarketplaceActividadConsumerHostedService>();
+});
 builder.Services.AddGrpc();
 
 var app = builder.Build();
@@ -49,7 +58,18 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapGrpcService<ReservaGrpcService>();
 app.MapGrpcService<ClienteGrpcService>();
-app.MapGet("/health", () => Results.Json(new { status = "ok" }));
+app.MapGet("/health", async (VentasDbContext db) =>
+{
+    try
+    {
+        var canConnect = await db.Database.CanConnectAsync();
+        return Results.Json(new { status = canConnect ? "ok" : "degraded", db = canConnect ? "ok" : "unreachable", service = "ms-reservas" });
+    }
+    catch (Exception ex)
+    {
+        return Results.Json(new { status = "degraded", db = "error", error = ex.Message, service = "ms-reservas" }, statusCode: 503);
+    }
+});
 
 app.Lifetime.ApplicationStarted.Register(() =>
 {

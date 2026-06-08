@@ -23,6 +23,115 @@ namespace Atracciones.MsReservas.DataAccess.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Atracciones.MsReservas.DataAccess.Entities.MarketplaceReservaSeguimientoEntity", b =>
+                {
+                    b.Property<Guid>("SeguimientoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("seguimiento_id");
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("estado");
+
+                    b.Property<string>("MotivoRechazo")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("motivo_rechazo");
+
+                    b.Property<string>("RevCodigo")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("rev_codigo");
+
+                    b.Property<Guid?>("RevGuid")
+                        .HasColumnType("uuid")
+                        .HasColumnName("rev_guid");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_utc");
+
+                    b.HasKey("SeguimientoId");
+
+                    b.HasIndex("CorrelationId");
+
+                    b.ToTable("marketplace_reserva_seguimiento", "ventas");
+                });
+
+            modelBuilder.Entity("Atracciones.MsReservas.DataAccess.Entities.OutboxEventEntity", b =>
+                {
+                    b.Property<Guid>("ObGuid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("ob_guid");
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("correlation_id");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_utc");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload_json");
+
+                    b.Property<DateTime?>("PublishedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_utc");
+
+                    b.Property<string>("RoutingKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("routing_key");
+
+                    b.HasKey("ObGuid");
+
+                    b.HasIndex("PublishedUtc");
+
+                    b.ToTable("outbox_events", "ventas");
+                });
+
+            modelBuilder.Entity("Atracciones.MsReservas.DataAccess.Entities.ProcessedEventEntity", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("event_type");
+
+                    b.Property<DateTime>("ProcessedUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_utc");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("eventos_procesados", "ventas");
+                });
+
             modelBuilder.Entity("Atracciones.MsReservas.DataAccess.Entities.ReservaDetalleEntity", b =>
                 {
                     b.Property<Guid>("RdetGuid")

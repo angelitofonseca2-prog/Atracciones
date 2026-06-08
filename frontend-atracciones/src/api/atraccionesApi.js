@@ -22,13 +22,27 @@ apiClient.interceptors.request.use((config) => {
   return config
 })
 
+// Deduplicar toasts por mensaje: evita apilar N toasts idénticos cuando
+// se disparan varias peticiones en paralelo con el mismo error (ej: fallback admin/reservas).
+const _toastCooldown = new Map()
+function dispatchToast(message, type) {
+  const key = `${type}:${message}`
+  if (_toastCooldown.has(key)) return
+  _toastCooldown.set(key, true)
+  setTimeout(() => _toastCooldown.delete(key), 4000)
+  window.dispatchEvent(
+    new CustomEvent('app:toast', {
+      detail: { id: Date.now(), message, type },
+    }),
+  )
+}
+
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error?.response?.status
 
     if (status === 401) {
-      // Solo limpiar sesión y redirigir si el token ya existía (no en un intento de login)
       const hayToken = Boolean(localStorage.getItem('token'))
       localStorage.removeItem('token')
       localStorage.removeItem('usuario')
@@ -36,29 +50,10 @@ apiClient.interceptors.response.use(
         window.location.href = '/login'
       }
     } else if (status === 403) {
-      // Notificar sin redirigir — cada componente maneja sus propios 403
-      // (ej: registro puede obtener 403 en /admin/clientes con token CLIENTE)
-      window.dispatchEvent(
-        new CustomEvent('app:toast', {
-          detail: {
-            id: Date.now(),
-            message: 'No tienes permisos para esta acción',
-            type: 'error',
-          },
-        }),
-      )
+      dispatchToast('No tienes permisos para esta acción', 'error')
     } else if (status >= 500) {
-      window.dispatchEvent(
-        new CustomEvent('app:toast', {
-          detail: {
-            id: Date.now(),
-            message: 'Error del servidor. Intenta nuevamente.',
-            type: 'error',
-          },
-        }),
-      )
+      dispatchToast('Error del servidor. Intenta nuevamente.', 'error')
     }
-    // 409 y otros se manejan en cada hook
     return Promise.reject(error)
   },
 )

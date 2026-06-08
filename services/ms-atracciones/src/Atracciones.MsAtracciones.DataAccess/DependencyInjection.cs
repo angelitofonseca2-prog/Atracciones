@@ -1,6 +1,7 @@
 using Atracciones.MsAtracciones.DataAccess.Context;
 using Atracciones.MsAtracciones.DataAccess.Repositories;
 using Atracciones.MsAtracciones.DataManagement.Interfaces;
+using Atracciones.Platform.BuildingBlocks.EventBus.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,9 @@ public static class DependencyInjection
                 npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "inventario")));
         services.AddScoped<IInventarioRepository, InventarioRepository>();
         services.AddScoped<IReseniaRepository, ReseniaRepository>();
+        services.AddScoped<IOutboxWriter, InventarioOutboxRepository>();
+        services.AddScoped<IOutboxReader, InventarioOutboxRepository>();
+        services.AddScoped<IProcessedEventStore, InventarioOutboxRepository>();
 
         // Catálogos en el mismo PostgreSQL que inventario (schema catalogos)
         var catalogCs = configuration.GetConnectionString("CatalogosDb") ?? cs;

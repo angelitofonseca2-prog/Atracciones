@@ -12,6 +12,7 @@ public sealed class BillingDbContext : DbContext
 
     public DbSet<FacturaEntity> Facturas => Set<FacturaEntity>();
     public DbSet<DatosFacturacionEntity> DatosFacturacion => Set<DatosFacturacionEntity>();
+    public DbSet<ProcessedEventEntity> ProcessedEvents => Set<ProcessedEventEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,6 +52,15 @@ public sealed class BillingDbContext : DbContext
                 .HasForeignKey<DatosFacturacionEntity>(x => x.FacGuid)
                 .OnDelete(DeleteBehavior.Cascade);
             b.HasIndex(x => x.FacGuid).IsUnique();
+        });
+
+        modelBuilder.Entity<ProcessedEventEntity>(b =>
+        {
+            b.ToTable("eventos_procesados");
+            b.HasKey(x => x.EventId);
+            b.Property(x => x.EventId).HasColumnName("event_id");
+            b.Property(x => x.EventType).HasColumnName("event_type").HasMaxLength(120).IsRequired();
+            b.Property(x => x.ProcessedUtc).HasColumnName("processed_utc");
         });
     }
 }

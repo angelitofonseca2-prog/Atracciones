@@ -1,6 +1,7 @@
 using Atracciones.MsAuditoria.DataAccess.Context;
 using Atracciones.MsAuditoria.DataAccess.Repositories;
 using Atracciones.MsAuditoria.DataManagement.Interfaces;
+using Atracciones.Platform.BuildingBlocks.EventBus.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ public static class DependencyInjection
             o.UseNpgsql(cs, npgsql =>
                 npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "audit")));
         services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
+        services.AddScoped<IProcessedEventStore, AuditoriaProcessedEventRepository>();
         return services;
     }
 }

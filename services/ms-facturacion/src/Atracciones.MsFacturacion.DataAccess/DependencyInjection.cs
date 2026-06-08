@@ -1,6 +1,7 @@
 using Atracciones.MsFacturacion.DataAccess.Context;
 using Atracciones.MsFacturacion.DataAccess.Repositories;
 using Atracciones.MsFacturacion.DataManagement.Interfaces;
+using Atracciones.Platform.BuildingBlocks.EventBus.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ public static class DependencyInjection
             o.UseNpgsql(cs, npgsql =>
                 npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "billing")));
         services.AddScoped<IFacturaRepository, FacturaRepository>();
+        services.AddScoped<IProcessedEventStore, FacturacionProcessedEventRepository>();
         return services;
     }
 }

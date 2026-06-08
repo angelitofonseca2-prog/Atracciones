@@ -272,5 +272,22 @@ Criterio: login con tokens RS256 de identidad; registro funcional con sync; usua
 
 - **Eliminado:** RabbitMQ, MassTransit, Outbox transaccional, eventos pub/sub, consumidor wildcard de auditoría; procesos desplegables separados **`ms-clientes`** y **`ms-catalogos`** (lógica absorbida por **`ms-reservas`** y **`ms-atracciones`**).
 - **Añadido:** `services/ms-orquestador/` (sagas síncronas gRPC); fusión BD/servicio según [docs/plan-fusion-microservicios.md](docs/plan-fusion-microservicios.md).
-- **Mantenido:** API Gateway YARP, gRPC, JWT RS256, BD por servicio, Polly, Idempotency-Key, OpenTelemetry, frontend sin cambios funcionales.
+- **Mantenido:** API Gateway YARP, gRPC, JWT RS256, BD por servicio, Polly, Idempotency-Key, OpenTelemetry, frontend REST sin cambios funcionales (flag GraphQL opcional).
+
+## 11. Fase 8 — EvBus híbrido + GraphQL marketplace (implementada)
+
+**Objetivo:** segunda vía para el frontend React (lecturas GraphQL + reservas async por eventos) **sin** alterar el contrato REST Booking (`POST /reservas` → 201 síncrono).
+
+| Componente | Ubicación |
+|------------|-----------|
+| Contratos eventos | `platform/shared/Contracts.Events/` |
+| BuildingBlocks EvBus | `platform/shared/BuildingBlocks/EventBus/` |
+| RabbitMQ | `platform/docker-compose.yml` (vhost `atracciones`) |
+| Marketplace Gateway | `platform/marketplace-gateway/` (:5200 GraphQL) |
+| ms-reservas / atracciones / auditoría / facturación | Consumidores + outbox según servicio |
+| Frontend | `frontend-atracciones/src/graphql/`, `VITE_USE_GRAPHQL` |
+
+**Documentación:** [docs/marketplace-graphql-evbus.md](docs/marketplace-graphql-evbus.md), verificación [platform/docs/evbus-graphql-verificacion.md](platform/docs/evbus-graphql-verificacion.md).
+
+**Pendiente Fase 8+:** E2E en Docker, Railway marketplace-gateway, retirar gRPC factura tras validar shadow, webhooks Booking, OTel en bus.
 - **Sobre BD en Fase 1:** se **CREA** un esquema/BD nuevo para `ms-identidad` y se **MIGRAN datos** desde `atracciones.usuario`/`roles`/`usuariosroles` con un ETL puntual; la BD del monolito **no se modifica** y se conservan esas tablas hasta que se apague el monolito.

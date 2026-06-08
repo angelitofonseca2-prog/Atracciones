@@ -11,6 +11,7 @@ public sealed class AuditoriaDbContext : DbContext
     }
 
     public DbSet<EventoAuditoriaEntity> Eventos => Set<EventoAuditoriaEntity>();
+    public DbSet<ProcessedEventEntity> ProcessedEvents => Set<ProcessedEventEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,6 +29,15 @@ public sealed class AuditoriaDbContext : DbContext
             b.HasIndex(x => x.CorrelationId);
             b.HasIndex(x => x.FechaUtc);
             b.HasIndex(x => x.EvtTipo);
+        });
+
+        modelBuilder.Entity<ProcessedEventEntity>(b =>
+        {
+            b.ToTable("eventos_procesados");
+            b.HasKey(x => x.EventId);
+            b.Property(x => x.EventId).HasColumnName("event_id");
+            b.Property(x => x.EventType).HasColumnName("event_type").HasMaxLength(120).IsRequired();
+            b.Property(x => x.ProcessedUtc).HasColumnName("processed_utc");
         });
     }
 }

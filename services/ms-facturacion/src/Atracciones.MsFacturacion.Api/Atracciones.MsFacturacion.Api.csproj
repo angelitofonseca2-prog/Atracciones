@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\platform\shared\BuildingBlocks\Atracciones.Platform.BuildingBlocks.csproj" />
+    <ProjectReference Include="..\..\..\..\platform\shared\Contracts.Events\Atracciones.Contracts.Events.csproj" />
     <ProjectReference Include="..\Atracciones.MsFacturacion.DataAccess\Atracciones.MsFacturacion.DataAccess.csproj" />
   </ItemGroup>
 </Project>

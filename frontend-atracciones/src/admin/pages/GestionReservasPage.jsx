@@ -100,15 +100,35 @@ function GestionReservasPage() {
 
   return (
     <section className="page-section">
-      <div className="admin-page-header">
-        <h1>Gestión de Reservas</h1>
+      <div className="admin-page-header" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <h1 style={{ margin: 0 }}>Gestión de Reservas</h1>
+        <button
+          className="btn btn-outline btn-sm"
+          onClick={() => cargar(page)}
+          disabled={cargando}
+          title="Actualizar lista"
+        >
+          {cargando ? '…' : '⟳ Actualizar'}
+        </button>
       </div>
 
-      {cargando && <Spinner message="Cargando reservas..." />}
-      <ErrorMessage mensaje={error} />
+      {cargando && items.length === 0 && <Spinner message="Cargando reservas..." />}
 
-      <div className="table-wrap">
-        <table className="admin-table">
+      {error && (
+        <div style={{ marginBottom: '1rem' }}>
+          <ErrorMessage mensaje={error} />
+          <button
+            className="btn btn-outline btn-sm"
+            style={{ marginTop: '0.5rem' }}
+            onClick={() => cargar(page)}
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
+
+      <div className="table-wrap" style={{ overflowX: 'auto' }}>
+        <table className="admin-table" style={{ minWidth: '700px' }}>
           <thead>
             <tr>
               <th>Código</th>
@@ -122,9 +142,10 @@ function GestionReservasPage() {
             </tr>
           </thead>
           <tbody>
-            {items.length === 0 && !cargando && (
+            {items.length === 0 && !cargando && !error && (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
+                <td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '3rem 1rem' }}>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📋</div>
                   No hay reservas registradas.
                 </td>
               </tr>

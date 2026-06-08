@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Atracciones.MsAtracciones.Api.Configuration;
+using Atracciones.MsAtracciones.Api.EventBus;
 using Atracciones.MsAtracciones.Api.Extensions;
 using Atracciones.MsAtracciones.Api.Grpc;
 using Atracciones.MsAtracciones.Api.Middleware;
@@ -7,6 +8,7 @@ using Atracciones.MsAtracciones.Business;
 using Atracciones.MsAtracciones.DataAccess;
 using Atracciones.MsAtracciones.DataAccess.Context;
 using Atracciones.Platform.BuildingBlocks.Kestrel;
+using Atracciones.Platform.BuildingBlocks.EventBus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -32,6 +34,11 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 builder.Services.AddInventarioPersistence(builder.Configuration);
 builder.Services.AddInventarioBusiness(builder.Configuration);
 builder.Services.AddJwtFromJwks(builder.Configuration);
+builder.Services.AddScoped<MarketplaceInventarioSyncHandler>();
+builder.Services.AddAtraccionesEventBus(builder.Configuration, services =>
+{
+    services.AddHostedService<MarketplaceInventarioSyncConsumerHostedService>();
+});
 builder.Services.AddGrpc();
 
 var app = builder.Build();
