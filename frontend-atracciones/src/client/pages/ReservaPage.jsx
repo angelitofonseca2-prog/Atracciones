@@ -6,6 +6,13 @@ import {
   obtenerTicketsPorHorario,
 } from '../../api/atraccionesApi'
 import * as reservasApi from '../../api/reservasApi'
+import { useGraphqlEnabled } from '../../config/graphqlUrl'
+import {
+  graphqlEsperarConfirmacionReserva,
+  graphqlObtenerTickets,
+  graphqlSolicitarReserva,
+} from '../../graphql/marketplaceApi'
+import { useHorariosConPolling } from '../hooks/useHorariosConPolling'
 import CalendarioDiasVisita from '../../components/common/CalendarioDiasVisita'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Spinner from '../../components/common/Spinner'
@@ -94,7 +101,9 @@ function PantallaPago({
   errorPago,
   setErrorPago,
   datosFacturacionIniciales,
+  onVolverAFormulario,
 }) {
+  const graphqlOn = useGraphqlEnabled()
   const [form, setForm] = useState({
     nombre_receptor: '',
     apellido_receptor: '',
@@ -110,6 +119,7 @@ function PantallaPago({
   }, [datosFacturacionIniciales])
   const [errores, setErrores] = useState({})
   const [procesandoCaptura, setProcesandoCaptura] = useState(false)
+  const [faseAsync, setFaseAsync] = useState('')
   const formRef = useRef(form)
   formRef.current = form
 
@@ -139,18 +149,43 @@ function PantallaPago({
     }
     setErrorPago('')
     setProcesandoCaptura(true)
+    setFaseAsync('')
     try {
-      const reservaResp = await reservasApi.crearReserva({
-        at_guid: checkoutReserva.at_guid,
-        hor_guid: checkoutReserva.hor_guid,
-        lineas: checkoutReserva.lineas,
-        origen_canal: checkoutReserva.origen_canal || 'web',
-        fecha_visita: checkoutReserva.fecha_visita,
-      })
-      const reservaData = reservaResp?.data ?? reservaResp
-      const revGuid = reservaData?.rev_guid
+      let revGuid
+      if (graphqlOn) {
+        setFaseAsync('solicitud')
+        const solicitud = await graphqlSolicitarReserva({
+          at_guid: checkoutReserva.at_guid,
+          hor_guid: checkoutReserva.hor_guid,
+          lineas: checkoutReserva.lineas,
+          origen_canal: checkoutReserva.origen_canal || 'MARKETPLACE',
+          fecha_visita: checkoutReserva.fecha_visita,
+          cliente_invitado: {
+            tipo_identificacion: 'CEDULA',
+            numero_identificacion: formRef.current.correo_receptor.trim(),
+            nombres: formRef.current.nombre_receptor.trim(),
+            apellidos: formRef.current.apellido_receptor?.trim() || '',
+            correo: formRef.current.correo_receptor.trim(),
+            telefono: formRef.current.telefono_receptor?.trim() || '',
+          },
+        })
+        setFaseAsync('confirmacion')
+        const confirmada = await graphqlEsperarConfirmacionReserva(solicitud.seguimientoId)
+        revGuid = confirmada.revGuid
+      } else {
+        const reservaResp = await reservasApi.crearReserva({
+          at_guid: checkoutReserva.at_guid,
+          hor_guid: checkoutReserva.hor_guid,
+          lineas: checkoutReserva.lineas,
+          origen_canal: checkoutReserva.origen_canal || 'web',
+          fecha_visita: checkoutReserva.fecha_visita,
+        })
+        const reservaData = reservaResp?.data ?? reservaResp
+        revGuid = reservaData?.rev_guid
+      }
       if (!revGuid) throw new Error('No se recibió identificador de reserva.')
 
+      setFaseAsync('pago')
       const f = formRef.current
       const payload = {
         rev_guid: revGuid,
@@ -165,16 +200,34 @@ function PantallaPago({
       const factura = resp?.data ?? resp
       onPagoRef.current(factura)
     } catch (err) {
-      const msg =
+      const status = err?.response?.status
+      let msg =
         err?.response?.data?.message ||
         err?.response?.data?.details?.[0] ||
         err?.message ||
         'No se pudo completar la reserva.'
+
+      // Normalizar errores comunes para el usuario
+      if (status === 409 || (msg && /cupo|capacidad|sin lugar|no disponible|agotad/i.test(msg))) {
+        msg = 'Lo sentimos, no quedan cupos disponibles para este horario. Por favor elige otro horario.'
+      } else if (status === 422 || status === 400) {
+        msg = msg || 'Datos de reserva inválidos. Verifica la información e intenta de nuevo.'
+      }
+
       setErrorPago(msg)
     } finally {
       setProcesandoCaptura(false)
+      setFaseAsync('')
     }
   }
+
+  const mensajeProcesando = useMemo(() => {
+    if (!procesandoCaptura) return ''
+    if (graphqlOn && faseAsync === 'solicitud') return 'Enviando solicitud de reserva…'
+    if (graphqlOn && faseAsync === 'confirmacion') return 'Procesando reserva (eventos RabbitMQ)…'
+    if (faseAsync === 'pago') return 'Confirmando pago y generando factura…'
+    return 'Confirmando reserva…'
+  }, [procesandoCaptura, graphqlOn, faseAsync])
 
   const revSubtotal = Number(subtotal ?? 0)
   const revIva = Number(iva ?? 0)
@@ -284,6 +337,16 @@ function PantallaPago({
         </form>
 
         <ErrorMessage mensaje={errorPago} />
+        {errorPago && /cupo|horario|capacidad/i.test(errorPago) && (
+          <button
+            type="button"
+            className="btn btn-outline btn-full"
+            style={{ marginTop: '0.5rem' }}
+            onClick={onVolverAFormulario}
+          >
+            ← Volver a elegir horario
+          </button>
+        )}
         <button
           type="button"
           className="btn btn-full"
@@ -291,12 +354,12 @@ function PantallaPago({
           disabled={procesandoCaptura}
           onClick={confirmarReservaSimulada}
         >
-          {procesandoCaptura ? 'Confirmando reserva...' : 'Confirmar reserva (pago simulado)'}
+          {procesandoCaptura ? mensajeProcesando : 'Confirmar reserva (pago simulado)'}
         </button>
 
         {procesandoCaptura && (
           <p className="text-muted text-sm" style={{ marginTop: '0.75rem' }}>
-            <span className="spinner spinner-sm" /> Confirmando reserva y generando factura…
+            <span className="spinner spinner-sm" /> {mensajeProcesando}
           </p>
         )}
       </div>
@@ -477,6 +540,7 @@ function ReservaPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { estaAutenticado } = useAuthContext()
+  const graphqlOn = useGraphqlEnabled()
 
   // cargando | formulario | datos | pago | confirmacion
   const [paso, setPaso] = useState('cargando')
@@ -487,7 +551,7 @@ function ReservaPage() {
   const [intentoEnvio, setIntentoEnvio] = useState(false)
   const [tickets, setTickets] = useState([])
   const [ticketsHorario, setTicketsHorario] = useState([])
-  const [horarios, setHorarios] = useState([])
+  const { horarios, refrescar: refrescarHorarios } = useHorariosConPolling(guid)
 
   const horarioSeleccionado = useMemo(
     () => horarios.find((h) => h.hor_guid === horGuid) ?? null,
@@ -548,23 +612,32 @@ function ReservaPage() {
 
   useEffect(() => {
     if (!guid) return
-    obtenerTicketsAtraccion(guid)
-      .then((data) => setTickets(Array.isArray(data) ? data : []))
-      .catch(() => setTickets([]))
-    obtenerHorariosDisponibles(guid)
-      .then((data) => setHorarios(Array.isArray(data) ? data : []))
-      .catch(() => setHorarios([]))
-  }, [guid])
+    const cargarTickets = async () => {
+      try {
+        const ticketsData = graphqlOn
+          ? await graphqlObtenerTickets(guid)
+          : await obtenerTicketsAtraccion(guid)
+        setTickets(Array.isArray(ticketsData) ? ticketsData : [])
+      } catch {
+        setTickets([])
+      }
+    }
+    cargarTickets()
+  }, [guid, graphqlOn])
 
   useEffect(() => {
     if (!guid || !horGuid) {
       setTicketsHorario([])
       return
     }
+    if (graphqlOn) {
+      setTicketsHorario([])
+      return
+    }
     obtenerTicketsPorHorario(guid, horGuid)
       .then((data) => setTicketsHorario(Array.isArray(data) ? data : []))
       .catch(() => setTicketsHorario([]))
-  }, [guid, horGuid])
+  }, [guid, horGuid, graphqlOn])
 
   const ticketsFiltrados = useMemo(() => {
     if (ticketsHorario.length > 0) return ticketsHorario
@@ -648,6 +721,7 @@ function ReservaPage() {
         errorPago={errorPago}
         setErrorPago={setErrorPago}
         datosFacturacionIniciales={datosFacturacionIniciales}
+        onVolverAFormulario={() => { setErrorPago(''); refrescarHorarios(); setPaso('formulario') }}
       />
     )
   }
@@ -720,6 +794,27 @@ function ReservaPage() {
                 </select>
                 {intentoEnvio && sinHorario && (
                   <span className="field-error">⚠ Selecciona un horario para continuar</span>
+                )}
+                {horarioSeleccionado && (
+                  <span
+                    className="text-sm"
+                    style={{
+                      marginTop: '0.4rem',
+                      display: 'inline-block',
+                      color:
+                        (horarioSeleccionado.hor_cupos_disponibles ?? 99) <= 0
+                          ? 'var(--danger, #e55)'
+                          : (horarioSeleccionado.hor_cupos_disponibles ?? 99) <= 5
+                            ? 'var(--warning, #e90)'
+                            : 'var(--success, #0a5)',
+                    }}
+                  >
+                    {(horarioSeleccionado.hor_cupos_disponibles ?? null) === null
+                      ? ''
+                      : (horarioSeleccionado.hor_cupos_disponibles ?? 0) <= 0
+                        ? '❌ Sin cupos disponibles'
+                        : `✅ ${horarioSeleccionado.hor_cupos_disponibles} cupos disponibles`}
+                  </span>
                 )}
               </div>
 
@@ -804,8 +899,11 @@ function ReservaPage() {
               <button
                 type="submit"
                 className="btn btn-full"
+                disabled={horarioSeleccionado != null && (horarioSeleccionado.hor_cupos_disponibles ?? 99) <= 0}
               >
-                Continuar con datos personales
+                {horarioSeleccionado != null && (horarioSeleccionado.hor_cupos_disponibles ?? 99) <= 0
+                  ? 'Sin cupos disponibles'
+                  : 'Continuar con datos personales'}
               </button>
             </form>
           )}

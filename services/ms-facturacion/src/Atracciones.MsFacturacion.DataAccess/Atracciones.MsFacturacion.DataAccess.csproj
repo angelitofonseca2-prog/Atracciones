@@ -17,5 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Atracciones.MsFacturacion.DataManagement\Atracciones.MsFacturacion.DataManagement.csproj" />
+    <ProjectReference Include="..\..\..\..\platform\shared\BuildingBlocks\Atracciones.Platform.BuildingBlocks.csproj" />
   </ItemGroup>
 </Project>

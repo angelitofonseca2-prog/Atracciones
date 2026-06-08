@@ -1,9 +1,13 @@
 <Solution>
   <Folder Name="/gateway/">
     <Project Path="gateway/Atracciones.Gateway.csproj" />
+    <Project Path="marketplace-gateway/Atracciones.MarketplaceGateway.csproj" />
   </Folder>
   <Folder Name="/shared/" />
   <Folder Name="/shared/BuildingBlocks/">
     <Project Path="shared/BuildingBlocks/Atracciones.Platform.BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/shared/Contracts.Events/">
+    <Project Path="shared/Contracts.Events/Atracciones.Contracts.Events.csproj" />
   </Folder>
 </Solution>

@@ -1,4 +1,5 @@
 using Atracciones.Contracts.Reservas.V1;
+using Atracciones.MsReservas.Api.EventBus;
 using Atracciones.MsReservas.DataManagement.Interfaces;
 using Atracciones.MsReservas.DataManagement.Models;
 using Grpc.Core;
@@ -8,11 +9,16 @@ namespace Atracciones.MsReservas.Api.Grpc;
 public sealed class ReservaGrpcService : ReservaService.ReservaServiceBase
 {
     private readonly IReservaRepository _repo;
+    private readonly ReservaPagadaOutboxPublisher _pagadaPublisher;
     private readonly ILogger<ReservaGrpcService> _logger;
 
-    public ReservaGrpcService(IReservaRepository repo, ILogger<ReservaGrpcService> logger)
+    public ReservaGrpcService(
+        IReservaRepository repo,
+        ReservaPagadaOutboxPublisher pagadaPublisher,
+        ILogger<ReservaGrpcService> logger)
     {
         _repo = repo;
+        _pagadaPublisher = pagadaPublisher;
         _logger = logger;
     }
 
@@ -89,6 +95,26 @@ public sealed class ReservaGrpcService : ReservaService.ReservaServiceBase
             var ip = string.IsNullOrWhiteSpace(request.IpAccion) ? "0.0.0.0" : request.IpAccion.Trim();
             var dto = await _repo.ConfirmarPagadaAsync(revGuid, usuario, ip, context.CancellationToken)
                 ?? throw new RpcException(new Status(StatusCode.NotFound, "Reserva no encontrada."));
+
+            var corr = context.RequestHeaders.FirstOrDefault(h =>
+                string.Equals(h.Key, "x-correlation-id", StringComparison.OrdinalIgnoreCase))?.Value
+                ?? Guid.NewGuid().ToString("D");
+
+            try
+            {
+                await _pagadaPublisher.TryEnqueueAsync(
+                    dto,
+                    request.NombreReceptor,
+                    request.CorreoReceptor,
+                    string.IsNullOrWhiteSpace(request.TelefonoReceptor) ? null : request.TelefonoReceptor,
+                    corr,
+                    context.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "No se pudo encolar reservas.reserva.pagada para {RevGuid}", revGuid);
+            }
+
             return ReservaGrpcMapper.ToReply(dto);
         }
         catch (InvalidOperationException ex)

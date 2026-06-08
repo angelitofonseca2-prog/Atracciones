@@ -14,7 +14,9 @@
     "start": "serve -s dist -l ${PORT:-3000}"
   },
   "dependencies": {
+    "@apollo/client": "^4.2.2",
     "axios": "^1.15.2",
+    "graphql": "^16.14.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2",

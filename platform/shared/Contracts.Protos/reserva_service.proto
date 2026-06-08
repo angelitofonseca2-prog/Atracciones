@@ -43,6 +43,10 @@ message ConfirmarReservaPagadaRequest {
   string rev_guid = 1;
   string usuario_accion = 2;
   string ip_accion = 3;
+  // Datos opcionales para publicar reservas.reserva.pagada vía outbox (EvBus shadow).
+  string nombre_receptor = 4;
+  string correo_receptor = 5;
+  string telefono_receptor = 6;
 }
 
 message AnularReservaRequest {

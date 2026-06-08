@@ -1,6 +1,7 @@
 using Atracciones.MsReservas.DataAccess.Context;
 using Atracciones.MsReservas.DataAccess.Repositories;
 using Atracciones.MsReservas.DataManagement.Interfaces;
+using Atracciones.Platform.BuildingBlocks.EventBus.Outbox;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,10 @@ public static class DependencyInjection
             o.UseNpgsql(cs, npgsql =>
                 npgsql.MigrationsHistoryTable("__EFMigrationsHistory", "ventas")));
         services.AddScoped<IReservaRepository, ReservaRepository>();
+        services.AddScoped<IOutboxWriter, OutboxRepository>();
+        services.AddScoped<IOutboxReader, OutboxRepository>();
+        services.AddScoped<IProcessedEventStore, OutboxRepository>();
+        services.AddScoped<IMarketplaceSeguimientoRepository, MarketplaceSeguimientoRepository>();
 
         // CRM (clientes) en el mismo PostgreSQL que ventas (schema crm)
         var crmCs = configuration.GetConnectionString("CrmDb") ?? cs;

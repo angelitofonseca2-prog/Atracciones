@@ -18,6 +18,8 @@ public sealed class InventarioDbContext : DbContext
     public DbSet<AtraccionImagenEntity> AtraccionImagenes => Set<AtraccionImagenEntity>();
     public DbSet<AtraccionIncluyeEntity> AtraccionIncluyes => Set<AtraccionIncluyeEntity>();
     public DbSet<ReseniaEntity> Resenias => Set<ReseniaEntity>();
+    public DbSet<OutboxEventEntity> OutboxEvents => Set<OutboxEventEntity>();
+    public DbSet<ProcessedEventEntity> ProcessedEvents => Set<ProcessedEventEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -164,6 +166,28 @@ public sealed class InventarioDbContext : DbContext
             b.Property(x => x.RsnEstado).HasColumnName("rsn_estado").HasColumnType("char(1)").HasDefaultValue('A');
             b.HasIndex(x => x.RevGuid).IsUnique().HasDatabaseName("uk_resenia_rev_guid");
             b.HasOne(x => x.Atraccion).WithMany(x => x.Resenias).HasForeignKey(x => x.AtGuid).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OutboxEventEntity>(b =>
+        {
+            b.ToTable("outbox_events");
+            b.HasKey(x => x.ObGuid);
+            b.Property(x => x.ObGuid).HasColumnName("ob_guid");
+            b.Property(x => x.RoutingKey).HasColumnName("routing_key").HasMaxLength(200).IsRequired();
+            b.Property(x => x.PayloadJson).HasColumnName("payload_json").HasColumnType("text").IsRequired();
+            b.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(128).IsRequired();
+            b.Property(x => x.CreatedUtc).HasColumnName("created_utc");
+            b.Property(x => x.PublishedUtc).HasColumnName("published_utc");
+            b.HasIndex(x => x.PublishedUtc);
+        });
+
+        modelBuilder.Entity<ProcessedEventEntity>(b =>
+        {
+            b.ToTable("eventos_procesados");
+            b.HasKey(x => x.EventId);
+            b.Property(x => x.EventId).HasColumnName("event_id");
+            b.Property(x => x.EventType).HasColumnName("event_type").HasMaxLength(120).IsRequired();
+            b.Property(x => x.ProcessedUtc).HasColumnName("processed_utc");
         });
     }
 }

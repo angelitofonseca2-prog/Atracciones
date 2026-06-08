@@ -4,8 +4,15 @@ import {
   obtenerAtraccion,
   obtenerFiltros,
 } from '../../api/atraccionesApi'
+import { useGraphqlEnabled } from '../../config/graphqlUrl'
+import {
+  graphqlListarAtracciones,
+  graphqlObtenerAtraccion,
+  graphqlObtenerFiltros,
+} from '../../graphql/marketplaceApi'
 
 export function useAtracciones(filtrosActivos = {}) {
+  const graphqlOn = useGraphqlEnabled()
   const ciudad = filtrosActivos?.ciudad || undefined
   const tipo = filtrosActivos?.tipo || undefined
   const subtipo = filtrosActivos?.subtipo || undefined
@@ -49,39 +56,42 @@ export function useAtracciones(filtrosActivos = {}) {
         Page: page,
         Limit: limit,
       }
-      const data = await listarAtracciones(params)
+      const data = graphqlOn
+        ? await graphqlListarAtracciones(params)
+        : await listarAtracciones(params)
       setAtracciones(data.data || [])
       const pagination = data.pagination || {}
       setPaginacion({
         page: pagination.page || page,
         limit: pagination.limit || limit,
         total: pagination.total || 0,
-        // El backend puede devolver total_pages (snake_case) o totalPages (camelCase)
         totalPages: pagination.total_pages ?? pagination.totalPages ?? 1,
       })
     } catch (err) {
-      setError(err?.response?.data?.message || 'No se pudo cargar el catálogo')
+      setError(err?.response?.data?.message || err?.message || 'No se pudo cargar el catálogo')
     } finally {
       setCargando(false)
     }
-  }, [ciudad, tipo, subtipo, idioma, calificacionMin, disponible, ordenarPor, page, limit])
+  }, [graphqlOn, ciudad, tipo, subtipo, idioma, calificacionMin, disponible, ordenarPor, page, limit])
 
   useEffect(() => {
     cargarAtracciones()
   }, [cargarAtracciones])
 
-  // Carga filtros al montar; el endpoint no requiere parámetros.
   useEffect(() => {
-    obtenerFiltros()
-      .then((raw) => setFiltrosDisponibles(raw ?? {}))
-      .catch(() => setFiltrosDisponibles({}))
-  }, [])
+    const load = graphqlOn
+      ? () => graphqlObtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {}))
+      : () => obtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {}))
+    load().catch(() => setFiltrosDisponibles({}))
+  }, [graphqlOn])
 
   const cargarDetalle = useCallback(async (guid) => {
     setCargando(true)
     setError('')
     try {
-      const data = await obtenerAtraccion(guid)
+      const data = graphqlOn
+        ? await graphqlObtenerAtraccion(guid)
+        : await obtenerAtraccion(guid)
       const atraccion = data?.data || null
       setDetalle(atraccion)
       return atraccion
@@ -89,14 +99,14 @@ export function useAtracciones(filtrosActivos = {}) {
       if (err?.response?.status === 404) {
         setError('Atracción no encontrada')
       } else {
-        setError(err?.response?.data?.message || 'No se pudo cargar el detalle')
+        setError(err?.response?.data?.message || err?.message || 'No se pudo cargar el detalle')
       }
       setDetalle(null)
       throw err
     } finally {
       setCargando(false)
     }
-  }, [])
+  }, [graphqlOn])
 
   const cambiarPagina = (nuevaPagina) => {
     setPaginacion((prev) => ({ ...prev, page: nuevaPagina }))

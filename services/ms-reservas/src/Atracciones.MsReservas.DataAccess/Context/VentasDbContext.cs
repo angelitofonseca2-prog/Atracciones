@@ -12,6 +12,9 @@ public sealed class VentasDbContext : DbContext
 
     public DbSet<ReservaEntity> Reservas => Set<ReservaEntity>();
     public DbSet<ReservaDetalleEntity> ReservaDetalles => Set<ReservaDetalleEntity>();
+    public DbSet<OutboxEventEntity> OutboxEvents => Set<OutboxEventEntity>();
+    public DbSet<ProcessedEventEntity> ProcessedEvents => Set<ProcessedEventEntity>();
+    public DbSet<MarketplaceReservaSeguimientoEntity> MarketplaceSeguimientos => Set<MarketplaceReservaSeguimientoEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -58,6 +61,43 @@ public sealed class VentasDbContext : DbContext
                 .WithMany(x => x.Detalle)
                 .HasForeignKey(x => x.RevGuid)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<OutboxEventEntity>(b =>
+        {
+            b.ToTable("outbox_events");
+            b.HasKey(x => x.ObGuid);
+            b.Property(x => x.ObGuid).HasColumnName("ob_guid");
+            b.Property(x => x.RoutingKey).HasColumnName("routing_key").HasMaxLength(200).IsRequired();
+            b.Property(x => x.PayloadJson).HasColumnName("payload_json").HasColumnType("text").IsRequired();
+            b.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(128).IsRequired();
+            b.Property(x => x.CreatedUtc).HasColumnName("created_utc");
+            b.Property(x => x.PublishedUtc).HasColumnName("published_utc");
+            b.HasIndex(x => x.PublishedUtc);
+        });
+
+        modelBuilder.Entity<ProcessedEventEntity>(b =>
+        {
+            b.ToTable("eventos_procesados");
+            b.HasKey(x => x.EventId);
+            b.Property(x => x.EventId).HasColumnName("event_id");
+            b.Property(x => x.EventType).HasColumnName("event_type").HasMaxLength(120).IsRequired();
+            b.Property(x => x.ProcessedUtc).HasColumnName("processed_utc");
+        });
+
+        modelBuilder.Entity<MarketplaceReservaSeguimientoEntity>(b =>
+        {
+            b.ToTable("marketplace_reserva_seguimiento");
+            b.HasKey(x => x.SeguimientoId);
+            b.Property(x => x.SeguimientoId).HasColumnName("seguimiento_id");
+            b.Property(x => x.RevGuid).HasColumnName("rev_guid");
+            b.Property(x => x.Estado).HasColumnName("estado").HasMaxLength(30).IsRequired();
+            b.Property(x => x.RevCodigo).HasColumnName("rev_codigo").HasMaxLength(32);
+            b.Property(x => x.MotivoRechazo).HasColumnName("motivo_rechazo").HasMaxLength(500);
+            b.Property(x => x.CorrelationId).HasColumnName("correlation_id").HasMaxLength(128).IsRequired();
+            b.Property(x => x.CreatedUtc).HasColumnName("created_utc");
+            b.Property(x => x.UpdatedUtc).HasColumnName("updated_utc");
+            b.HasIndex(x => x.CorrelationId);
         });
     }
 }

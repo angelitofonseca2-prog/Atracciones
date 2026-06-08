@@ -287,6 +287,9 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
                 RevGuid = prep.RevGuid.ToString("D"),
                 UsuarioAccion = usuarioAccion,
                 IpAccion = ip,
+                NombreReceptor = nombreFull,
+                CorreoReceptor = facturacion.CorreoReceptor.Trim(),
+                TelefonoReceptor = facturacion.TelefonoReceptor?.Trim() ?? string.Empty,
             }, cancellationToken: ct);
 
             await _saga.RegistrarPasoAsync(sagaId, "CONFIRMAR_DB", "OK", null, confirmada.RevGuid, null, ct);
@@ -549,6 +552,9 @@ public sealed class ReservaOrquestacionAppService : IReservaOrquestacionService
                 RevGuid = revGuid.ToString("D"),
                 UsuarioAccion = usuarioAccion,
                 IpAccion = ip,
+                NombreReceptor = nombreFull,
+                CorreoReceptor = request.CorreoReceptor.Trim(),
+                TelefonoReceptor = request.TelefonoReceptor?.Trim() ?? string.Empty,
             }, cancellationToken: ct);
 
             await _saga.RegistrarPasoAsync(sagaId, "CONFIRMAR_DB", "OK", null, confirmada.RevGuid, null, ct);

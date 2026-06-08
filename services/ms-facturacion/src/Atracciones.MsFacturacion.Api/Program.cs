@@ -1,11 +1,13 @@
 using System.Text.Json;
 using Atracciones.MsFacturacion.Api.Configuration;
+using Atracciones.MsFacturacion.Api.EventBus;
 using Atracciones.MsFacturacion.Api.Extensions;
 using Atracciones.MsFacturacion.Api.Grpc;
 using Atracciones.MsFacturacion.Api.Middleware;
 using Atracciones.MsFacturacion.DataAccess;
 using Atracciones.MsFacturacion.DataAccess.Context;
 using Atracciones.Platform.BuildingBlocks.Kestrel;
+using Atracciones.Platform.BuildingBlocks.EventBus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -22,6 +24,10 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 
 builder.Services.AddBillingPersistence(builder.Configuration);
 builder.Services.AddJwtFromJwks(builder.Configuration);
+builder.Services.AddAtraccionesEventBus(builder.Configuration, services =>
+{
+    services.AddHostedService<ReservaPagadaConsumerHostedService>();
+});
 builder.Services.AddGrpc();
 
 var app = builder.Build();

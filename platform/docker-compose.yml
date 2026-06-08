@@ -11,12 +11,25 @@
 #   orquestador_db → ms-orquestador(5438, 5501)
 #   audit_db       → ms-auditoria  (5440, 5801)
 #   gateway YARP   → http://localhost:5050
+#   marketplace-gw → http://localhost:5200/graphql
+#   RabbitMQ UI    → http://localhost:15672  | AMQP :5672
 #   Jaeger UI      → http://localhost:16686  | OTLP gRPC :4317
 #
 # Si /admin/usuarios devuelve 404: reconstruir gateway + identidad y levantar de nuevo:
 #   docker compose build --no-cache gateway ms-identidad && docker compose up -d gateway ms-identidad
 
 services:
+
+  # ── RabbitMQ (Event Bus) ─────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: atracciones
+      RABBITMQ_DEFAULT_PASS: atracciones
+      RABBITMQ_DEFAULT_VHOST: atracciones
 
   # ── Identidad ────────────────────────────────────────────
   postgres-identidad:
@@ -73,9 +86,16 @@ services:
       Jwt__Issuer: microservicio-atracciones-dev
       Jwt__Audience: booking-prototipo-dev
       Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
+      EvBus__Enabled: "true"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__VirtualHost: atracciones
+      RabbitMQ__Username: atracciones
+      RabbitMQ__Password: atracciones
     depends_on:
       - postgres-atracciones
       - ms-identidad
+      - rabbitmq
 
   # ── Reservas (fusiona ventas + crm) ──────────────────────
   postgres-reservas:
@@ -102,10 +122,17 @@ services:
       Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
       ClientesMirror__MonolithApiKey: dev-monolith-sync-key
       GrpcClients__Atracciones: http://ms-atracciones:8081
+      EvBus__Enabled: "true"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__VirtualHost: atracciones
+      RabbitMQ__Username: atracciones
+      RabbitMQ__Password: atracciones
     depends_on:
       - postgres-reservas
       - ms-identidad
       - ms-atracciones
+      - rabbitmq
 
   # ── Orquestador ───────────────────────────────────────────
   postgres-orquestador:
@@ -175,9 +202,16 @@ services:
       Jwt__Issuer: microservicio-atracciones-dev
       Jwt__Audience: booking-prototipo-dev
       Jwt__JwksUrl: http://ms-identidad:8080/.well-known/jwks.json
+      EvBus__Enabled: "true"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__VirtualHost: atracciones
+      RabbitMQ__Username: atracciones
+      RabbitMQ__Password: atracciones
     depends_on:
       - postgres-facturacion
       - ms-identidad
+      - rabbitmq
 
   # ── Auditoría ─────────────────────────────────────────────
   postgres-auditoria:
@@ -200,9 +234,16 @@ services:
       ConnectionStrings__AuditoriaDb: Host=postgres-auditoria;Port=5432;Database=audit_db;Username=audit;Password=audit
       Otlp__Endpoint: http://jaeger:4317
       Otlp__ServiceName: atracciones-auditoria
+      EvBus__Enabled: "true"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__VirtualHost: atracciones
+      RabbitMQ__Username: atracciones
+      RabbitMQ__Password: atracciones
     depends_on:
       - postgres-auditoria
       - jaeger
+      - rabbitmq
 
   # ── Gateway YARP ─────────────────────────────────────────
   gateway:
@@ -234,6 +275,31 @@ services:
       - ms-orquestador
       - ms-facturacion
       - ms-auditoria
+      - rabbitmq
+
+  # ── Marketplace GraphQL Gateway ────────────────────────────
+  marketplace-gateway:
+    build:
+      context: ..
+      dockerfile: platform/marketplace-gateway/Dockerfile
+    ports:
+      - "5200:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      Services__AtraccionesHttp: http://ms-atracciones:8080
+      Services__ReservasHttp: http://ms-reservas:8080
+      EvBus__Enabled: "true"
+      RabbitMQ__Host: rabbitmq
+      RabbitMQ__Port: "5672"
+      RabbitMQ__VirtualHost: atracciones
+      RabbitMQ__Username: atracciones
+      RabbitMQ__Password: atracciones
+      Cors__0: http://localhost:5173
+      Cors__1: http://127.0.0.1:5173
+    depends_on:
+      - rabbitmq
+      - ms-atracciones
+      - ms-reservas
 
   # ── Frontend (Vite) ──────────────────────────────────────
   frontend-atracciones:
@@ -245,9 +311,12 @@ services:
     environment:
       # El navegador en tu PC llama al gateway publicado en localhost:5050
       VITE_API_URL: http://localhost:5050/api/v2
+      VITE_GRAPHQL_URL: http://localhost:5200/graphql
+      VITE_USE_GRAPHQL: "true"
       VITE_PAYPAL_CLIENT_ID: ${VITE_PAYPAL_CLIENT_ID:-}
     depends_on:
       - gateway
+      - marketplace-gateway
 
   # ── Jaeger ────────────────────────────────────────────────
   jaeger:

@@ -3,14 +3,17 @@
 ## Contenido
 
 - **`gateway/`** — YARP: rutas a microservicios (sin fallback al monolito).
-- **`shared/BuildingBlocks`** — Correlación, idempotencia, defaults gRPC (`GrpcClientDefaults`).
+- **`marketplace-gateway/`** — Hot Chocolate GraphQL (:5200): catálogo + reserva async vía RabbitMQ.
+- **`shared/BuildingBlocks`** — Correlación, idempotencia, defaults gRPC, **EvBus** (RabbitMQ, outbox).
+- **`shared/Contracts.Events`** — Payloads y routing keys del bus.
 - **`shared/Contracts.Protos`** — Contratos gRPC compartidos.
-- **`docker-compose.yml`** — Postgres por servicio, microservicios, gateway, Jaeger.
+- **`docker-compose.yml`** — Postgres por servicio, **RabbitMQ**, microservicios, gateway REST, marketplace-gateway, Jaeger.
 
 ## URL única de desarrollo
 
-- **Gateway:** `http://localhost:5050/api/v2` (Docker Compose y `dotnet run` del gateway con perfil `http`).
-- **Frontend:** `VITE_API_URL=http://localhost:5050/api/v2` en [`frontend-atracciones/.env.local`](../frontend-atracciones/.env.local).
+- **Gateway REST:** `http://localhost:5050/api/v2` (Docker Compose y `dotnet run` del gateway con perfil `http`).
+- **GraphQL marketplace:** `http://localhost:5200/graphql` (solo frontend público con `VITE_USE_GRAPHQL=true`).
+- **Frontend:** `VITE_API_URL=http://localhost:5050/api/v2`, `VITE_GRAPHQL_URL=http://localhost:5200/graphql` en [`frontend-atracciones/.env.local`](../frontend-atracciones/.env.local).
 - **Booking externo:** misma base `/api/v2`; ver [`docs/api/Endpoints-Booking-Atracciones.md`](../docs/api/Endpoints-Booking-Atracciones.md).
 
 El monolito (`MicroservicioAtracionesAPI`, puerto 5031) es **legacy** y no se enruta desde el gateway. Solo usarlo como referencia o para ETL puntual.
@@ -31,7 +34,7 @@ Solución plataforma: **`Atracciones.Platform.slnx`**.
    docker compose up -d --build
    ```
 
-   Expone gateway en **5050**, Jaeger, Postgres y microservicios según `docker-compose.yml`.
+   Expone gateway en **5050**, GraphQL en **5200**, RabbitMQ management **15672**, Jaeger, Postgres y microservicios según `docker-compose.yml`.
 
 2. O bien servicios sueltos con `dotnet run` en cada `services/ms-*/src/*.Api` y gateway en `platform/gateway` (perfil **5050**).
 

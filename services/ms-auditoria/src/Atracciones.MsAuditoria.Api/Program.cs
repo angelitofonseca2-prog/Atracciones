@@ -1,8 +1,10 @@
 using Atracciones.MsAuditoria.Api.Configuration;
+using Atracciones.MsAuditoria.Api.EventBus;
 using Atracciones.MsAuditoria.Api.Grpc;
 using Atracciones.MsAuditoria.DataAccess;
 using Atracciones.MsAuditoria.DataAccess.Context;
 using Atracciones.Platform.BuildingBlocks.Kestrel;
+using Atracciones.Platform.BuildingBlocks.EventBus.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry.Resources;
@@ -27,6 +29,10 @@ if (!string.IsNullOrWhiteSpace(otlp))
 }
 
 builder.Services.AddAuditoriaPersistence(builder.Configuration);
+builder.Services.AddAtraccionesEventBus(builder.Configuration, services =>
+{
+    services.AddHostedService<MarketplaceAuditoriaConsumerHostedService>();
+});
 builder.Services.AddGrpc();
 
 var app = builder.Build();

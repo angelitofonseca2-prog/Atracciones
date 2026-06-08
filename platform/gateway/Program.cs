@@ -5,6 +5,15 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Permite override de destinos YARP vía variable de entorno ASPNETCORE_ENVIRONMENT=Railway
+// o archivos appsettings.Railway.json cuando se despliega en Railway.
+builder.Configuration
+    .AddJsonFile("appsettings.Railway.json", optional: true, reloadOnChange: false);
+
+// Las variables de entorno sobreescriben la configuración anterior.
+// En Railway: ReverseProxy__Clusters__reservas__Destinations__d1__Address=http://...
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
@@ -57,5 +66,8 @@ app.UseCorrelationId();
 app.UseIdempotencyKeyProbe();
 app.UseCors("GatewayCors");
 app.MapReverseProxy();
+
+// Health endpoint expuesto directamente en el gateway para Railway
+app.MapGet("/health", () => Results.Json(new { status = "ok", service = "gateway" }));
 
 app.Run();
