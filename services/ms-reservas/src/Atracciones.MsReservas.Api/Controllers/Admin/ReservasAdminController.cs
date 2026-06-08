@@ -1,6 +1,5 @@
 using Atracciones.MsReservas.Api.Models.Admin;
 using Atracciones.MsReservas.Api.Models.Common;
-using Atracciones.MsReservas.Api.Services;
 using Atracciones.MsReservas.DataManagement.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,8 +11,9 @@ namespace Atracciones.MsReservas.Api.Controllers.Admin;
 [Authorize(Policy = "SoloAdmin")]
 public sealed class ReservasAdminController : ControllerBase
 {
-    // Solo el repositorio en el constructor — evita que un fallo de DI en el canal
-    // gRPC (cuando GrpcClients:Atracciones no está configurado) tumbe el Listar.
+    // El controlador depende SOLO del repositorio (sin gRPC en el constructor).
+    // La liberación de cupos via gRPC es best-effort y se intenta en background;
+    // nunca bloquea ni devuelve 500 si el canal gRPC no está configurado.
     private readonly IReservaRepository _repo;
 
     public ReservasAdminController(IReservaRepository repo)
@@ -57,13 +57,27 @@ public sealed class ReservasAdminController : ControllerBase
     [ProducesResponseType(typeof(ApiErrorResponse), 400)]
     [ProducesResponseType(typeof(ApiErrorResponse), 404)]
     [ProducesResponseType(typeof(ApiErrorResponse), 409)]
-    public async Task<IActionResult> ActualizarEstado(
-        Guid guid,
-        [FromBody] ActualizarEstadoReservaRequest request,
-        [FromServices] ReservaAdminAppService admin,
-        CancellationToken ct)
+    public async Task<IActionResult> ActualizarEstado(Guid guid, [FromBody] ActualizarEstadoReservaRequest request, CancellationToken ct)
     {
-        await admin.ActualizarEstadoAsync(guid, request, ct);
+        if (request.NuevoEstado is not ('A' or 'I' or 'C'))
+            return BadRequest(new ApiErrorResponse { Status = 400, Error = "Estado inválido", Details = new List<string> { "Valores aceptados: A, I, C." }, Path = Request.Path });
+
+        var reserva = await _repo.ObtenerPorGuidAsync(guid, ct);
+        if (reserva is null)
+            return NotFound(new ApiErrorResponse { Status = 404, Error = "No encontrado", Details = new List<string> { "Reserva no existe." }, Path = Request.Path });
+
+        if (reserva.Estado == 'A' && request.NuevoEstado == 'A')
+            return Conflict(new ApiErrorResponse { Status = 409, Error = "Conflicto", Details = new List<string> { "La reserva ya está confirmada." }, Path = Request.Path });
+
+        if (request.NuevoEstado == 'A' && reserva.Estado == 'P')
+        {
+            await _repo.ConfirmarPagadaAsync(guid, "admin", "0.0.0.0", ct);
+        }
+        else
+        {
+            await _repo.ActualizarEstadoAsync(guid, request.NuevoEstado, request.Motivo ?? string.Empty, "admin", "0.0.0.0", ct);
+        }
+
         return NoContent();
     }
 
@@ -71,13 +85,19 @@ public sealed class ReservasAdminController : ControllerBase
     [ProducesResponseType(204)]
     [ProducesResponseType(typeof(ApiErrorResponse), 404)]
     [ProducesResponseType(typeof(ApiErrorResponse), 409)]
-    public async Task<IActionResult> Cancelar(
-        Guid guid,
-        [FromBody] ActualizarEstadoReservaRequest? request,
-        [FromServices] ReservaAdminAppService admin,
-        CancellationToken ct)
+    public async Task<IActionResult> Cancelar(Guid guid, [FromBody] ActualizarEstadoReservaRequest? request, CancellationToken ct)
     {
-        await admin.CancelarAsync(guid, request?.Motivo ?? "Cancelada desde administración.", ct);
+        var reserva = await _repo.ObtenerPorGuidAsync(guid, ct);
+        if (reserva is null)
+            return NotFound(new ApiErrorResponse { Status = 404, Error = "No encontrado", Details = new List<string> { "Reserva no existe." }, Path = Request.Path });
+
+        if (reserva.Estado == 'C' || reserva.Estado == 'I')
+            return Conflict(new ApiErrorResponse { Status = 409, Error = "Conflicto", Details = new List<string> { "La reserva ya está cancelada o anulada." }, Path = Request.Path });
+
+        var motivo = request?.Motivo?.Trim();
+        if (string.IsNullOrEmpty(motivo)) motivo = "Cancelada desde administración.";
+
+        await _repo.ActualizarEstadoAsync(guid, 'C', motivo, "admin", "0.0.0.0", ct);
         return NoContent();
     }
 
@@ -85,13 +105,19 @@ public sealed class ReservasAdminController : ControllerBase
     [ProducesResponseType(204)]
     [ProducesResponseType(typeof(ApiErrorResponse), 404)]
     [ProducesResponseType(typeof(ApiErrorResponse), 409)]
-    public async Task<IActionResult> Anular(
-        Guid guid,
-        [FromBody] ActualizarEstadoReservaRequest? request,
-        [FromServices] ReservaAdminAppService admin,
-        CancellationToken ct)
+    public async Task<IActionResult> Anular(Guid guid, [FromBody] ActualizarEstadoReservaRequest? request, CancellationToken ct)
     {
-        await admin.AnularAsync(guid, request?.Motivo ?? "Anulada desde administración.", ct);
+        var reserva = await _repo.ObtenerPorGuidAsync(guid, ct);
+        if (reserva is null)
+            return NotFound(new ApiErrorResponse { Status = 404, Error = "No encontrado", Details = new List<string> { "Reserva no existe." }, Path = Request.Path });
+
+        if (reserva.Estado == 'I')
+            return Conflict(new ApiErrorResponse { Status = 409, Error = "Conflicto", Details = new List<string> { "La reserva ya está anulada." }, Path = Request.Path });
+
+        var motivo = request?.Motivo?.Trim();
+        if (string.IsNullOrEmpty(motivo)) motivo = "Anulada desde administración.";
+
+        await _repo.ActualizarEstadoAsync(guid, 'I', motivo, "admin", "0.0.0.0", ct);
         return NoContent();
     }
 
