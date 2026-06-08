@@ -12,13 +12,13 @@ namespace Atracciones.MsReservas.Api.Controllers.Admin;
 [Authorize(Policy = "SoloAdmin")]
 public sealed class ReservasAdminController : ControllerBase
 {
+    // Solo el repositorio en el constructor — evita que un fallo de DI en el canal
+    // gRPC (cuando GrpcClients:Atracciones no está configurado) tumbe el Listar.
     private readonly IReservaRepository _repo;
-    private readonly ReservaAdminAppService _admin;
 
-    public ReservasAdminController(IReservaRepository repo, ReservaAdminAppService admin)
+    public ReservasAdminController(IReservaRepository repo)
     {
         _repo = repo;
-        _admin = admin;
     }
 
     [HttpGet]
@@ -33,9 +33,6 @@ public sealed class ReservasAdminController : ControllerBase
         }
         catch
         {
-            // Fail-safe: evita 500 en el panel admin por filas legacy corruptas.
-            // El fallback profundo vive en el repositorio; si aun así falla,
-            // devolvemos lista vacía para mantener operativo el módulo.
             return Ok(new ApiListResponse<ReservaAdminResponse>(
                 new List<ReservaAdminResponse>(),
                 0,
@@ -60,9 +57,13 @@ public sealed class ReservasAdminController : ControllerBase
     [ProducesResponseType(typeof(ApiErrorResponse), 400)]
     [ProducesResponseType(typeof(ApiErrorResponse), 404)]
     [ProducesResponseType(typeof(ApiErrorResponse), 409)]
-    public async Task<IActionResult> ActualizarEstado(Guid guid, [FromBody] ActualizarEstadoReservaRequest request, CancellationToken ct)
+    public async Task<IActionResult> ActualizarEstado(
+        Guid guid,
+        [FromBody] ActualizarEstadoReservaRequest request,
+        [FromServices] ReservaAdminAppService admin,
+        CancellationToken ct)
     {
-        await _admin.ActualizarEstadoAsync(guid, request, ct);
+        await admin.ActualizarEstadoAsync(guid, request, ct);
         return NoContent();
     }
 
@@ -70,9 +71,13 @@ public sealed class ReservasAdminController : ControllerBase
     [ProducesResponseType(204)]
     [ProducesResponseType(typeof(ApiErrorResponse), 404)]
     [ProducesResponseType(typeof(ApiErrorResponse), 409)]
-    public async Task<IActionResult> Cancelar(Guid guid, [FromBody] ActualizarEstadoReservaRequest? request, CancellationToken ct)
+    public async Task<IActionResult> Cancelar(
+        Guid guid,
+        [FromBody] ActualizarEstadoReservaRequest? request,
+        [FromServices] ReservaAdminAppService admin,
+        CancellationToken ct)
     {
-        await _admin.CancelarAsync(guid, request?.Motivo ?? "Cancelada desde administración.", ct);
+        await admin.CancelarAsync(guid, request?.Motivo ?? "Cancelada desde administración.", ct);
         return NoContent();
     }
 
@@ -80,9 +85,13 @@ public sealed class ReservasAdminController : ControllerBase
     [ProducesResponseType(204)]
     [ProducesResponseType(typeof(ApiErrorResponse), 404)]
     [ProducesResponseType(typeof(ApiErrorResponse), 409)]
-    public async Task<IActionResult> Anular(Guid guid, [FromBody] ActualizarEstadoReservaRequest? request, CancellationToken ct)
+    public async Task<IActionResult> Anular(
+        Guid guid,
+        [FromBody] ActualizarEstadoReservaRequest? request,
+        [FromServices] ReservaAdminAppService admin,
+        CancellationToken ct)
     {
-        await _admin.AnularAsync(guid, request?.Motivo ?? "Anulada desde administración.", ct);
+        await admin.AnularAsync(guid, request?.Motivo ?? "Anulada desde administración.", ct);
         return NoContent();
     }
 
