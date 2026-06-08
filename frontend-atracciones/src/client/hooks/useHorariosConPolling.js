@@ -24,10 +24,17 @@ export function useHorariosConPolling(atGuid) {
       if (!silent) setCargando(true)
       setError('')
       try {
-        const data = graphqlOn
+        const raw = graphqlOn
           ? await graphqlObtenerHorarios(atGuid, true)
           : await obtenerHorariosDisponibles(atGuid)
-        setHorarios(Array.isArray(data) ? data : [])
+        // Normalizar campos: la API REST devuelve `cupos` y sin `fecha_fin`;
+        // el resto del código usa `hor_cupos_disponibles` y `fecha_fin`.
+        const data = (Array.isArray(raw) ? raw : []).map((h) => ({
+          ...h,
+          hor_cupos_disponibles: h.hor_cupos_disponibles ?? h.cupos_disponibles ?? h.cupos,
+          fecha_fin: h.fecha_fin ?? h.fecha, // si no hay rango, inicio = fin
+        }))
+        setHorarios(data)
       } catch {
         if (!silent) setError('No se pudieron cargar los horarios.')
       } finally {

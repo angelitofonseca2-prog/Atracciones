@@ -42,8 +42,20 @@ export function hoyUtcIso() {
   return new Date().toISOString().slice(0, 10)
 }
 
-/** Días del rango que aún no han pasado (>= hoy UTC). */
-export function listarDiasReservablesEnRango(fechaInicio, fechaFin, hoy = hoyUtcIso()) {
+/** Fecha de hoy en la zona local del navegador (YYYY-MM-DD).
+ *  Se usa para comparar con las fechas de los horarios que vienen en hora local (Ecuador UTC-5).
+ *  Usando toISOString() se obtendría UTC y a las 19:00 local ya sería "mañana" en UTC. */
+export function hoyLocalIso() {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+/** Días del rango que aún no han pasado (>= hoy en hora LOCAL). */
+export function listarDiasReservablesEnRango(fechaInicio, fechaFin) {
+  const hoy = hoyLocalIso()
   return listarDiasEnRango(fechaInicio, fechaFin).filter((d) => d >= hoy)
 }
 
