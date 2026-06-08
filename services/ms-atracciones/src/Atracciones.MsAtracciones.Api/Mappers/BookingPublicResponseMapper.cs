@@ -17,9 +17,11 @@ public static class BookingPublicResponseMapper
     {
         hor_guid = h.HorGuid,
         fecha = h.Fecha,
+        fecha_fin = h.FechaFin,       // necesario para calcular el rango del calendario
         hora_inicio = h.HoraInicio,
         hora_fin = h.HoraFin,
         cupos = h.Cupos,
+        cupos_disponibles = h.Cupos,  // alias para compatibilidad con el frontend
     };
 
     public static object ToDetalleBooking(AtraccionDetalleResponse d) => new
