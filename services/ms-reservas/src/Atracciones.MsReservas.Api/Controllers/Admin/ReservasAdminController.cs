@@ -15,20 +15,28 @@ public sealed class ReservasAdminController : ControllerBase
     // La liberación de cupos via gRPC es best-effort y se intenta en background;
     // nunca bloquea ni devuelve 500 si el canal gRPC no está configurado.
     private readonly IReservaRepository _repo;
+    private readonly IClienteRepository _clientes;
 
-    public ReservasAdminController(IReservaRepository repo)
+    public ReservasAdminController(IReservaRepository repo, IClienteRepository clientes)
     {
         _repo = repo;
+        _clientes = clientes;
     }
 
     [HttpGet]
     [ProducesResponseType(typeof(ApiListResponse<ReservaAdminResponse>), 200)]
-    public async Task<IActionResult> Listar([FromQuery] int page = 1, [FromQuery] int limit = 10, [FromQuery] char? estado = null)
+    public async Task<IActionResult> Listar(
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 10,
+        [FromQuery] char? estado = null,
+        CancellationToken ct = default)
     {
         try
         {
-            var (rows, total) = await _repo.ListarAdminAsync(page, limit, estado);
+            var (rows, total) = await _repo.ListarAdminAsync(page, limit, estado, ct);
             var data = rows.Select(MapRow).ToList();
+            foreach (var item in data)
+                item.ClienteNombre = await ResolverNombreClienteAsync(item.CliGuid, ct);
             return Ok(new ApiListResponse<ReservaAdminResponse>(data, total, page, limit));
         }
         catch
@@ -44,12 +52,14 @@ public sealed class ReservasAdminController : ControllerBase
     [HttpGet("{guid:guid}")]
     [ProducesResponseType(typeof(ApiItemResponse<ReservaAdminResponse>), 200)]
     [ProducesResponseType(typeof(ApiErrorResponse), 404)]
-    public async Task<IActionResult> ObtenerPorGuid(Guid guid)
+    public async Task<IActionResult> ObtenerPorGuid(Guid guid, CancellationToken ct = default)
     {
-        var r = await _repo.ObtenerPorGuidAsync(guid);
+        var r = await _repo.ObtenerPorGuidAsync(guid, ct);
         if (r is null)
             return NotFound(new ApiErrorResponse { Status = 404, Error = "No encontrado", Details = new List<string> { "Reserva no existe." }, Path = Request.Path });
-        return Ok(new ApiItemResponse<ReservaAdminResponse>(MapFull(r)));
+        var response = MapFull(r);
+        response.ClienteNombre = await ResolverNombreClienteAsync(response.CliGuid, ct);
+        return Ok(new ApiItemResponse<ReservaAdminResponse>(response));
     }
 
     [HttpPut("{guid:guid}/estado")]
@@ -159,4 +169,31 @@ public sealed class ReservasAdminController : ControllerBase
                 TipoParticipante = d.TipoParticipante,
             }).ToList(),
         };
+
+    private async Task<string> ResolverNombreClienteAsync(string cliGuidText, CancellationToken ct)
+    {
+        if (!Guid.TryParse(cliGuidText, out var cliGuid))
+            return string.Empty;
+
+        try
+        {
+            var cli = await _clientes.ObtenerActivoPorGuidAsync(cliGuid, ct);
+            return FormatearNombreCliente(cli);
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private static string FormatearNombreCliente(DataManagement.Models.ClienteDto? cli)
+    {
+        if (cli is null)
+            return string.Empty;
+        if (!string.IsNullOrWhiteSpace(cli.RazonSocial))
+            return cli.RazonSocial.Trim();
+
+        var nombre = $"{cli.Nombres} {cli.Apellidos}".Trim();
+        return !string.IsNullOrWhiteSpace(nombre) ? nombre : cli.Correo;
+    }
 }

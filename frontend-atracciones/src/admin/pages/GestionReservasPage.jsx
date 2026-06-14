@@ -156,8 +156,11 @@ function GestionReservasPage() {
               const estaPendiente = estado === 'P'
               const estaCancelada = estado === 'C' || estado === 'I'
               const puedeCancelar = esReservaCancelable(item.rev_estado)
-              const fechaReserva = item.rev_fecha_reserva_utc
-                ? String(item.rev_fecha_reserva_utc).slice(0, 10) : '—'
+              const fechaRaw = item.fecha_reserva ?? item.rev_fecha_reserva_utc ?? item.fechaReserva
+              const fechaReserva = fechaRaw ? String(fechaRaw).slice(0, 10) : '—'
+              const clienteLabel = item.cliente_nombre?.trim()
+                || item.cliente_login?.trim()
+                || (item.cli_guid ? `${String(item.cli_guid).slice(0, 8)}…` : '—')
               const horarioFecha = item.hor_fecha
                 ? String(item.hor_fecha).slice(0, 10) : ''
               const horaInicio = item.hor_hora_inicio
@@ -170,7 +173,7 @@ function GestionReservasPage() {
                     </span>
                   </td>
                   <td>{item.atraccion_nombre || '—'}</td>
-                  <td>{item.cliente_nombre || item.cliente_login || '—'}</td>
+                  <td>{clienteLabel}</td>
                   <td>{fechaReserva}</td>
                   <td>{horarioFecha ? `${horarioFecha}${horaInicio ? ` ${horaInicio}` : ''}` : '—'}</td>
                   <td>

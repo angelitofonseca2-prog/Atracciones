@@ -10,6 +10,7 @@ export function estadoLabel(codigo) {
     ACTIVA: 'Confirmada',
     PENDIENTE: 'Pendiente',
     CONFIRMADA: 'Confirmada',
+    PAGADA: 'Pagada',
     CANCELADA: 'Cancelada',
     INACTIVA: 'Inactiva',
     FINALIZADA: 'Finalizada',
@@ -22,7 +23,9 @@ export function estadoLabel(codigo) {
 
 export function estadoBadgeClass(codigo) {
   const c = String(codigo).toUpperCase()
-  if (c === 'A' || c === 'ACTIVA' || c === 'ACTIVE' || c === 'CONFIRMADA') return 'badge badge-green'
+  if (c === 'A' || c === 'ACTIVA' || c === 'ACTIVE' || c === 'CONFIRMADA' || c === 'PAGADA') {
+    return 'badge badge-green'
+  }
   if (c === 'P' || c === 'PENDIENTE') return 'badge badge-blue'
   if (c === 'C' || c === 'CANCELADA' || c === 'CANCELLED' || c === 'X' || c === 'I' || c === 'INACTIVA') {
     return 'badge badge-red'
@@ -45,5 +48,5 @@ export function esReservaCancelable(codigo) {
 /** Reserva pagada/confirmada: apta para dejar reseña. */
 export function esReservaConfirmada(codigo) {
   const c = String(codigo).toUpperCase()
-  return c === 'A' || c === 'ACTIVA' || c === 'ACTIVE' || c === 'CONFIRMADA'
+  return c === 'A' || c === 'ACTIVA' || c === 'ACTIVE' || c === 'CONFIRMADA' || c === 'PAGADA'
 }

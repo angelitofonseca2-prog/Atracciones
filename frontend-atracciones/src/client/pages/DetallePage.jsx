@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { listarResenias } from '../../api/reseniasApi'
 import ErrorMessage from '../../components/common/ErrorMessage'
 import Spinner from '../../components/common/Spinner'
 import { useAuthContext } from '../../context/AuthContext'
@@ -25,11 +26,25 @@ function DetallePage() {
   const navigate = useNavigate()
   const { estaAutenticado, usuario } = useAuthContext()
   const { detalle, cargarDetalle, cargando, error } = useAtracciones({})
+  const [resenias, setResenias] = useState([])
+  const [cargandoResenias, setCargandoResenias] = useState(false)
   const esCliente = estaAutenticado && !usuario?.roles?.includes('ADMIN')
 
   useEffect(() => {
     cargarDetalle(guid).catch(() => {})
   }, [guid, cargarDetalle])
+
+  useEffect(() => {
+    if (!guid) return
+    setCargandoResenias(true)
+    listarResenias(guid, { page: 1, page_size: 20 })
+      .then((payload) => {
+        const items = payload?.data ?? (Array.isArray(payload) ? payload : [])
+        setResenias(Array.isArray(items) ? items : [])
+      })
+      .catch(() => setResenias([]))
+      .finally(() => setCargandoResenias(false))
+  }, [guid])
 
   if (cargando && !detalle && !error) return <Spinner message="Cargando detalle..." />
 
@@ -96,11 +111,12 @@ function DetallePage() {
               )}
 
               <h3>Reseñas</h3>
-              {(detalle.resenias || detalle.resenas || []).length === 0 ? (
+              {cargandoResenias && <p className="text-muted">Cargando reseñas...</p>}
+              {!cargandoResenias && resenias.length === 0 ? (
                 <p className="text-muted">Aún no hay reseñas para esta atracción.</p>
               ) : (
                 <ul>
-                  {(detalle.resenias || detalle.resenas || []).map((resena) => (
+                  {resenias.map((resena) => (
                     <li
                       key={resena.rsn_guid || resena.fecha_creacion}
                       style={{ marginBottom: '0.75rem' }}

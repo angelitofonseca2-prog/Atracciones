@@ -8,7 +8,11 @@ RUN npm ci
 COPY . .
 
 ARG VITE_API_URL=https://api-gateway-production-0afd.up.railway.app/api/v2
+ARG VITE_GRAPHQL_URL=https://marketplace-gateway-production.up.railway.app/graphql
+ARG VITE_USE_GRAPHQL=true
 ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_GRAPHQL_URL=$VITE_GRAPHQL_URL
+ENV VITE_USE_GRAPHQL=$VITE_USE_GRAPHQL
 
 RUN npm run build
 
