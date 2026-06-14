@@ -153,6 +153,8 @@ function PantallaPago({
     try {
       let revGuid
       let usandoGql = graphqlOn
+      let gqlSolicitudExitosa = false
+
       if (graphqlOn) {
         try {
           setFaseAsync('solicitud')
@@ -171,14 +173,22 @@ function PantallaPago({
               telefono: formRef.current.telefono_receptor?.trim() || '',
             },
           })
+          gqlSolicitudExitosa = true
           setFaseAsync('confirmacion')
           const confirmada = await graphqlEsperarConfirmacionReserva(solicitud.seguimientoId)
           revGuid = confirmada.revGuid
-        } catch {
-          // GraphQL no disponible → fallback REST
+        } catch (err) {
+          if (gqlSolicitudExitosa) {
+            // La solicitud GraphQL ya fue enviada: no hacer fallback REST (evita doble reserva).
+            throw new Error(
+              'Tu reserva fue enviada al sistema. Verifica su estado en "Mis Reservas" en unos minutos.'
+            )
+          }
+          // La solicitud falló antes de enviarse → fallback a REST
           usandoGql = false
         }
       }
+
       if (!usandoGql) {
         const reservaResp = await reservasApi.crearReserva({
           at_guid: checkoutReserva.at_guid,

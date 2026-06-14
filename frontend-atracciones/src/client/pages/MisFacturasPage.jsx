@@ -128,7 +128,11 @@ function MisFacturasPage() {
                     <strong>${Number(f.total ?? 0).toFixed(2)}</strong>
                     {f.moneda ? <span className="text-muted text-sm"> {f.moneda}</span> : ''}
                   </td>
-                  <td>{f.estado || '—'}</td>
+                  <td>
+                    {f.estado === 'A' ? 'Emitida'
+                      : f.estado === 'C' ? 'Cancelada'
+                      : f.estado || '—'}
+                  </td>
                   <td>{f.nombre_receptor || '—'}</td>
                   <td>
                     <button
