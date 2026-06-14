@@ -102,6 +102,7 @@ function PantallaPago({
   setErrorPago,
   datosFacturacionIniciales,
   onVolverAFormulario,
+  estaAutenticado,
 }) {
   const graphqlOn = useGraphqlEnabled()
   const [form, setForm] = useState({
@@ -155,7 +156,9 @@ function PantallaPago({
       let usandoGql = graphqlOn
       let gqlSolicitudExitosa = false
 
-      if (graphqlOn) {
+      // GraphQL solicitarReserva es para invitados (marketplace sin sesión).
+      // Si el usuario está autenticado, usar siempre REST directamente.
+      if (graphqlOn && !estaAutenticado) {
         try {
           setFaseAsync('solicitud')
           const solicitud = await graphqlSolicitarReserva({
@@ -189,7 +192,7 @@ function PantallaPago({
         }
       }
 
-      if (!usandoGql) {
+      if (!usandoGql || estaAutenticado) {
         const reservaResp = await reservasApi.crearReserva({
           at_guid: checkoutReserva.at_guid,
           hor_guid: checkoutReserva.hor_guid,
@@ -240,11 +243,11 @@ function PantallaPago({
 
   const mensajeProcesando = useMemo(() => {
     if (!procesandoCaptura) return ''
-    if (graphqlOn && faseAsync === 'solicitud') return 'Enviando solicitud de reserva…'
-    if (graphqlOn && faseAsync === 'confirmacion') return 'Procesando reserva (eventos RabbitMQ)…'
+    if (graphqlOn && !estaAutenticado && faseAsync === 'solicitud') return 'Enviando solicitud de reserva…'
+    if (graphqlOn && !estaAutenticado && faseAsync === 'confirmacion') return 'Procesando reserva…'
     if (faseAsync === 'pago') return 'Confirmando pago y generando factura…'
     return 'Confirmando reserva…'
-  }, [procesandoCaptura, graphqlOn, faseAsync])
+  }, [procesandoCaptura, graphqlOn, estaAutenticado, faseAsync])
 
   const revSubtotal = Number(subtotal ?? 0)
   const revIva = Number(iva ?? 0)
@@ -654,14 +657,11 @@ function ReservaPage() {
       setTicketsHorario([])
       return
     }
-    if (graphqlOn) {
-      setTicketsHorario([])
-      return
-    }
+    // Siempre filtrar por horario usando REST — da los tickets exactos para ese horario
     obtenerTicketsPorHorario(guid, horGuid)
       .then((data) => setTicketsHorario(Array.isArray(data) ? data : []))
       .catch(() => setTicketsHorario([]))
-  }, [guid, horGuid, graphqlOn])
+  }, [guid, horGuid])
 
   const ticketsFiltrados = useMemo(() => {
     if (ticketsHorario.length > 0) return ticketsHorario
@@ -746,6 +746,7 @@ function ReservaPage() {
         setErrorPago={setErrorPago}
         datosFacturacionIniciales={datosFacturacionIniciales}
         onVolverAFormulario={() => { setErrorPago(''); refrescarHorarios(); setPaso('formulario') }}
+        estaAutenticado={estaAutenticado}
       />
     )
   }
@@ -876,7 +877,7 @@ function ReservaPage() {
                     {ticketsFiltrados.map((ticket) => (
                       <div className="ticket-row" key={ticket.tck_guid}>
                         <div className="ticket-row-info">
-                          <strong>{ticket.titulo}</strong>
+                          <strong>{ticket.titulo || 'Entrada'}</strong>
                           <span>${Number(ticket.precio).toFixed(2)} por persona</span>
                         </div>
                         <div className="ticket-qty">

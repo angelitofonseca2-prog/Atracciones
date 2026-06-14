@@ -88,7 +88,7 @@ function DetallePage() {
               <ul>
                 {(detalle.tickets || []).map((ticket) => (
                   <li key={ticket.tck_guid}>
-                    {ticket.titulo} — ${Number(ticket.precio).toFixed(2)}
+                    {ticket.titulo || 'Entrada'} — ${Number(ticket.precio).toFixed(2)}
                   </li>
                 ))}
               </ul>
