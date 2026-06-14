@@ -13,9 +13,17 @@ export function useHomeDestacadas() {
     setCargando(true)
     setError('')
     try {
-      const data = graphqlOn
-        ? await graphqlListarAtracciones({ page: 1, limit: 6 })
-        : await listarAtracciones({ page: 1, limit: 6 })
+      let data
+      if (graphqlOn) {
+        try {
+          data = await graphqlListarAtracciones({ page: 1, limit: 6 })
+        } catch {
+          // GraphQL no disponible → fallback REST
+          data = await listarAtracciones({ page: 1, limit: 6 })
+        }
+      } else {
+        data = await listarAtracciones({ page: 1, limit: 6 })
+      }
       setDestacadas(data.data || [])
     } catch (err) {
       setError(err?.response?.data?.message || err?.message || 'No se pudieron cargar las destacadas')

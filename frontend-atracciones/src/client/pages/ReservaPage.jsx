@@ -152,27 +152,34 @@ function PantallaPago({
     setFaseAsync('')
     try {
       let revGuid
+      let usandoGql = graphqlOn
       if (graphqlOn) {
-        setFaseAsync('solicitud')
-        const solicitud = await graphqlSolicitarReserva({
-          at_guid: checkoutReserva.at_guid,
-          hor_guid: checkoutReserva.hor_guid,
-          lineas: checkoutReserva.lineas,
-          origen_canal: checkoutReserva.origen_canal || 'MARKETPLACE',
-          fecha_visita: checkoutReserva.fecha_visita,
-          cliente_invitado: {
-            tipo_identificacion: 'CEDULA',
-            numero_identificacion: formRef.current.correo_receptor.trim(),
-            nombres: formRef.current.nombre_receptor.trim(),
-            apellidos: formRef.current.apellido_receptor?.trim() || '',
-            correo: formRef.current.correo_receptor.trim(),
-            telefono: formRef.current.telefono_receptor?.trim() || '',
-          },
-        })
-        setFaseAsync('confirmacion')
-        const confirmada = await graphqlEsperarConfirmacionReserva(solicitud.seguimientoId)
-        revGuid = confirmada.revGuid
-      } else {
+        try {
+          setFaseAsync('solicitud')
+          const solicitud = await graphqlSolicitarReserva({
+            at_guid: checkoutReserva.at_guid,
+            hor_guid: checkoutReserva.hor_guid,
+            lineas: checkoutReserva.lineas,
+            origen_canal: checkoutReserva.origen_canal || 'MARKETPLACE',
+            fecha_visita: checkoutReserva.fecha_visita,
+            cliente_invitado: {
+              tipo_identificacion: 'CEDULA',
+              numero_identificacion: formRef.current.correo_receptor.trim(),
+              nombres: formRef.current.nombre_receptor.trim(),
+              apellidos: formRef.current.apellido_receptor?.trim() || '',
+              correo: formRef.current.correo_receptor.trim(),
+              telefono: formRef.current.telefono_receptor?.trim() || '',
+            },
+          })
+          setFaseAsync('confirmacion')
+          const confirmada = await graphqlEsperarConfirmacionReserva(solicitud.seguimientoId)
+          revGuid = confirmada.revGuid
+        } catch {
+          // GraphQL no disponible → fallback REST
+          usandoGql = false
+        }
+      }
+      if (!usandoGql) {
         const reservaResp = await reservasApi.crearReserva({
           at_guid: checkoutReserva.at_guid,
           hor_guid: checkoutReserva.hor_guid,
@@ -614,9 +621,16 @@ function ReservaPage() {
     if (!guid) return
     const cargarTickets = async () => {
       try {
-        const ticketsData = graphqlOn
-          ? await graphqlObtenerTickets(guid)
-          : await obtenerTicketsAtraccion(guid)
+        let ticketsData
+        if (graphqlOn) {
+          try {
+            ticketsData = await graphqlObtenerTickets(guid)
+          } catch {
+            ticketsData = await obtenerTicketsAtraccion(guid)
+          }
+        } else {
+          ticketsData = await obtenerTicketsAtraccion(guid)
+        }
         setTickets(Array.isArray(ticketsData) ? ticketsData : [])
       } catch {
         setTickets([])

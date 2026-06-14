@@ -3,13 +3,12 @@ import { obtenerHorariosDisponibles } from '../../api/atraccionesApi'
 import { graphqlObtenerHorarios } from '../../graphql/marketplaceApi'
 import { useGraphqlEnabled } from '../../config/graphqlUrl'
 
-const POLL_INTERVAL_MS = 30_000 // Refrescar cupos cada 30 segundos
+const POLL_INTERVAL_MS = 30_000
 
 /**
  * Devuelve la lista de horarios disponibles y la refresca automáticamente
  * cada POLL_INTERVAL_MS mientras la página esté visible.
- * Garantiza que el usuario vea cupos actualizados aunque Booking externo
- * haya consumido plazas mientras estaba en la pantalla de selección.
+ * Si GraphQL no está disponible, cae automáticamente a REST.
  */
 export function useHorariosConPolling(atGuid) {
   const graphqlOn = useGraphqlEnabled()
@@ -24,15 +23,24 @@ export function useHorariosConPolling(atGuid) {
       if (!silent) setCargando(true)
       setError('')
       try {
-        const raw = graphqlOn
-          ? await graphqlObtenerHorarios(atGuid, true)
-          : await obtenerHorariosDisponibles(atGuid)
-        // Normalizar campos: la API REST devuelve `cupos` y sin `fecha_fin`;
-        // el resto del código usa `hor_cupos_disponibles` y `fecha_fin`.
+        let raw
+        if (graphqlOn) {
+          try {
+            raw = await graphqlObtenerHorarios(atGuid, true)
+          } catch {
+            // GraphQL no disponible → fallback REST
+            const data = await obtenerHorariosDisponibles(atGuid)
+            raw = data?.data ?? data ?? []
+          }
+        } else {
+          const data = await obtenerHorariosDisponibles(atGuid)
+          raw = data?.data ?? data ?? []
+        }
+
         const data = (Array.isArray(raw) ? raw : []).map((h) => ({
           ...h,
           hor_cupos_disponibles: h.hor_cupos_disponibles ?? h.cupos_disponibles ?? h.cupos,
-          fecha_fin: h.fecha_fin ?? h.fecha, // si no hay rango, inicio = fin
+          fecha_fin: h.fecha_fin ?? h.fecha,
         }))
         setHorarios(data)
       } catch {
@@ -47,7 +55,6 @@ export function useHorariosConPolling(atGuid) {
   useEffect(() => {
     cargar(false)
 
-    // Polling silencioso — solo actualiza si la pestaña está activa
     const startPolling = () => {
       timerRef.current = setInterval(() => {
         if (!document.hidden) cargar(true)
@@ -58,7 +65,6 @@ export function useHorariosConPolling(atGuid) {
     return () => clearInterval(timerRef.current)
   }, [cargar])
 
-  // Refrescar también cuando el usuario vuelve a la pestaña
   useEffect(() => {
     const onVisible = () => {
       if (!document.hidden) cargar(true)

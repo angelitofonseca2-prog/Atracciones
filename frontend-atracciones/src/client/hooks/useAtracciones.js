@@ -11,6 +11,18 @@ import {
   graphqlObtenerFiltros,
 } from '../../graphql/marketplaceApi'
 
+/**
+ * Intenta la llamada GraphQL; si falla (gateway caído / hostname incorrecto)
+ * cae automáticamente al equivalente REST. Así el catálogo siempre funciona.
+ */
+async function intentarGraphqlConFallback(graphqlFn, restFn) {
+  try {
+    return await graphqlFn()
+  } catch {
+    return await restFn()
+  }
+}
+
 export function useAtracciones(filtrosActivos = {}) {
   const graphqlOn = useGraphqlEnabled()
   const ciudad = filtrosActivos?.ciudad || undefined
@@ -57,8 +69,12 @@ export function useAtracciones(filtrosActivos = {}) {
         Limit: limit,
       }
       const data = graphqlOn
-        ? await graphqlListarAtracciones(params)
+        ? await intentarGraphqlConFallback(
+            () => graphqlListarAtracciones(params),
+            () => listarAtracciones(params),
+          )
         : await listarAtracciones(params)
+
       setAtracciones(data.data || [])
       const pagination = data.pagination || {}
       setPaginacion({
@@ -80,7 +96,11 @@ export function useAtracciones(filtrosActivos = {}) {
 
   useEffect(() => {
     const load = graphqlOn
-      ? () => graphqlObtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {}))
+      ? () =>
+          intentarGraphqlConFallback(
+            () => graphqlObtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {})),
+            () => obtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {})),
+          )
       : () => obtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {}))
     load().catch(() => setFiltrosDisponibles({}))
   }, [graphqlOn])
@@ -90,7 +110,10 @@ export function useAtracciones(filtrosActivos = {}) {
     setError('')
     try {
       const data = graphqlOn
-        ? await graphqlObtenerAtraccion(guid)
+        ? await intentarGraphqlConFallback(
+            () => graphqlObtenerAtraccion(guid),
+            () => obtenerAtraccion(guid),
+          )
         : await obtenerAtraccion(guid)
       const atraccion = data?.data || null
       setDetalle(atraccion)
