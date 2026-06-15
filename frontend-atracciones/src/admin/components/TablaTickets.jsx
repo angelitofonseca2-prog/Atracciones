@@ -48,13 +48,13 @@ function TablaTickets({ items, onEditar, onEliminar }) {
           )}
           {items.map((item) => (
             <tr key={item.tck_guid}>
-              <td>{item.atraccion_nombre || '—'}</td>
-              <td>{item.titulo || '—'}</td>
-              <td>{item.tipo_participante || '—'}</td>
-              <td>${Number(item.precio ?? 0).toFixed(2)}</td>
-              <td>{item.capacidad_maxima ?? '—'}</td>
-              <td>{item.cupos_disponibles ?? '—'}</td>
-              <td>{item.estado || '—'}</td>
+              <td data-label="Atracción">{item.atraccion_nombre || '—'}</td>
+              <td data-label="Título">{item.titulo || '—'}</td>
+              <td data-label="Tipo">{item.tipo_participante || '—'}</td>
+              <td data-label="Precio">${Number(item.precio ?? 0).toFixed(2)}</td>
+              <td data-label="Capacidad">{item.capacidad_maxima ?? '—'}</td>
+              <td data-label="Cupos">{item.cupos_disponibles ?? '—'}</td>
+              <td data-label="Estado">{item.estado || '—'}</td>
               <td>
                 <button
                   className="btn btn-outline btn-sm"

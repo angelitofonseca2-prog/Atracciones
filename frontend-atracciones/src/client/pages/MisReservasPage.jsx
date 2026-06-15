@@ -223,23 +223,23 @@ function MisReservasPage() {
                 return (
                   <Fragment key={key}>
                     <tr>
-                      <td>
+                      <td data-label="Código">
                         <span style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
                           {reserva.rev_codigo || '—'}
                         </span>
                       </td>
-                      <td>{reserva.atraccion_nombre || '—'}</td>
-                      <td>
+                      <td data-label="Atracción">{reserva.atraccion_nombre || '—'}</td>
+                      <td data-label="Fecha reserva">
                         {reserva.rev_fecha_reserva_utc
                           ? String(reserva.rev_fecha_reserva_utc).slice(0, 10)
                           : '—'}
                       </td>
-                      <td>
+                      <td data-label="Estado">
                         <span className={estadoBadgeClass(reserva.rev_estado)}>
                           {estadoLabel(reserva.rev_estado)}
                         </span>
                       </td>
-                      <td>${Number(reserva.rev_total ?? 0).toFixed(2)}</td>
+                      <td data-label="Total">${Number(reserva.rev_total ?? 0).toFixed(2)}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                           {puedeCancelar && (

@@ -113,27 +113,27 @@ function MisFacturasPage() {
               )}
               {facturas.map((f) => (
                 <tr key={f.fac_guid}>
-                  <td>
+                  <td data-label="Número">
                     <span style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
                       {f.fac_numero || '—'}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Cód. reserva">
                     <span style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
                       {f.rev_codigo || '—'}
                     </span>
                   </td>
-                  <td>{f.fecha_emision ? String(f.fecha_emision).slice(0, 10) : '—'}</td>
-                  <td>
+                  <td data-label="Fecha emisión">{f.fecha_emision ? String(f.fecha_emision).slice(0, 10) : '—'}</td>
+                  <td data-label="Total">
                     <strong>${Number(f.total ?? 0).toFixed(2)}</strong>
                     {f.moneda ? <span className="text-muted text-sm"> {f.moneda}</span> : ''}
                   </td>
-                  <td>
+                  <td data-label="Estado">
                     {f.estado === 'A' ? 'Emitida'
                       : f.estado === 'C' ? 'Cancelada'
                       : f.estado || '—'}
                   </td>
-                  <td>{f.nombre_receptor || '—'}</td>
+                  <td data-label="Receptor">{f.nombre_receptor || '—'}</td>
                   <td>
                     <button
                       className="btn btn-outline btn-sm"

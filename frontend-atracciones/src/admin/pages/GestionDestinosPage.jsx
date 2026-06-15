@@ -214,7 +214,7 @@ function GestionDestinosPage() {
             )}
             {items.map((item) => (
               <tr key={item.des_guid}>
-                <td>
+                <td data-label="Imagen">
                   {item.imagen_url ? (
                     <img
                       src={item.imagen_url}
@@ -227,9 +227,9 @@ function GestionDestinosPage() {
                     />
                   ) : <span className="text-muted text-sm">—</span>}
                 </td>
-                <td>{item.nombre}</td>
-                <td>{item.pais || '—'}</td>
-                <td>{item.estado || '—'}</td>
+                <td data-label="Nombre">{item.nombre}</td>
+                <td data-label="País">{item.pais || '—'}</td>
+                <td data-label="Estado">{item.estado || '—'}</td>
                 <td>
                   <button className="btn btn-outline btn-sm" style={{ marginRight: '0.5rem' }} onClick={() => handleEditar(item)}>Editar</button>
                   <button

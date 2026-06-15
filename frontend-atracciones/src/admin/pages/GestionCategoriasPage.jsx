@@ -173,9 +173,9 @@ function GestionCategoriasPage() {
             )}
             {items.map((item) => (
               <tr key={item.cat_guid}>
-                <td>{item.nombre}</td>
-                <td>{item.parent_nombre || '—'}</td>
-                <td>{item.estado || '—'}</td>
+                <td data-label="Nombre">{item.nombre}</td>
+                <td data-label="Padre">{item.parent_nombre || '—'}</td>
+                <td data-label="Estado">{item.estado || '—'}</td>
                 <td>
                   <button className="btn btn-outline btn-sm" style={{ marginRight: '0.5rem' }} onClick={() => handleEditar(item)}>Editar</button>
                   <button

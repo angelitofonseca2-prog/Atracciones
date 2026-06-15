@@ -148,8 +148,8 @@ function GestionIdiomasPage() {
             )}
             {items.map((item) => (
               <tr key={item.id_guid}>
-                <td>{item.descripcion}</td>
-                <td>{item.estado || '—'}</td>
+                <td data-label="Descripción">{item.descripcion}</td>
+                <td data-label="Estado">{item.estado || '—'}</td>
                 <td>
                   <button className="btn btn-outline btn-sm" style={{ marginRight: '0.5rem' }} onClick={() => handleEditar(item)}>Editar</button>
                   <button

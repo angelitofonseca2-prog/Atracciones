@@ -44,6 +44,19 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: rgba(85, 210, 255, 0.18);
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
 }
 
 body {
@@ -1451,6 +1464,11 @@ textarea.input-error {
     display: none;
   }
 
+  /* Ocultar auth en header — el menú móvil ya incluye login/logout */
+  .header-auth {
+    display: none;
+  }
+
   .hamburger {
     display: flex;
   }
@@ -1486,6 +1504,29 @@ textarea.input-error {
 }
 
 @media (max-width: 600px) {
+  /* Inputs — prevenir zoom automático en iOS */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  /* Objetivos táctiles mínimos */
+  .btn-sm {
+    min-height: 40px;
+    padding: 0.55rem 0.85rem;
+  }
+
+  .ticket-qty .btn-sm {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .ticket-qty input {
+    min-height: 36px;
+  }
+
   .page-section {
     padding: 1.5rem 1rem;
   }
@@ -1522,5 +1563,131 @@ textarea.input-error {
   .filtro-item {
     min-width: unset;
     width: 100%;
+  }
+
+  /* ── Reserva form ── */
+  .reserva-form {
+    max-width: 100%;
+  }
+
+  /* ticket-row: info + qty se apilan en móvil */
+  .ticket-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .ticket-row-info {
+    width: 100%;
+  }
+
+  /* Pago simulado */
+  .confirmacion-card {
+    padding: 1.5rem 1rem;
+    margin: 1rem auto;
+  }
+
+  .confirmacion-row {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .confirmacion-row span:last-child {
+    font-size: 1rem;
+  }
+
+  /* Toast en móvil: ancho completo */
+  .toast-container {
+    bottom: 0;
+    right: 0;
+    left: 0;
+    max-width: 100%;
+    padding: 0 0.75rem 0.75rem;
+  }
+
+  /* ── Tablas → Tarjetas ── */
+  .table-wrap {
+    overflow-x: visible;
+  }
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table tr {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 0.85rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .admin-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .admin-table tr:hover td {
+    background: transparent;
+  }
+
+  .admin-table td {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.55rem 0;
+    font-size: 0.88rem;
+  }
+
+  .admin-table td:last-child {
+    border-bottom: none;
+    padding-top: 0.65rem;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .admin-table td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    width: 40%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    padding-right: 0.5rem;
+  }
+
+  .admin-table td:last-child::before {
+    display: none;
+  }
+
+  /* Botones de acción en la tarjeta — fila completa */
+  .admin-table td:last-child .btn,
+  .admin-table td:last-child .btn-sm {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  /* ── Calendario día de visita — celdas táctiles ── */
+  .calendario-visita-celda {
+    min-height: 2.75rem;
+    font-size: 0.92rem;
+  }
+
+  /* ── Header auth — ocultar email en pantallas muy pequeñas ── */
+  .username {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

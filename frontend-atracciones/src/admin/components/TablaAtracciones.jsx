@@ -46,7 +46,7 @@ function TablaAtracciones({ items, onEditar, onDesactivar }) {
           )}
           {items.map((item) => (
             <tr key={item.at_guid}>
-              <td>
+              <td data-label="Imagen">
                 {item.imagen_principal ? (
                   <img
                     src={item.imagen_principal}
@@ -61,11 +61,11 @@ function TablaAtracciones({ items, onEditar, onDesactivar }) {
                   <span className="text-muted text-sm">—</span>
                 )}
               </td>
-              <td>{item.nombre}</td>
-              <td>{item.ciudad || '—'}</td>
-              <td>{item.pais || '—'}</td>
-              <td>{item.disponible ? 'Sí' : 'No'}</td>
-              <td>{item.estado || '—'}</td>
+              <td data-label="Nombre">{item.nombre}</td>
+              <td data-label="Ciudad">{item.ciudad || '—'}</td>
+              <td data-label="País">{item.pais || '—'}</td>
+              <td data-label="Disponible">{item.disponible ? 'Sí' : 'No'}</td>
+              <td data-label="Estado">{item.estado || '—'}</td>
               <td>
                 <button
                   className="btn btn-outline btn-sm"

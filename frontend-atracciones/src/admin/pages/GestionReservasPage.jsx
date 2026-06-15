@@ -167,21 +167,21 @@ function GestionReservasPage() {
                 ? String(item.hor_hora_inicio).slice(0, 5) : ''
               return (
                 <tr key={item.rev_guid}>
-                  <td>
+                  <td data-label="Código">
                     <span style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
                       {item.rev_codigo || '—'}
                     </span>
                   </td>
-                  <td>{item.atraccion_nombre || '—'}</td>
-                  <td>{clienteLabel}</td>
-                  <td>{fechaReserva}</td>
-                  <td>{horarioFecha ? `${horarioFecha}${horaInicio ? ` ${horaInicio}` : ''}` : '—'}</td>
-                  <td>
+                  <td data-label="Atracción">{item.atraccion_nombre || '—'}</td>
+                  <td data-label="Cliente">{clienteLabel}</td>
+                  <td data-label="Reservada">{fechaReserva}</td>
+                  <td data-label="Horario">{horarioFecha ? `${horarioFecha}${horaInicio ? ` ${horaInicio}` : ''}` : '—'}</td>
+                  <td data-label="Estado">
                     <span className={estadoBadgeClass(item.rev_estado)}>
                       {estadoLabel(item.rev_estado)}
                     </span>
                   </td>
-                  <td><strong>${Number(item.rev_total ?? 0).toFixed(2)}</strong></td>
+                  <td data-label="Total"><strong>${Number(item.rev_total ?? 0).toFixed(2)}</strong></td>
                   <td style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                     {estaPendiente && (
                       <>

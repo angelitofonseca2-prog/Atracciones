@@ -76,9 +76,9 @@ function GestionUsuariosPage() {
             )}
             {usuarios.map((item) => (
               <tr key={item.usr_guid ?? item.guid ?? item.login}>
-                <td>{item.login}</td>
-                <td>{(item.roles || [item.rol]).filter(Boolean).join(', ') || '—'}</td>
-                <td>{item.estado || '—'}</td>
+                <td data-label="Login">{item.login}</td>
+                <td data-label="Roles">{(item.roles || [item.rol]).filter(Boolean).join(', ') || '—'}</td>
+                <td data-label="Estado">{item.estado || '—'}</td>
               </tr>
             ))}
           </tbody>

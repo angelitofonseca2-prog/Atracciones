@@ -51,13 +51,13 @@ function TablaHorarios({ items, onEditar, onEliminar }) {
           )}
           {items.map((item) => (
             <tr key={item.hor_guid}>
-              <td>{item.atraccion_nombre || '—'}</td>
-              <td>{item.ticket_titulo || '—'}</td>
-              <td>{formatearRangoFechas(item.fecha, item.fecha_fin) || '—'}</td>
-              <td>{formatearHora(item.hora_inicio)}</td>
-              <td>{formatearHora(item.hora_fin)}</td>
-              <td>{item.cupos_disponibles ?? '—'}</td>
-              <td>{item.estado || '—'}</td>
+              <td data-label="Atracción">{item.atraccion_nombre || '—'}</td>
+              <td data-label="Ticket">{item.ticket_titulo || '—'}</td>
+              <td data-label="Fechas">{formatearRangoFechas(item.fecha, item.fecha_fin) || '—'}</td>
+              <td data-label="Inicio">{formatearHora(item.hora_inicio)}</td>
+              <td data-label="Fin">{formatearHora(item.hora_fin)}</td>
+              <td data-label="Cupos">{item.cupos_disponibles ?? '—'}</td>
+              <td data-label="Estado">{item.estado || '—'}</td>
               <td>
                 <button
                   className="btn btn-outline btn-sm"
