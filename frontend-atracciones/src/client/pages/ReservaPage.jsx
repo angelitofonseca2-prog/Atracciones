@@ -690,10 +690,14 @@ function ReservaPage() {
   const sinHorario = !horGuid
   const sinFechaVisita = Boolean(horGuid) && !fechaVisita
 
+  const cuposMaximos = horarioSeleccionado?.hor_cupos_disponibles ?? null
+  const totalEntradas = lineas.reduce((acc, l) => acc + l.cantidad, 0)
+  const excedeCupos = cuposMaximos !== null && totalEntradas > cuposMaximos
+
   const handleSubmit = (event) => {
     event.preventDefault()
     setIntentoEnvio(true)
-    if (sinHorario || sinTickets || sinFechaVisita) return
+    if (sinHorario || sinTickets || sinFechaVisita || excedeCupos) return
     if (!estaAutenticado) {
       navigate('/registro', { state: { from: location } })
       return
@@ -874,44 +878,70 @@ function ReservaPage() {
                   </p>
                 ) : (
                   <div className="tickets-box">
-                    {ticketsFiltrados.map((ticket) => (
-                      <div className="ticket-row" key={ticket.tck_guid}>
-                        <div className="ticket-row-info">
-                          <strong>{ticket.titulo || 'Entrada'}</strong>
-                          <span>${Number(ticket.precio).toFixed(2)} por persona</span>
+                    {ticketsFiltrados.map((ticket) => {
+                      const cantActual = Number(cantidades[ticket.tck_guid] || 0)
+                      const otrasEntradas = lineas
+                        .filter((l) => l.tck_guid !== ticket.tck_guid)
+                        .reduce((acc, l) => acc + l.cantidad, 0)
+                      const maxPermitido = cuposMaximos !== null
+                        ? Math.max(0, cuposMaximos - otrasEntradas)
+                        : 999
+                      return (
+                        <div className="ticket-row" key={ticket.tck_guid}>
+                          <div className="ticket-row-info">
+                            <strong>{ticket.titulo || 'Entrada'}</strong>
+                            <span>${Number(ticket.precio).toFixed(2)} por persona</span>
+                          </div>
+                          <div className="ticket-qty">
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              disabled={cantActual <= 0}
+                              onClick={() => setCantidades((prev) => ({
+                                ...prev,
+                                [ticket.tck_guid]: Math.max(0, cantActual - 1)
+                              }))}
+                            >−</button>
+                            <input
+                              type="number"
+                              min="0"
+                              max={maxPermitido}
+                              value={cantActual}
+                              onChange={(e) => {
+                                const val = Math.min(Math.max(0, Number(e.target.value) || 0), maxPermitido)
+                                setCantidades((prev) => ({ ...prev, [ticket.tck_guid]: val }))
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              disabled={cantActual >= maxPermitido}
+                              onClick={() => setCantidades((prev) => ({
+                                ...prev,
+                                [ticket.tck_guid]: Math.min(cantActual + 1, maxPermitido)
+                              }))}
+                            >+</button>
+                          </div>
                         </div>
-                        <div className="ticket-qty">
-                          <button
-                            type="button"
-                            className="btn btn-outline btn-sm"
-                            onClick={() => setCantidades((prev) => ({
-                              ...prev,
-                              [ticket.tck_guid]: Math.max(0, (Number(prev[ticket.tck_guid] || 0) - 1))
-                            }))}
-                          >−</button>
-                          <input
-                            type="number"
-                            min="0"
-                            value={cantidades[ticket.tck_guid] || 0}
-                            onChange={(e) =>
-                              setCantidades((prev) => ({ ...prev, [ticket.tck_guid]: e.target.value }))
-                            }
-                          />
-                          <button
-                            type="button"
-                            className="btn btn-outline btn-sm"
-                            onClick={() => setCantidades((prev) => ({
-                              ...prev,
-                              [ticket.tck_guid]: (Number(prev[ticket.tck_guid] || 0) + 1)
-                            }))}
-                          >+</button>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
+                )}
+                {cuposMaximos !== null && totalEntradas > 0 && (
+                  <p className="text-sm" style={{
+                    marginTop: '0.5rem',
+                    color: excedeCupos ? 'var(--danger, #e55)' : 'var(--text-muted)',
+                  }}>
+                    {excedeCupos
+                      ? `⚠ Solo hay ${cuposMaximos} cupo${cuposMaximos !== 1 ? 's' : ''} disponibles en este horario.`
+                      : `${totalEntradas} de ${cuposMaximos} cupo${cuposMaximos !== 1 ? 's' : ''} seleccionados.`}
+                  </p>
                 )}
                 {intentoEnvio && sinTickets && (
                   <span className="field-error">⚠ Selecciona al menos una entrada</span>
+                )}
+                {intentoEnvio && excedeCupos && (
+                  <span className="field-error">⚠ La cantidad supera los cupos disponibles ({cuposMaximos}).</span>
                 )}
               </div>
 
