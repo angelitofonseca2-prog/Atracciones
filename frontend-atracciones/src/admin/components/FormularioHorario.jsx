@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { adminApi } from '../../api/adminApi'
+import { hoyLocalIso } from '../../utils/formatFechas'
 
 /**
  * Crea/edita horarios contra:
@@ -227,7 +228,7 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
           type="date"
           value={form.fecha}
           onChange={set('fecha')}
-          min={new Date().toISOString().slice(0, 10)}
+          min={hoyLocalIso()}
           className={errores.fecha ? 'input-error' : ''}
         />
         {errores.fecha && <span className="field-error">⚠ {errores.fecha}</span>}
@@ -240,7 +241,7 @@ function FormularioHorario({ inicial, onCrear, onActualizar, onCancelar }) {
           type="date"
           value={form.fecha_fin}
           onChange={set('fecha_fin')}
-          min={form.fecha || new Date().toISOString().slice(0, 10)}
+          min={form.fecha || hoyLocalIso()}
           className={errores.fecha_fin ? 'input-error' : ''}
         />
         <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.35rem' }}>
