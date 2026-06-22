@@ -2,6 +2,7 @@ using System.Text.Json;
 using Atracciones.Contracts.Events.Marketplace;
 using Atracciones.MarketplaceGateway.Services;
 using HotChocolate;
+using HotChocolate.Subscriptions;
 
 namespace Atracciones.MarketplaceGateway.GraphQL;
 
@@ -133,6 +134,24 @@ public sealed class SolicitudReservaPayload
     public Guid RevGuid { get; init; }
     public string Estado { get; init; } = "EN_PROCESO";
     public string CorrelationId { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Subscription para recibir actualizaciones de estado en tiempo real.
+/// Reemplaza el polling de estadoReserva cuando el cliente usa WebSocket.
+/// </summary>
+public sealed class Subscription
+{
+    /// <summary>
+    /// Se activa cuando ms-reservas procesa la reserva (CONFIRMADA o RECHAZADA).
+    /// Tópico: "seguimiento:{seguimientoId}" — emitido por <see cref="ReservaEstadoEventConsumer"/>.
+    /// </summary>
+    [Subscribe]
+    [Topic("seguimiento:{seguimientoId}")]
+    public EstadoReservaPayload OnEstadoReservaActualizado(
+        Guid seguimientoId,
+        [EventMessage] EstadoReservaPayload payload)
+        => payload;
 }
 
 public sealed class Mutation

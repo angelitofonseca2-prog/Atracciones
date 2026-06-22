@@ -1,6 +1,15 @@
-import { ApolloClient, InMemoryCache, createHttpLink, gql } from '@apollo/client'
+import {
+  ApolloClient,
+  InMemoryCache,
+  createHttpLink,
+  gql,
+  split,
+} from '@apollo/client'
 import { setContext } from '@apollo/client/link/context'
-import { getGraphqlUrl } from '../config/graphqlUrl'
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
+import { getMainDefinition } from '@apollo/client/utilities'
+import { createClient as createWsClient } from 'graphql-ws'
+import { getGraphqlUrl, getGraphqlWsUrl } from '../config/graphqlUrl'
 
 const httpLink = createHttpLink({
   uri: getGraphqlUrl(),
@@ -22,8 +31,41 @@ const authLink = setContext((_, { headers }) => {
   }
 })
 
+// Enlace WebSocket para subscriptions (GraphQL over WebSockets).
+// Si el gateway no tiene WebSocket activo, el hook de reserva usa polling como fallback.
+const wsLink = new GraphQLWsLink(
+  createWsClient({
+    url: getGraphqlWsUrl(),
+    connectionParams: () => {
+      const token = localStorage.getItem('token')
+      return token ? { Authorization: `Bearer ${token}` } : {}
+    },
+    // Reconecta automáticamente si se cae la conexión.
+    shouldRetry: () => true,
+    retryAttempts: 5,
+    retryWait: (attempt) =>
+      new Promise((resolve) => setTimeout(resolve, Math.min(1000 * 2 ** attempt, 30000))),
+    on: {
+      error: (err) => {
+        // eslint-disable-next-line no-console
+        console.warn('[GraphQL WS] error de conexión, se usará polling como fallback →', err)
+      },
+    },
+  }),
+)
+
+// Las subscriptions van por WebSocket; queries y mutations por HTTP.
+const splitLink = split(
+  ({ query }) => {
+    const def = getMainDefinition(query)
+    return def.kind === 'OperationDefinition' && def.operation === 'subscription'
+  },
+  wsLink,
+  authLink.concat(httpLink),
+)
+
 export const apolloClient = new ApolloClient({
-  link: authLink.concat(httpLink),
+  link: splitLink,
   cache: new InMemoryCache(),
 })
 
@@ -76,6 +118,21 @@ export const QUERIES = {
   ESTADO_RESERVA: gql`
     query EstadoReserva($seguimientoId: UUID!) {
       estadoReserva(seguimientoId: $seguimientoId) {
+        seguimientoId
+        revGuid
+        revCodigo
+        estado
+        motivoRechazo
+        correlationId
+      }
+    }
+  `,
+}
+
+export const SUBSCRIPTIONS = {
+  ESTADO_RESERVA: gql`
+    subscription OnEstadoReservaActualizado($seguimientoId: UUID!) {
+      onEstadoReservaActualizado(seguimientoId: $seguimientoId) {
         seguimientoId
         revGuid
         revCodigo

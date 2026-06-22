@@ -4,6 +4,12 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/** Genera un UUID v4 compatible con todos los navegadores. */
+export function newCorrelationId() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
 export async function graphqlListarAtracciones(params = {}) {
   const { data } = await apolloClient.query({
     query: QUERIES.ATRACCIONES,
@@ -45,7 +51,7 @@ export async function graphqlObtenerAtraccion(guid) {
 export async function graphqlObtenerHorarios(atGuid, disponibles = true) {
   const { data } = await apolloClient.query({
     query: QUERIES.HORARIOS,
-    variables: { atGuid: guidToUuid(atGuid), disponibles },
+    variables: { atGuid: String(atGuid), disponibles },
     fetchPolicy: 'network-only',
   })
   const raw = parseGraphqlJson(data.horarios)
@@ -55,7 +61,7 @@ export async function graphqlObtenerHorarios(atGuid, disponibles = true) {
 export async function graphqlObtenerTickets(atGuid) {
   const { data } = await apolloClient.query({
     query: QUERIES.TICKETS,
-    variables: { atGuid: guidToUuid(atGuid) },
+    variables: { atGuid: String(atGuid) },
     fetchPolicy: 'network-only',
   })
   const raw = parseGraphqlJson(data.tickets)
@@ -68,12 +74,12 @@ export async function graphqlSolicitarReserva(input) {
     variables: {
       input: {
         cliGuid: input.cli_guid || null,
-        atGuid: guidToUuid(input.at_guid),
-        horGuid: guidToUuid(input.hor_guid),
+        atGuid: String(input.at_guid),
+        horGuid: String(input.hor_guid),
         fechaVisita: input.fecha_visita || null,
         origenCanal: input.origen_canal || 'MARKETPLACE',
         lineas: (input.lineas || []).map((l) => ({
-          tckGuid: guidToUuid(l.tck_guid),
+          tckGuid: String(l.tck_guid),
           cantidad: l.cantidad,
         })),
         clienteInvitado: input.cliente_invitado
@@ -97,7 +103,7 @@ export async function graphqlEsperarConfirmacionReserva(seguimientoId, { maxInte
   for (let i = 0; i < maxIntentos; i += 1) {
     const { data } = await apolloClient.query({
       query: QUERIES.ESTADO_RESERVA,
-      variables: { seguimientoId: guidToUuid(seguimientoId) },
+      variables: { seguimientoId: String(seguimientoId) },
       fetchPolicy: 'network-only',
     })
     const estado = data?.estadoReserva
@@ -114,7 +120,3 @@ export async function graphqlEsperarConfirmacionReserva(seguimientoId, { maxInte
   throw new Error('Tiempo de espera agotado. La reserva sigue en proceso.')
 }
 
-function guidToUuid(value) {
-  if (!value) return value
-  return String(value)
-}

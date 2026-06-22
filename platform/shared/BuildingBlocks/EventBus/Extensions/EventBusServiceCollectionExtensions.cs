@@ -20,6 +20,7 @@ public static class EventBusServiceCollectionExtensions
         services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
         services.AddHostedService<RabbitMqTopologyInitializer>();
         services.AddHostedService<OutboxProcessorHostedService>();
+        services.AddHostedService<DlqLoggerConsumerHostedService>();
 
         configureConsumers?.Invoke(services);
 

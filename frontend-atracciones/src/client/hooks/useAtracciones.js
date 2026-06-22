@@ -13,12 +13,14 @@ import {
 
 /**
  * Intenta la llamada GraphQL; si falla (gateway caído / hostname incorrecto)
- * cae automáticamente al equivalente REST. Así el catálogo siempre funciona.
+ * registra el error y cae automáticamente al equivalente REST.
  */
-async function intentarGraphqlConFallback(graphqlFn, restFn) {
+async function intentarGraphqlConFallback(graphqlFn, restFn, label = '') {
   try {
     return await graphqlFn()
-  } catch {
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn(`[GraphQL fallback${label ? ` · ${label}` : ''}] →`, err?.message ?? err)
     return await restFn()
   }
 }
@@ -72,6 +74,7 @@ export function useAtracciones(filtrosActivos = {}) {
         ? await intentarGraphqlConFallback(
             () => graphqlListarAtracciones(params),
             () => listarAtracciones(params),
+            'listarAtracciones',
           )
         : await listarAtracciones(params)
 
@@ -100,6 +103,7 @@ export function useAtracciones(filtrosActivos = {}) {
           intentarGraphqlConFallback(
             () => graphqlObtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {})),
             () => obtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {})),
+            'obtenerFiltros',
           )
       : () => obtenerFiltros().then((raw) => setFiltrosDisponibles(raw ?? {}))
     load().catch(() => setFiltrosDisponibles({}))
@@ -113,6 +117,7 @@ export function useAtracciones(filtrosActivos = {}) {
         ? await intentarGraphqlConFallback(
             () => graphqlObtenerAtraccion(guid),
             () => obtenerAtraccion(guid),
+            'obtenerAtraccion',
           )
         : await obtenerAtraccion(guid)
       const atraccion = data?.data || null

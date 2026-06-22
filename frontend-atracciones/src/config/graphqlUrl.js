@@ -8,6 +8,13 @@ export function getGraphqlUrl() {
   return DEFAULT_GRAPHQL_URL
 }
 
+/** URL WebSocket para GraphQL subscriptions (ws:// o wss://). */
+export function getGraphqlWsUrl() {
+  const http = getGraphqlUrl()
+  // Convierte http → ws y https → wss automáticamente.
+  return http.replace(/^http/, 'ws')
+}
+
 export function useGraphqlEnabled() {
   const flag = import.meta.env.VITE_USE_GRAPHQL
   return flag === 'true' || flag === true

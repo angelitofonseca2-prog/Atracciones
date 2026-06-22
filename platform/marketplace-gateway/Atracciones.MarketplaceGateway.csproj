@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.3" />
+    <PackageReference Include="HotChocolate.AspNetCore.WebSockets" Version="15.1.3" />
+    <PackageReference Include="HotChocolate.Subscriptions.InMemory" Version="15.1.3" />
   </ItemGroup>
 
   <ItemGroup>

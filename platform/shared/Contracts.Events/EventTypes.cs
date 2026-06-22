@@ -17,4 +17,5 @@ public static class EventTypes
     public const string QueueCrmMarketplaceActividad = "crm.marketplace-actividad";
     public const string QueueAuditMarketplace = "audit.marketplace";
     public const string QueueFacturacionReservasPagadas = "facturacion.reservas-pagadas";
+    public const string DlqQueueName = "atracciones.dlq";
 }

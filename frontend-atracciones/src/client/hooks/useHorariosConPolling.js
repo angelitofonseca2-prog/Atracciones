@@ -27,8 +27,9 @@ export function useHorariosConPolling(atGuid) {
         if (graphqlOn) {
           try {
             raw = await graphqlObtenerHorarios(atGuid, true)
-          } catch {
-            // GraphQL no disponible → fallback REST
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.warn('[GraphQL fallback · obtenerHorarios] →', err?.message ?? err)
             const data = await obtenerHorariosDisponibles(atGuid)
             raw = data?.data ?? data ?? []
           }

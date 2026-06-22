@@ -70,10 +70,12 @@ public sealed class RabbitMqConnectionHolder : IDisposable
     }
 }
 
-public sealed class RabbitMqPublisher : IRabbitMqPublisher
+public sealed class RabbitMqPublisher : IRabbitMqPublisher, IDisposable
 {
     private readonly RabbitMqConnectionHolder _holder;
     private readonly ILogger<RabbitMqPublisher> _logger;
+    private readonly object _channelLock = new();
+    private IChannel? _channel;
 
     public RabbitMqPublisher(RabbitMqConnectionHolder holder, ILogger<RabbitMqPublisher> logger)
     {
@@ -83,7 +85,7 @@ public sealed class RabbitMqPublisher : IRabbitMqPublisher
 
     public void Publish(string routingKey, string bodyJson, string correlationId)
     {
-        using var channel = _holder.GetConnection().CreateChannelAsync().GetAwaiter().GetResult();
+        var channel = GetOrRecreateChannel();
         var props = new BasicProperties
         {
             ContentType = "application/json",
@@ -91,12 +93,42 @@ public sealed class RabbitMqPublisher : IRabbitMqPublisher
             CorrelationId = correlationId,
         };
         var body = System.Text.Encoding.UTF8.GetBytes(bodyJson);
-        channel.BasicPublishAsync(
-            exchange: EventTypes.ExchangeName,
-            routingKey: routingKey,
-            mandatory: false,
-            basicProperties: props,
-            body: body).GetAwaiter().GetResult();
-        _logger.LogDebug("Publicado {RoutingKey} correlation={CorrelationId}", routingKey, correlationId);
+        try
+        {
+            channel.BasicPublishAsync(
+                exchange: EventTypes.ExchangeName,
+                routingKey: routingKey,
+                mandatory: false,
+                basicProperties: props,
+                body: body).GetAwaiter().GetResult();
+            _logger.LogDebug("Publicado {RoutingKey} correlation={CorrelationId}", routingKey, correlationId);
+        }
+        catch
+        {
+            // Invalidar canal para que se recree en el próximo intento.
+            lock (_channelLock) { _channel = null; }
+            throw;
+        }
+    }
+
+    private IChannel GetOrRecreateChannel()
+    {
+        lock (_channelLock)
+        {
+            if (_channel is { IsOpen: true })
+                return _channel;
+
+            try { _channel?.Dispose(); } catch { /* ignore */ }
+            _channel = _holder.GetConnection().CreateChannelAsync().GetAwaiter().GetResult();
+            return _channel;
+        }
+    }
+
+    public void Dispose()
+    {
+        lock (_channelLock)
+        {
+            try { _channel?.Dispose(); } catch { /* ignore */ }
+        }
     }
 }

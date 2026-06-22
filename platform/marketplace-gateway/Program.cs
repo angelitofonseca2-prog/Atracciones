@@ -10,21 +10,29 @@ builder.Services.Configure<ServicesOptions>(builder.Configuration.GetSection(Ser
 builder.Services.AddHttpClient<AtraccionesProxyService>();
 builder.Services.AddHttpClient<ReservasProxyService>();
 builder.Services.AddSingleton<MarketplaceReservaPublisher>();
-builder.Services.AddAtraccionesEventBus(builder.Configuration);
+builder.Services.AddAtraccionesEventBus(builder.Configuration, services =>
+{
+    // Consumer que traduce eventos RabbitMQ → subscriptions HotChocolate.
+    services.AddHostedService<ReservaEstadoEventConsumer>();
+});
 
 var corsOrigins = builder.Configuration.GetSection("Cors").Get<string[]>() ?? ["http://localhost:5173"];
 builder.Services.AddCors(o => o.AddDefaultPolicy(p =>
-    p.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod()));
+    p.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
 
+builder.Services.AddInMemorySubscriptions();
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<Query>()
     .AddMutationType<Mutation>()
+    .AddSubscriptionType<Subscription>()
+    .AddInMemorySubscriptions()
     .ModifyRequestOptions(o => o.IncludeExceptionDetails = builder.Environment.IsDevelopment());
 
 var app = builder.Build();
 
 app.UseCors();
+app.UseWebSockets();
 app.Use(async (ctx, next) =>
 {
     var corr = ctx.Request.Headers["X-Correlation-ID"].FirstOrDefault();
