@@ -7,19 +7,13 @@ import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
 import { listarMisReservas } from '@/lib/api/reservasApi';
 import { useAuth } from '@/lib/context/AuthContext';
+import { normalizarReserva, ReservaNormalizada } from '@/lib/utils/mappers';
 import { formatearFechaCorta } from '@/lib/utils/formatFechas';
 import { Colors } from '@/constants/Colors';
 
-interface Reserva {
-  rev_guid?: string; rev_codigo?: string; codigo?: string;
-  estado?: string; fecha_visita?: string;
-  total?: number; total_pagar?: number;
-  atraccion_nombre?: string; nombre_atraccion?: string;
-}
-
 export default function MisReservasScreen() {
   const { user } = useAuth();
-  const [reservas, setReservas] = useState<Reserva[]>([]);
+  const [reservas, setReservas] = useState<ReservaNormalizada[]>([]);
   const [cargando, setCargando] = useState(true);
   const [refrescando, setRefrescando] = useState(false);
   const [error, setError] = useState('');
@@ -28,9 +22,9 @@ export default function MisReservasScreen() {
     try {
       setError('');
       const res = await listarMisReservas() as Record<string, unknown>;
-      // API devuelve: { status: 200, message: "...", data: [...reservas...] }
-      const d = res?.data ?? res;
-      setReservas(Array.isArray(d) ? d : []);
+      const d = (res?.data ?? res) as Record<string, unknown>[];
+      const lista = Array.isArray(d) ? d.map((r) => normalizarReserva(r as Record<string, unknown>)) : [];
+      setReservas(lista);
     } catch (e: unknown) {
       const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
       setError(msg ?? 'No se pudo cargar tus reservas');
@@ -52,22 +46,34 @@ export default function MisReservasScreen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <FlatList
         data={reservas}
-        keyExtractor={(r) => String(r.rev_guid ?? r.rev_codigo ?? Math.random())}
+        keyExtractor={(r) => r.rev_guid || r.rev_codigo || String(Math.random())}
         contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} tintColor={Colors.primary} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refrescando}
+            onRefresh={() => { setRefrescando(true); cargar(); }}
+            tintColor={Colors.primary}
+          />
+        }
         renderItem={({ item: r }) => (
-          <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => router.push(`/mis-reservas/${r.rev_guid}`)}>
+          <TouchableOpacity
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => router.push(`/mis-reservas/${r.rev_guid}`)}
+          >
             <View style={styles.cardHeader}>
-              <Text style={styles.codigo}>{r.rev_codigo ?? r.codigo ?? '—'}</Text>
-              <Badge estado={r.estado ?? 'P'} />
+              <Text style={styles.codigo}>{r.rev_codigo || '—'}</Text>
+              <Badge estado={r.rev_estado} />
             </View>
-            {(r.atraccion_nombre ?? r.nombre_atraccion) && (
-              <Text style={styles.nombre}>{r.atraccion_nombre ?? r.nombre_atraccion}</Text>
-            )}
+            {r.atraccion_nombre ? (
+              <Text style={styles.nombre}>{r.atraccion_nombre}</Text>
+            ) : null}
             <View style={styles.cardFooter}>
-              <Text style={styles.fecha}>📅 {formatearFechaCorta(r.fecha_visita ?? '')}</Text>
-              {(r.total ?? r.total_pagar) != null && (
-                <Text style={styles.total}>${Number(r.total ?? r.total_pagar).toFixed(2)}</Text>
+              <Text style={styles.fecha}>
+                📅 {formatearFechaCorta(r.fecha_visita || r.rev_fecha_reserva_utc)}
+              </Text>
+              {r.rev_total > 0 && (
+                <Text style={styles.total}>${r.rev_total.toFixed(2)}</Text>
               )}
             </View>
           </TouchableOpacity>
@@ -80,7 +86,11 @@ export default function MisReservasScreen() {
             <View style={styles.empty}>
               <Text style={styles.emptyIcon}>📅</Text>
               <Text style={styles.emptyText}>No tienes reservas aún</Text>
-              <Button title="Explorar atracciones" onPress={() => router.push('/(tabs)/catalogo')} style={{ marginTop: 16 }} />
+              <Button
+                title="Explorar atracciones"
+                onPress={() => router.push('/(tabs)/catalogo')}
+                style={{ marginTop: 16 }}
+              />
             </View>
           ) : null
         }

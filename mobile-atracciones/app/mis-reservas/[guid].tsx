@@ -9,6 +9,7 @@ import Spinner from '@/components/ui/Spinner';
 import { cancelarReserva, obtenerReserva } from '@/lib/api/reservasApi';
 import { crearResenia } from '@/lib/api/atraccionesApi';
 import { esReservaCancelable, esReservaConfirmada } from '@/lib/utils/estadoReserva';
+import { normalizarReserva } from '@/lib/utils/mappers';
 import { formatearFechaCorta } from '@/lib/utils/formatFechas';
 import { Colors } from '@/constants/Colors';
 
@@ -28,7 +29,8 @@ export default function DetalleReservaScreen() {
     try {
       const res = await obtenerReserva(guid);
       const raw = res as Record<string, unknown>;
-      setReserva((raw?.data as Record<string, unknown>) ?? raw);
+      const d = (raw?.data as Record<string, unknown>) ?? raw;
+      setReserva(normalizarReserva(d) as unknown as Record<string, unknown>);
     } catch {
       Alert.alert('Error', 'No se pudo cargar la reserva');
     } finally {
@@ -91,18 +93,19 @@ export default function DetalleReservaScreen() {
     </View>
   );
 
-  const estado = String(reserva.estado ?? 'P');
+  // normalizarReserva garantiza rev_estado; fallback a 'P' solo si falta todo
+  const estado = String(reserva.rev_estado ?? reserva.estado ?? 'P');
   const cancelable = esReservaCancelable(estado);
   const confirmada = esReservaConfirmada(estado);
   const atGuid = String(reserva.at_guid ?? reserva.atraccion_guid ?? '');
-  const detalles = (reserva.detalles ?? reserva.lineas ?? []) as Record<string, unknown>[];
+  const detalles = (reserva.detalle ?? reserva.detalles ?? reserva.lineas ?? []) as Record<string, unknown>[];
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Encabezado */}
         <View style={styles.encabezado}>
-          <Text style={styles.codigo}>{String(reserva.rev_codigo ?? reserva.codigo ?? '—')}</Text>
+          <Text style={styles.codigo}>{String(reserva.rev_codigo || reserva.codigo || '—')}</Text>
           <Badge estado={estado} />
         </View>
 
@@ -114,10 +117,10 @@ export default function DetalleReservaScreen() {
 
         {/* Datos principales */}
         <View style={styles.card}>
-          <InfoRow label="Fecha de visita" valor={formatearFechaCorta(String(reserva.fecha_visita ?? ''))} />
+          <InfoRow label="Fecha de visita" valor={formatearFechaCorta(String(reserva.fecha_visita ?? reserva.hor_fecha ?? ''))} />
           <InfoRow
             label="Fecha de reserva"
-            valor={formatearFechaCorta(String(reserva.fecha_creacion ?? reserva.created_at ?? ''))}
+            valor={formatearFechaCorta(String(reserva.rev_fecha_reserva_utc ?? reserva.fecha_creacion ?? reserva.created_at ?? ''))}
           />
           {reserva.canal_venta && <InfoRow label="Canal" valor={String(reserva.canal_venta)} />}
         </View>
@@ -140,7 +143,7 @@ export default function DetalleReservaScreen() {
             <View style={styles.detalleRow}>
               <Text style={[styles.detalleName, { fontWeight: '700' }]}>Total</Text>
               <Text style={[styles.detalleCant, { color: Colors.primary, fontWeight: '700' }]}>
-                ${Number(reserva.total ?? reserva.total_pagar ?? 0).toFixed(2)}
+                ${Number(reserva.rev_total ?? reserva.total ?? reserva.total_pagar ?? 0).toFixed(2)}
               </Text>
             </View>
           </View>

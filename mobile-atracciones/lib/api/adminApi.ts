@@ -71,8 +71,11 @@ export const listarReservasAdmin = (params?: Record<string, unknown>) =>
   apiClient.get('/admin/reservas', { params }).then((r) => r.data);
 
 // ── Usuarios ──────────────────────────────────────────────────────────────────
-export const listarUsuarios = () =>
-  apiClient.get('/admin/usuarios').then((r) => r.data);
+export const listarUsuarios = (params?: { page?: number; limit?: number }) =>
+  apiClient.get('/admin/usuarios', { params }).then((r) => ({
+    data: (r.data as Record<string, unknown>)?.data ?? [],
+    pagination: (r.data as Record<string, unknown>)?.pagination ?? null,
+  }));
 
 // ── Catálogos ─────────────────────────────────────────────────────────────────
 export const listarDestinos = () =>
@@ -93,17 +96,35 @@ export const listarCategorias = () =>
 export const crearCategoria = (data: Record<string, unknown>) =>
   apiClient.post('/admin/categorias', data).then((r) => r.data);
 
+export const actualizarCategoria = (guid: string, data: Record<string, unknown>) =>
+  apiClient.put(`/admin/categorias/${guid}`, data).then((r) => r.data);
+
+export const eliminarCategoria = (guid: string) =>
+  apiClient.delete(`/admin/categorias/${guid}`).then((r) => r.data);
+
 export const listarIdiomas = () =>
   apiClient.get('/admin/idiomas').then((r) => r.data);
 
 export const crearIdioma = (data: Record<string, unknown>) =>
   apiClient.post('/admin/idiomas', data).then((r) => r.data);
 
+export const actualizarIdioma = (guid: string, data: Record<string, unknown>) =>
+  apiClient.put(`/admin/idiomas/${guid}`, data).then((r) => r.data);
+
+export const eliminarIdioma = (guid: string) =>
+  apiClient.delete(`/admin/idiomas/${guid}`).then((r) => r.data);
+
 export const listarIncluye = () =>
   apiClient.get('/admin/incluye').then((r) => r.data);
 
 export const crearIncluye = (data: Record<string, unknown>) =>
   apiClient.post('/admin/incluye', data).then((r) => r.data);
+
+export const actualizarIncluye = (guid: string, data: Record<string, unknown>) =>
+  apiClient.put(`/admin/incluye/${guid}`, data).then((r) => r.data);
+
+export const eliminarIncluye = (guid: string) =>
+  apiClient.delete(`/admin/incluye/${guid}`).then((r) => r.data);
 
 // ── Imágenes (/admin/imagenes) ────────────────────────────────────────────────
 export const listarImagenes = () =>

@@ -8,7 +8,12 @@ import { listarReservasAdmin } from '@/lib/api/adminApi';
 import { formatearFechaCorta } from '@/lib/utils/formatFechas';
 import { Colors } from '@/constants/Colors';
 
-interface Reserva { rev_guid?: string; rev_codigo?: string; estado?: string; fecha_visita?: string; total?: number; cliente_nombre?: string; }
+interface Reserva {
+  rev_guid?: string; rev_codigo?: string;
+  rev_estado?: string; estado?: string;
+  fecha_visita?: string; rev_total?: number; total?: number;
+  atraccion_nombre?: string; cliente_nombre?: string;
+}
 
 export default function AdminReservasScreen() {
   const [items, setItems] = useState<Reserva[]>([]);
@@ -38,12 +43,14 @@ export default function AdminReservasScreen() {
           <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => router.push(`/mis-reservas/${r.rev_guid}` as never)}>
             <View style={styles.cardHeader}>
               <Text style={styles.codigo}>{r.rev_codigo ?? '—'}</Text>
-              <Badge estado={r.estado ?? 'P'} />
+              <Badge estado={r.rev_estado ?? r.estado ?? 'P'} />
             </View>
             {r.cliente_nombre && <Text style={styles.cliente}>👤 {r.cliente_nombre}</Text>}
             <View style={styles.cardFooter}>
               <Text style={styles.fecha}>📅 {formatearFechaCorta(r.fecha_visita ?? '')}</Text>
-              {r.total != null && <Text style={styles.total}>${Number(r.total).toFixed(2)}</Text>}
+              {(r.rev_total ?? r.total) != null && (
+                <Text style={styles.total}>${Number(r.rev_total ?? r.total).toFixed(2)}</Text>
+              )}
             </View>
           </TouchableOpacity>
         )}

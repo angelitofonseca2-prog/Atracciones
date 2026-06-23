@@ -8,43 +8,43 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Spinner from '@/components/ui/Spinner';
 import {
+  actualizarCategoria, actualizarDestino, actualizarIdioma, actualizarIncluye,
   crearCategoria, crearDestino, crearIdioma, crearIncluye,
+  eliminarCategoria, eliminarDestino, eliminarIdioma, eliminarIncluye,
   listarCategorias, listarDestinos, listarIdiomas, listarIncluye,
 } from '@/lib/api/adminApi';
 import { Colors } from '@/constants/Colors';
 
 type Seccion = 'destinos' | 'categorias' | 'idiomas' | 'incluye';
 
-const SECCIONES: { key: Seccion; label: string }[] = [
-  { key: 'destinos', label: 'Destinos' },
-  { key: 'categorias', label: 'Categorias' },
-  { key: 'idiomas', label: 'Idiomas' },
-  { key: 'incluye', label: 'Incluye' },
+const SECCIONES: { key: Seccion; label: string; singular: string }[] = [
+  { key: 'destinos', label: 'Destinos', singular: 'Destino' },
+  { key: 'categorias', label: 'Categorias', singular: 'Categoria' },
+  { key: 'idiomas', label: 'Idiomas', singular: 'Idioma' },
+  { key: 'incluye', label: 'Incluye', singular: 'Incluye' },
 ];
 
-const getGuid = (item: Record<string, unknown>, seccion: Seccion) => {
-  if (seccion === 'destinos') return String(item.des_guid ?? item.guid ?? '');
-  if (seccion === 'categorias') return String(item.cat_guid ?? item.guid ?? '');
-  if (seccion === 'idiomas') return String(item.id_guid ?? item.guid ?? '');
-  if (seccion === 'incluye') return String(item.incluye_guid ?? item.guid ?? '');
+const getGuid = (item: Record<string, unknown>, s: Seccion): string => {
+  if (s === 'destinos') return String(item.des_guid ?? item.guid ?? '');
+  if (s === 'categorias') return String(item.cat_guid ?? item.guid ?? '');
+  if (s === 'idiomas') return String(item.id_guid ?? item.guid ?? '');
+  if (s === 'incluye') return String(item.incluye_guid ?? item.guid ?? '');
   return String(item.guid ?? '');
 };
 
-const getLabel = (item: Record<string, unknown>, seccion: Seccion) => {
-  if (seccion === 'destinos') {
-    const nombre = String(item.nombre ?? '');
-    const pais = String(item.pais ?? '');
-    return pais ? `${nombre} — ${pais}` : nombre;
+const getLabel = (item: Record<string, unknown>, s: Seccion): string => {
+  if (s === 'destinos') {
+    const n = String(item.nombre ?? '');
+    const p = String(item.pais ?? '');
+    return p ? `${n} — ${p}` : n;
   }
-  if (seccion === 'idiomas' || seccion === 'incluye')
-    return String(item.descripcion ?? item.nombre ?? '');
+  if (s === 'idiomas' || s === 'incluye') return String(item.descripcion ?? item.nombre ?? '');
   return String(item.nombre ?? '');
 };
 
 interface FormDestino { nombre: string; pais: string; imagen_url: string }
 interface FormCategoria { nombre: string }
-interface FormIdioma { descripcion: string }
-interface FormIncluye { descripcion: string }
+interface FormDescripcion { descripcion: string }
 
 export default function AdminCatalogosScreen() {
   const [seccion, setSeccion] = useState<Seccion>('destinos');
@@ -54,12 +54,11 @@ export default function AdminCatalogosScreen() {
   const [modal, setModal] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [errores, setErrores] = useState<Record<string, string>>({});
+  const [editandoGuid, setEditandoGuid] = useState<string | null>(null);
 
-  // Forms por sección
   const [fDest, setFDest] = useState<FormDestino>({ nombre: '', pais: '', imagen_url: '' });
   const [fCat, setFCat] = useState<FormCategoria>({ nombre: '' });
-  const [fIdi, setFIdi] = useState<FormIdioma>({ descripcion: '' });
-  const [fInc, setFInc] = useState<FormIncluye>({ descripcion: '' });
+  const [fDesc, setFDesc] = useState<FormDescripcion>({ descripcion: '' });
 
   const cargar = useCallback(async (s?: Seccion) => {
     const actual = s ?? seccion;
@@ -84,13 +83,52 @@ export default function AdminCatalogosScreen() {
     cargar(s);
   };
 
-  const abrirModal = () => {
+  const abrirCrear = () => {
+    setEditandoGuid(null);
     setFDest({ nombre: '', pais: '', imagen_url: '' });
     setFCat({ nombre: '' });
-    setFIdi({ descripcion: '' });
-    setFInc({ descripcion: '' });
+    setFDesc({ descripcion: '' });
     setErrores({});
     setModal(true);
+  };
+
+  const abrirEditar = (item: Record<string, unknown>) => {
+    setEditandoGuid(getGuid(item, seccion));
+    if (seccion === 'destinos') {
+      setFDest({
+        nombre: String(item.nombre ?? ''),
+        pais: String(item.pais ?? ''),
+        imagen_url: String(item.imagen_url ?? ''),
+      });
+    } else if (seccion === 'categorias') {
+      setFCat({ nombre: String(item.nombre ?? '') });
+    } else {
+      setFDesc({ descripcion: String(item.descripcion ?? item.nombre ?? '') });
+    }
+    setErrores({});
+    setModal(true);
+  };
+
+  const onEliminar = (item: Record<string, unknown>) => {
+    const label = getLabel(item, seccion);
+    const guid = getGuid(item, seccion);
+    Alert.alert(`Eliminar ${SECCIONES.find((s) => s.key === seccion)?.singular}`, `¿Eliminar "${label}"?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Eliminar', style: 'destructive', onPress: async () => {
+          try {
+            if (seccion === 'destinos') await eliminarDestino(guid);
+            else if (seccion === 'categorias') await eliminarCategoria(guid);
+            else if (seccion === 'idiomas') await eliminarIdioma(guid);
+            else await eliminarIncluye(guid);
+            await cargar();
+          } catch (e: unknown) {
+            const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'No se pudo eliminar';
+            Alert.alert('Error', msg);
+          }
+        },
+      },
+    ]);
   };
 
   const validar = () => {
@@ -100,10 +138,8 @@ export default function AdminCatalogosScreen() {
       if (!fDest.pais.trim()) e.pais = 'El pais es obligatorio';
     } else if (seccion === 'categorias') {
       if (!fCat.nombre.trim()) e.nombre = 'El nombre es obligatorio';
-    } else if (seccion === 'idiomas') {
-      if (!fIdi.descripcion.trim()) e.descripcion = 'La descripcion es obligatoria';
-    } else if (seccion === 'incluye') {
-      if (!fInc.descripcion.trim()) e.descripcion = 'La descripcion es obligatoria';
+    } else {
+      if (!fDesc.descripcion.trim()) e.descripcion = 'La descripcion es obligatoria';
     }
     return e;
   };
@@ -116,13 +152,20 @@ export default function AdminCatalogosScreen() {
       if (seccion === 'destinos') {
         const p: Record<string, unknown> = { nombre: fDest.nombre.trim(), pais: fDest.pais.trim() };
         if (fDest.imagen_url.trim()) p.imagen_url = fDest.imagen_url.trim();
-        await crearDestino(p);
+        if (editandoGuid) await actualizarDestino(editandoGuid, p);
+        else await crearDestino(p);
       } else if (seccion === 'categorias') {
-        await crearCategoria({ nombre: fCat.nombre.trim() });
+        const p = { nombre: fCat.nombre.trim() };
+        if (editandoGuid) await actualizarCategoria(editandoGuid, p);
+        else await crearCategoria(p);
       } else if (seccion === 'idiomas') {
-        await crearIdioma({ descripcion: fIdi.descripcion.trim() });
+        const p = { descripcion: fDesc.descripcion.trim() };
+        if (editandoGuid) await actualizarIdioma(editandoGuid, p);
+        else await crearIdioma(p);
       } else {
-        await crearIncluye({ descripcion: fInc.descripcion.trim() });
+        const p = { descripcion: fDesc.descripcion.trim() };
+        if (editandoGuid) await actualizarIncluye(editandoGuid, p);
+        else await crearIncluye(p);
       }
       setModal(false);
       await cargar();
@@ -133,9 +176,11 @@ export default function AdminCatalogosScreen() {
     } finally { setGuardando(false); }
   };
 
+  const singLabel = SECCIONES.find((s) => s.key === seccion)?.singular ?? '';
+
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
-      {/* Tabs de sección */}
+      {/* Tabs */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabs} contentContainerStyle={styles.tabsContent}>
         {SECCIONES.map((s) => (
           <TouchableOpacity key={s.key} style={[styles.tab, seccion === s.key && styles.tabActivo]} onPress={() => cambiarSeccion(s.key)}>
@@ -154,17 +199,21 @@ export default function AdminCatalogosScreen() {
           refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} tintColor={Colors.primary} />}
           renderItem={({ item }) => (
             <View style={styles.card}>
-              <Text style={styles.itemLabel}>{getLabel(item, seccion)}</Text>
-              <Text style={styles.itemGuid}>{getGuid(item, seccion).slice(0, 8)}…</Text>
+              <View style={styles.cardInfo}>
+                <Text style={styles.itemLabel}>{getLabel(item, seccion)}</Text>
+                <Text style={styles.itemGuid}>{getGuid(item, seccion).slice(0, 8)}…</Text>
+              </View>
+              <View style={styles.acciones}>
+                <TouchableOpacity onPress={() => abrirEditar(item)} style={styles.btnEdit}>
+                  <Text style={styles.btnEditText}>✎</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => onEliminar(item)} style={styles.btnDel}>
+                  <Text style={styles.btnDelText}>✕</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
-          ListHeaderComponent={
-            <Button
-              title={`+ Nuevo ${SECCIONES.find((s) => s.key === seccion)?.label.replace(/s$/, '') ?? ''}`}
-              onPress={abrirModal}
-              style={{ marginBottom: 16 }}
-            />
-          }
+          ListHeaderComponent={<Button title={`+ Nuevo ${singLabel}`} onPress={abrirCrear} style={{ marginBottom: 16 }} />}
           ListEmptyComponent={<Text style={styles.empty}>No hay {seccion}</Text>}
         />
       )}
@@ -172,30 +221,25 @@ export default function AdminCatalogosScreen() {
       <Modal visible={modal} animationType="slide" presentationStyle="formSheet" onRequestClose={() => setModal(false)}>
         <SafeAreaView style={styles.modalSafe}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>
-              Nuevo {SECCIONES.find((s) => s.key === seccion)?.label.replace(/s$/, '')}
-            </Text>
+            <Text style={styles.modalTitle}>{editandoGuid ? `Editar ${singLabel}` : `Nuevo ${singLabel}`}</Text>
             <TouchableOpacity onPress={() => setModal(false)}><Text style={styles.cerrar}>✕</Text></TouchableOpacity>
           </View>
           <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
             {seccion === 'destinos' && (
               <>
-                <Input label="Nombre *" value={fDest.nombre} onChangeText={(v) => { setFDest((p) => ({ ...p, nombre: v })); setErrores((p) => ({ ...p, nombre: '' })); }} placeholder="Paris" error={errores.nombre} />
-                <Input label="Pais *" value={fDest.pais} onChangeText={(v) => { setFDest((p) => ({ ...p, pais: v })); setErrores((p) => ({ ...p, pais: '' })); }} placeholder="Francia" error={errores.pais} />
+                <Input label="Nombre *" value={fDest.nombre} onChangeText={(v) => { setFDest((p) => ({ ...p, nombre: v })); setErrores((p) => ({ ...p, nombre: '' })); }} placeholder="Ciudad o lugar" error={errores.nombre} />
+                <Input label="Pais *" value={fDest.pais} onChangeText={(v) => { setFDest((p) => ({ ...p, pais: v })); setErrores((p) => ({ ...p, pais: '' })); }} placeholder="Ej. Ecuador" error={errores.pais} />
                 <Input label="URL de imagen (opcional)" value={fDest.imagen_url} onChangeText={(v) => setFDest((p) => ({ ...p, imagen_url: v }))} placeholder="https://..." />
               </>
             )}
             {seccion === 'categorias' && (
-              <Input label="Nombre *" value={fCat.nombre} onChangeText={(v) => { setFCat({ nombre: v }); setErrores((p) => ({ ...p, nombre: '' })); }} placeholder="Aventura" error={errores.nombre} />
+              <Input label="Nombre *" value={fCat.nombre} onChangeText={(v) => { setFCat({ nombre: v }); setErrores((p) => ({ ...p, nombre: '' })); }} placeholder="Ej. Aventura" error={errores.nombre} />
             )}
-            {seccion === 'idiomas' && (
-              <Input label="Descripcion *" value={fIdi.descripcion} onChangeText={(v) => { setFIdi({ descripcion: v }); setErrores((p) => ({ ...p, descripcion: '' })); }} placeholder="Espanol" error={errores.descripcion} />
-            )}
-            {seccion === 'incluye' && (
-              <Input label="Descripcion *" value={fInc.descripcion} onChangeText={(v) => { setFInc({ descripcion: v }); setErrores((p) => ({ ...p, descripcion: '' })); }} placeholder="Transporte incluido" error={errores.descripcion} />
+            {(seccion === 'idiomas' || seccion === 'incluye') && (
+              <Input label="Descripcion *" value={fDesc.descripcion} onChangeText={(v) => { setFDesc({ descripcion: v }); setErrores((p) => ({ ...p, descripcion: '' })); }} placeholder={seccion === 'idiomas' ? 'Ej. Espanol' : 'Ej. Transporte incluido'} error={errores.descripcion} />
             )}
             {errores._global && <Text style={styles.errorText}>{errores._global}</Text>}
-            <Button title="Guardar" onPress={onGuardar} loading={guardando} size="lg" />
+            <Button title={editandoGuid ? 'Guardar cambios' : 'Crear'} onPress={onGuardar} loading={guardando} size="lg" />
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -212,9 +256,15 @@ const styles = StyleSheet.create({
   tabText: { color: Colors.textMuted, fontWeight: '600', fontSize: 13 },
   tabTextActivo: { color: '#fff' },
   list: { padding: 16 },
-  card: { backgroundColor: Colors.surface, borderRadius: 12, padding: 14, marginBottom: 10 },
+  card: { backgroundColor: Colors.surface, borderRadius: 12, padding: 14, marginBottom: 10, flexDirection: 'row', alignItems: 'center' },
+  cardInfo: { flex: 1 },
   itemLabel: { color: Colors.text, fontWeight: '600', fontSize: 15 },
-  itemGuid: { color: Colors.textMuted, fontSize: 11, marginTop: 2, fontFamily: 'monospace' },
+  itemGuid: { color: Colors.textMuted, fontSize: 11, marginTop: 2 },
+  acciones: { flexDirection: 'row', gap: 8 },
+  btnEdit: { width: 36, height: 36, borderRadius: 8, backgroundColor: `${Colors.primary}33`, alignItems: 'center', justifyContent: 'center' },
+  btnEditText: { color: Colors.primary, fontSize: 18 },
+  btnDel: { width: 36, height: 36, borderRadius: 8, backgroundColor: `${Colors.danger}33`, alignItems: 'center', justifyContent: 'center' },
+  btnDelText: { color: Colors.danger, fontSize: 16 },
   empty: { color: Colors.textMuted, textAlign: 'center', marginTop: 40 },
   modalSafe: { flex: 1, backgroundColor: Colors.background },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: Colors.border },

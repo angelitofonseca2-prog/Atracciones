@@ -144,11 +144,39 @@ export default function AdminAtraccionesScreen() {
   };
 
   const abrirEditar = async (a: AtraccionAdmin) => {
-    setForm({ ...FORM_VACIO, nombre: a.nombre ?? '', disponible: a.estado !== 'I' });
+    const guid = a.at_guid ?? a.id ?? null;
+    setEditandoGuid(guid);
     setErrores({});
-    setEditandoGuid(a.at_guid ?? a.id ?? null);
     setModal(true);
+    // Cargar catálogos antes de intentar precargar el formulario
     await cargarCatalogos();
+    // Intentar obtener el detalle completo para tener los guids de arrays
+    let item: Record<string, unknown> = a as Record<string, unknown>;
+    if (guid) {
+      try {
+        const raw = await (await import('@/lib/api/adminApi')).obtenerAtraccionAdmin(guid);
+        if (raw && typeof raw === 'object') item = raw as Record<string, unknown>;
+      } catch { /* usar el item del listado como fallback */ }
+    }
+    const toArr = (v: unknown): string[] => Array.isArray(v) ? v.map(String) : [];
+    setForm({
+      destino_guid: String(item.destino_guid ?? item.DestinoGuid ?? ''),
+      num_establecimiento: String(item.num_establecimiento ?? item.NumEstablecimiento ?? ''),
+      nombre: String(item.nombre ?? item.Nombre ?? ''),
+      descripcion: String(item.descripcion ?? item.Descripcion ?? ''),
+      direccion: String(item.direccion ?? item.Direccion ?? ''),
+      duracion_minutos: String(item.duracion_minutos ?? item.DuracionMinutos ?? ''),
+      punto_encuentro: String(item.punto_encuentro ?? item.PuntoEncuentro ?? ''),
+      precio_referencia: String(item.precio_referencia ?? item.PrecioReferencia ?? ''),
+      disponible: Boolean(item.disponible ?? item.Disponible ?? true),
+      categoria_guids: toArr(item.categoria_guids ?? item.CategoriaGuids),
+      idioma_guids: toArr(item.idioma_guids ?? item.IdiomaGuids),
+      incluye_guids: toArr(item.incluye_guids ?? item.IncluyeGuids),
+      imagen_guids_existentes: toArr(item.imagen_guids ?? item.ImagenGuids),
+      imagenes_nuevas: [],
+      nueva_imagen_url: '',
+      nueva_imagen_desc: '',
+    });
   };
 
   const agregarImagenUrl = () => {
