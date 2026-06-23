@@ -22,7 +22,10 @@
         "backgroundColor": "#0f172a"
       },
       "package": "com.atracciones.mobile",
-      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"]
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -47,7 +50,14 @@
     "extra": {
       "apiUrl": "https://api-gateway-production-0afd.up.railway.app/api/v2",
       "graphqlUrl": "https://marketplace-gateway-production.up.railway.app/graphql",
-      "useGraphql": true
-    }
+      "useGraphql": true,
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "0dc52b48-025f-4d0d-83a7-291f47bf3b08"
+      }
+    },
+    "owner": "angel7074"
   }
 }
