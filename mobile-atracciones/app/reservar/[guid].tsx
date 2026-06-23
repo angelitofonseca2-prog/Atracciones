@@ -15,6 +15,7 @@ import {
   obtenerTicketsPorHorario,
 } from '@/lib/api/atraccionesApi';
 import { crearReserva, confirmarPagoReserva, DatosReceptor } from '@/lib/api/reservasApi';
+import { obtenerPerfilCliente } from '@/lib/api/clientesApi';
 import { useAuth } from '@/lib/context/AuthContext';
 import { Colors } from '@/constants/Colors';
 
@@ -96,15 +97,28 @@ export default function ReservarScreen() {
 
   useEffect(() => { cargarDatos(); }, [cargarDatos]);
 
-  // Precargar nombre/correo desde perfil del usuario
+  // Precargar datos desde perfil real del cliente (no del JWT)
   useEffect(() => {
-    if (user) {
-      setForm((p) => ({
-        ...p,
-        nombre_receptor: p.nombre_receptor || user.nombre || '',
-        correo_receptor: p.correo_receptor || user.correo || '',
-      }));
-    }
+    if (!user) return;
+    obtenerPerfilCliente()
+      .then((res) => {
+        const raw = res as Record<string, unknown>;
+        const d = (raw?.data as Record<string, unknown>) ?? raw;
+        setForm((p) => ({
+          ...p,
+          nombre_receptor: p.nombre_receptor || String(d?.nombres ?? d?.nombre ?? ''),
+          apellido_receptor: p.apellido_receptor || String(d?.apellidos ?? d?.apellido ?? ''),
+          correo_receptor: p.correo_receptor || String(d?.correo ?? user.correo ?? ''),
+          telefono_receptor: p.telefono_receptor || String(d?.telefono ?? ''),
+        }));
+      })
+      .catch(() => {
+        // Fallback: solo el correo del JWT
+        setForm((p) => ({
+          ...p,
+          correo_receptor: p.correo_receptor || user.correo || '',
+        }));
+      });
   }, [user]);
 
   const onSeleccionarHorario = async (h: Horario) => {
@@ -267,7 +281,7 @@ export default function ReservarScreen() {
               )}
 
               <Button
-                title="Siguiente →"
+                title="Siguiente"
                 onPress={() => {
                   if (!horarioSel) { Alert.alert('Selecciona un horario'); return; }
                   if (!fechaSel) { Alert.alert('Selecciona el día de tu visita'); return; }
@@ -341,9 +355,9 @@ export default function ReservarScreen() {
               )}
 
               <View style={styles.botonesRow}>
-                <Button title="← Volver" onPress={() => setPaso('horario')} variant="ghost" style={{ flex: 1 }} />
+                <Button title="Volver" onPress={() => setPaso('horario')} variant="ghost" style={{ flex: 1 }} />
                 <Button
-                  title="Continuar →"
+                  title="Continuar"
                   onPress={() => {
                     if (lineas.length === 0) { Alert.alert('Selecciona al menos una entrada'); return; }
                     setPaso('facturacion');
@@ -421,9 +435,9 @@ export default function ReservarScreen() {
               />
 
               <View style={styles.botonesRow}>
-                <Button title="← Volver" onPress={() => setPaso('tickets')} variant="ghost" style={{ flex: 1 }} />
+                <Button title="Volver" onPress={() => setPaso('tickets')} variant="ghost" style={{ flex: 1 }} />
                 <Button
-                  title="✓ Confirmar y pagar"
+                  title="Confirmar y pagar"
                   onPress={onConfirmarFacturacion}
                   loading={enviando}
                   style={{ flex: 2 }}

@@ -153,7 +153,7 @@ export default function DetalleAtraccionScreen() {
           )}
 
           <Button
-            title="Reservar ahora →"
+            title="Reservar ahora"
             onPress={() => router.push(`/reservar/${guid}`)}
             size="lg"
             style={{ marginTop: 8, marginBottom: 32 }}

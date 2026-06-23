@@ -1,57 +1,232 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, FlatList, Modal, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert, FlatList, Modal, RefreshControl,
+  ScrollView, StyleSheet, Text, TouchableOpacity, View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '@/components/ui/Button';
+import ChipsSelector from '@/components/ui/ChipsSelector';
 import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 import Spinner from '@/components/ui/Spinner';
-import { actualizarAtraccion, crearAtraccion, eliminarAtraccion, listarAtraccionesAdmin } from '@/lib/api/adminApi';
+import {
+  actualizarAtraccion, crearAtraccion, crearImagen, eliminarAtraccion,
+  listarAtraccionesAdmin, listarCategorias, listarDestinos,
+  listarIdiomas, listarImagenes, listarIncluye,
+} from '@/lib/api/adminApi';
 import { Colors } from '@/constants/Colors';
 
-interface AtraccionAdmin { at_guid?: string; nombre?: string; ciudad?: string; precio_desde?: number; estado?: string; }
+interface AtraccionAdmin {
+  at_guid?: string; id?: string;
+  nombre?: string; ciudad?: string; precio_desde?: number; estado?: string;
+}
 
-const FORM_VACIO = { nombre: '', ciudad: '', pais: '', descripcion_corta: '', descripcion: '', duracion_horas: '', precio_desde: '' };
+interface Catalogo { id: string; label: string; extra?: string }
+
+interface FormState {
+  destino_guid: string;
+  num_establecimiento: string;
+  nombre: string;
+  descripcion: string;
+  direccion: string;
+  duracion_minutos: string;
+  punto_encuentro: string;
+  precio_referencia: string;
+  disponible: boolean;
+  categoria_guids: string[];
+  idioma_guids: string[];
+  incluye_guids: string[];
+  imagen_guids_existentes: string[];
+  imagenes_nuevas: { url: string; descripcion?: string }[];
+  nueva_imagen_url: string;
+  nueva_imagen_desc: string;
+}
+
+const FORM_VACIO: FormState = {
+  destino_guid: '', num_establecimiento: '', nombre: '',
+  descripcion: '', direccion: '', duracion_minutos: '',
+  punto_encuentro: '', precio_referencia: '', disponible: true,
+  categoria_guids: [], idioma_guids: [], incluye_guids: [],
+  imagen_guids_existentes: [], imagenes_nuevas: [],
+  nueva_imagen_url: '', nueva_imagen_desc: '',
+};
 
 export default function AdminAtraccionesScreen() {
   const [items, setItems] = useState<AtraccionAdmin[]>([]);
   const [cargando, setCargando] = useState(true);
   const [refrescando, setRefrescando] = useState(false);
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState(FORM_VACIO);
+  const [form, setForm] = useState<FormState>(FORM_VACIO);
+  const [errores, setErrores] = useState<Record<string, string>>({});
   const [editandoGuid, setEditandoGuid] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+
+  // Catálogos
+  const [destinos, setDestinos] = useState<Catalogo[]>([]);
+  const [categorias, setCategorias] = useState<{ id: string; label: string }[]>([]);
+  const [idiomas, setIdiomas] = useState<{ id: string; label: string }[]>([]);
+  const [incluye, setIncluye] = useState<{ id: string; label: string }[]>([]);
+  const [imagenes, setImagenes] = useState<{ id: string; label: string; url: string }[]>([]);
+  const [cargandoCatalogos, setCargandoCatalogos] = useState(false);
 
   const cargar = useCallback(async () => {
     try {
       const res = await listarAtraccionesAdmin();
-      const d = res?.data ?? res;
-      setItems(Array.isArray(d) ? d : d?.items ?? d?.atracciones ?? []);
+      const raw = res as Record<string, unknown>;
+      const d = raw?.data ?? raw;
+      setItems(Array.isArray(d) ? d : []);
     } catch { Alert.alert('Error', 'No se pudo cargar atracciones'); }
     finally { setCargando(false); setRefrescando(false); }
   }, []);
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  const set = (k: string) => (v: string) => setForm((p) => ({ ...p, [k]: v }));
+  const cargarCatalogos = async () => {
+    setCargandoCatalogos(true);
+    try {
+      const [dRes, cRes, iRes, inRes, imgRes] = await Promise.allSettled([
+        listarDestinos(), listarCategorias(), listarIdiomas(), listarIncluye(), listarImagenes(),
+      ]);
+      const ext = (r: unknown): unknown[] => {
+        const raw = r as Record<string, unknown>;
+        const d = raw?.data ?? r;
+        return Array.isArray(d) ? d : [];
+      };
 
-  const abrirCrear = () => { setForm(FORM_VACIO); setEditandoGuid(null); setModal(true); };
-  const abrirEditar = (a: AtraccionAdmin) => {
-    setForm({ nombre: a.nombre ?? '', ciudad: a.ciudad ?? '', pais: '', descripcion_corta: '', descripcion: '', duracion_horas: '', precio_desde: String(a.precio_desde ?? '') });
-    setEditandoGuid(a.at_guid ?? null);
+      if (dRes.status === 'fulfilled') {
+        setDestinos(ext(dRes.value).map((d: unknown) => {
+          const x = d as Record<string, unknown>;
+          const guid = String(x.des_guid ?? x.guid ?? '');
+          const label = [x.nombre, x.pais].filter(Boolean).join(' — ');
+          return { id: guid, label };
+        }));
+      }
+      if (cRes.status === 'fulfilled') {
+        setCategorias(ext(cRes.value).map((c: unknown) => {
+          const x = c as Record<string, unknown>;
+          return { id: String(x.cat_guid ?? x.guid ?? ''), label: String(x.nombre ?? '') };
+        }));
+      }
+      if (iRes.status === 'fulfilled') {
+        setIdiomas(ext(iRes.value).map((i: unknown) => {
+          const x = i as Record<string, unknown>;
+          return { id: String(x.id_guid ?? x.guid ?? ''), label: String(x.descripcion ?? x.nombre ?? '') };
+        }));
+      }
+      if (inRes.status === 'fulfilled') {
+        setIncluye(ext(inRes.value).map((i: unknown) => {
+          const x = i as Record<string, unknown>;
+          return { id: String(x.incluye_guid ?? x.guid ?? ''), label: String(x.descripcion ?? x.nombre ?? '') };
+        }));
+      }
+      if (imgRes.status === 'fulfilled') {
+        setImagenes(ext(imgRes.value).map((i: unknown) => {
+          const x = i as Record<string, unknown>;
+          const url = String(x.url ?? '');
+          let label = String(x.descripcion ?? '');
+          if (!label && url) { try { label = new URL(url).hostname; } catch { label = url.slice(0, 30); } }
+          return { id: String(x.img_guid ?? x.guid ?? ''), label, url };
+        }));
+      }
+    } catch { /* no bloquear */ }
+    finally { setCargandoCatalogos(false); }
+  };
+
+  const set = (k: keyof FormState) => (v: string) =>
+    setForm((p) => ({ ...p, [k]: v }));
+
+  const abrirCrear = async () => {
+    setForm(FORM_VACIO);
+    setErrores({});
+    setEditandoGuid(null);
     setModal(true);
+    await cargarCatalogos();
+  };
+
+  const abrirEditar = async (a: AtraccionAdmin) => {
+    setForm({ ...FORM_VACIO, nombre: a.nombre ?? '', disponible: a.estado !== 'I' });
+    setErrores({});
+    setEditandoGuid(a.at_guid ?? a.id ?? null);
+    setModal(true);
+    await cargarCatalogos();
+  };
+
+  const agregarImagenUrl = () => {
+    const url = form.nueva_imagen_url.trim();
+    if (!url) { setErrores((p) => ({ ...p, nueva_imagen_url: 'Ingresa una URL' })); return; }
+    try { new URL(url); } catch {
+      setErrores((p) => ({ ...p, nueva_imagen_url: 'URL no válida (incluye https://)' }));
+      return;
+    }
+    if (form.imagenes_nuevas.some((x) => x.url === url)) {
+      setErrores((p) => ({ ...p, nueva_imagen_url: 'Esa URL ya fue añadida' }));
+      return;
+    }
+    setForm((p) => ({
+      ...p,
+      imagenes_nuevas: [...p.imagenes_nuevas, { url, descripcion: p.nueva_imagen_desc.trim() || undefined }],
+      nueva_imagen_url: '',
+      nueva_imagen_desc: '',
+    }));
+    setErrores((p) => ({ ...p, nueva_imagen_url: '' }));
+  };
+
+  const validar = () => {
+    const e: Record<string, string> = {};
+    if (!form.destino_guid) e.destino_guid = 'Selecciona un destino';
+    if (!form.nombre.trim()) e.nombre = 'El nombre es obligatorio';
+    if (form.duracion_minutos && Number(form.duracion_minutos) <= 0)
+      e.duracion_minutos = 'Debe ser mayor a 0';
+    if (form.precio_referencia && Number(form.precio_referencia) < 0)
+      e.precio_referencia = 'Debe ser positivo';
+    if (form.categoria_guids.length === 0) e.categoria_guids = 'Selecciona al menos una categoría';
+    if (form.idioma_guids.length === 0) e.idioma_guids = 'Selecciona al menos un idioma';
+    if (form.incluye_guids.length === 0) e.incluye_guids = 'Selecciona al menos un elemento incluido';
+    const totalImg = form.imagen_guids_existentes.length + form.imagenes_nuevas.length;
+    if (totalImg === 0) e.imagenes = 'Agrega al menos una imagen';
+    return e;
   };
 
   const onGuardar = async () => {
-    if (!form.nombre.trim()) { Alert.alert('El nombre es requerido'); return; }
+    const e = validar();
+    if (Object.keys(e).length) { setErrores(e); return; }
     setGuardando(true);
     try {
-      const payload = { ...form, precio_desde: Number(form.precio_desde) || 0 };
-      if (editandoGuid) await actualizarAtraccion(editandoGuid, payload as Record<string, unknown>);
-      else await crearAtraccion(payload as Record<string, unknown>);
+      // 1) Crear imágenes nuevas → obtener img_guids
+      const guidsCreados: string[] = [];
+      for (const img of form.imagenes_nuevas) {
+        const creada = await crearImagen({ url: img.url, descripcion: img.descripcion });
+        const guid = String(creada?.img_guid ?? creada?.guid ?? '');
+        if (!guid) throw new Error('La API no devolvió img_guid.');
+        guidsCreados.push(guid);
+      }
+      // 2) Payload según contrato
+      const payload: Record<string, unknown> = {
+        destino_guid: form.destino_guid,
+        nombre: form.nombre.trim(),
+        categoria_guids: form.categoria_guids,
+        idioma_guids: form.idioma_guids,
+        incluye_guids: form.incluye_guids,
+        imagen_guids: [...form.imagen_guids_existentes, ...guidsCreados],
+      };
+      if (form.num_establecimiento.trim()) payload.num_establecimiento = form.num_establecimiento.trim();
+      if (form.descripcion.trim()) payload.descripcion = form.descripcion.trim();
+      if (form.direccion.trim()) payload.direccion = form.direccion.trim();
+      if (form.duracion_minutos) payload.duracion_minutos = Number(form.duracion_minutos);
+      if (form.punto_encuentro.trim()) payload.punto_encuentro = form.punto_encuentro.trim();
+      if (form.precio_referencia) payload.precio_referencia = Number(form.precio_referencia);
+      if (editandoGuid) payload.disponible = form.disponible;
+
+      if (editandoGuid) await actualizarAtraccion(editandoGuid, payload);
+      else await crearAtraccion(payload);
       setModal(false);
       await cargar();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Error al guardar';
-      Alert.alert('Error', msg);
+      const msg = (err as { response?: { data?: { message?: string; details?: string[] } } })
+        ?.response?.data?.message
+        ?? (err as Error)?.message
+        ?? 'Error al guardar';
+      setErrores((p) => ({ ...p, _global: msg }));
     } finally { setGuardando(false); }
   };
 
@@ -60,8 +235,10 @@ export default function AdminAtraccionesScreen() {
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar', style: 'destructive', onPress: async () => {
-          try { await eliminarAtraccion(a.at_guid!); await cargar(); }
-          catch { Alert.alert('Error', 'No se pudo eliminar'); }
+          try {
+            await eliminarAtraccion((a.at_guid ?? a.id)!);
+            await cargar();
+          } catch { Alert.alert('Error', 'No se pudo eliminar'); }
         },
       },
     ]);
@@ -73,14 +250,14 @@ export default function AdminAtraccionesScreen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <FlatList
         data={items}
-        keyExtractor={(i) => String(i.at_guid ?? Math.random())}
+        keyExtractor={(i) => String(i.at_guid ?? i.id ?? Math.random())}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} tintColor={Colors.primary} />}
         renderItem={({ item: a }) => (
           <View style={styles.card}>
             <View style={styles.cardInfo}>
               <Text style={styles.nombre}>{a.nombre}</Text>
-              <Text style={styles.sub}>{[a.ciudad].filter(Boolean).join(', ')}</Text>
+              {a.ciudad && <Text style={styles.sub}>{a.ciudad}</Text>}
               {a.precio_desde != null && <Text style={styles.precio}>Desde ${Number(a.precio_desde).toFixed(2)}</Text>}
             </View>
             <View style={styles.acciones}>
@@ -89,28 +266,124 @@ export default function AdminAtraccionesScreen() {
             </View>
           </View>
         )}
-        ListHeaderComponent={
-          <Button title="+ Nueva Atracción" onPress={abrirCrear} style={{ marginBottom: 16 }} />
-        }
+        ListHeaderComponent={<Button title="+ Nueva Atraccion" onPress={abrirCrear} style={{ marginBottom: 16 }} />}
         ListEmptyComponent={<Text style={styles.empty}>No hay atracciones</Text>}
       />
 
       <Modal visible={modal} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setModal(false)}>
         <SafeAreaView style={styles.modalSafe}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{editandoGuid ? 'Editar' : 'Nueva'} Atracción</Text>
+            <Text style={styles.modalTitle}>{editandoGuid ? 'Editar' : 'Nueva'} Atraccion</Text>
             <TouchableOpacity onPress={() => setModal(false)}><Text style={styles.cerrar}>✕</Text></TouchableOpacity>
           </View>
-          <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
-            <Input label="Nombre *" value={form.nombre} onChangeText={set('nombre')} placeholder="Ej. Galápagos Tour" />
-            <Input label="Ciudad" value={form.ciudad} onChangeText={set('ciudad')} placeholder="Ej. Quito" />
-            <Input label="País" value={form.pais} onChangeText={set('pais')} placeholder="Ej. Ecuador" />
-            <Input label="Precio desde ($)" value={form.precio_desde} onChangeText={set('precio_desde')} keyboardType="numeric" placeholder="0.00" />
-            <Input label="Duración (horas)" value={form.duracion_horas} onChangeText={set('duracion_horas')} keyboardType="numeric" placeholder="2" />
-            <Input label="Descripción corta" value={form.descripcion_corta} onChangeText={set('descripcion_corta')} multiline numberOfLines={2} style={{ height: 70, textAlignVertical: 'top' }} />
-            <Input label="Descripción completa" value={form.descripcion} onChangeText={set('descripcion')} multiline numberOfLines={4} style={{ height: 110, textAlignVertical: 'top' }} />
-            <Button title={editandoGuid ? 'Guardar cambios' : 'Crear atracción'} onPress={onGuardar} loading={guardando} size="lg" />
-          </ScrollView>
+          {cargandoCatalogos ? (
+            <Spinner texto="Cargando catalogos..." />
+          ) : (
+            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+
+              <Select
+                label="Destino *"
+                value={form.destino_guid}
+                onChange={(v) => { setForm((p) => ({ ...p, destino_guid: v })); setErrores((p) => ({ ...p, destino_guid: '' })); }}
+                options={destinos.map((d) => ({ value: d.id, label: d.label }))}
+                placeholder="Selecciona un destino"
+                error={errores.destino_guid}
+              />
+              {destinos.length === 0 && <Text style={styles.hint}>No hay destinos. Crea uno en Catalogos.</Text>}
+
+              <Input label="Nombre *" value={form.nombre} onChangeText={(v) => { set('nombre')(v); setErrores((p) => ({ ...p, nombre: '' })); }} placeholder="Nombre de la atraccion" error={errores.nombre} />
+              <Input label="Num. establecimiento" value={form.num_establecimiento} onChangeText={set('num_establecimiento')} placeholder="EST-001" />
+              <Input label="Descripcion" value={form.descripcion} onChangeText={set('descripcion')} multiline numberOfLines={3} style={{ height: 80, textAlignVertical: 'top' }} />
+              <Input label="Direccion" value={form.direccion} onChangeText={set('direccion')} placeholder="Calle y numero" />
+              <Input label="Duracion (minutos)" value={form.duracion_minutos} onChangeText={set('duracion_minutos')} keyboardType="numeric" placeholder="120" error={errores.duracion_minutos} />
+              <Input label="Punto de encuentro" value={form.punto_encuentro} onChangeText={set('punto_encuentro')} placeholder="Donde se reunen los participantes" />
+              <Input label="Precio de referencia ($)" value={form.precio_referencia} onChangeText={set('precio_referencia')} keyboardType="numeric" placeholder="0.00" error={errores.precio_referencia} />
+
+              {editandoGuid && (
+                <Select
+                  label="Disponible"
+                  value={form.disponible ? 'true' : 'false'}
+                  onChange={(v) => setForm((p) => ({ ...p, disponible: v === 'true' }))}
+                  options={[{ value: 'true', label: 'Si' }, { value: 'false', label: 'No' }]}
+                />
+              )}
+
+              {/* Categorías */}
+              <ChipsSelector
+                titulo="Categorias *"
+                subtitulo="Selecciona al menos una."
+                items={categorias}
+                selected={form.categoria_guids}
+                onChange={(guids) => { setForm((p) => ({ ...p, categoria_guids: guids })); setErrores((p) => ({ ...p, categoria_guids: '' })); }}
+                getId={(c) => c.id}
+                getLabel={(c) => c.label}
+                vacio="No hay categorias. Crea una en Catalogos."
+                error={errores.categoria_guids}
+              />
+
+              {/* Idiomas */}
+              <ChipsSelector
+                titulo="Idiomas disponibles *"
+                subtitulo="Selecciona al menos uno."
+                items={idiomas}
+                selected={form.idioma_guids}
+                onChange={(guids) => { setForm((p) => ({ ...p, idioma_guids: guids })); setErrores((p) => ({ ...p, idioma_guids: '' })); }}
+                getId={(i) => i.id}
+                getLabel={(i) => i.label}
+                vacio="No hay idiomas. Crea uno en Catalogos."
+                error={errores.idioma_guids}
+              />
+
+              {/* Incluye */}
+              <ChipsSelector
+                titulo="Elementos incluidos *"
+                subtitulo="Selecciona al menos uno."
+                items={incluye}
+                selected={form.incluye_guids}
+                onChange={(guids) => { setForm((p) => ({ ...p, incluye_guids: guids })); setErrores((p) => ({ ...p, incluye_guids: '' })); }}
+                getId={(i) => i.id}
+                getLabel={(i) => i.label}
+                vacio="No hay elementos. Crea uno en Catalogos."
+                error={errores.incluye_guids}
+              />
+
+              {/* Imágenes existentes */}
+              <Text style={styles.seccionLabel}>Imagenes *</Text>
+              {imagenes.length > 0 && (
+                <ChipsSelector
+                  titulo=""
+                  subtitulo="Selecciona imagenes ya registradas."
+                  items={imagenes}
+                  selected={form.imagen_guids_existentes}
+                  onChange={(guids) => { setForm((p) => ({ ...p, imagen_guids_existentes: guids })); setErrores((p) => ({ ...p, imagenes: '' })); }}
+                  getId={(i) => i.id}
+                  getLabel={(i) => i.label}
+                />
+              )}
+
+              {/* Imágenes nuevas */}
+              {form.imagenes_nuevas.length > 0 && (
+                <View style={styles.imagNuevas}>
+                  {form.imagenes_nuevas.map((img) => (
+                    <View key={img.url} style={styles.imagNuevaRow}>
+                      <Text style={styles.imagNuevaUrl} numberOfLines={1}>{img.url}</Text>
+                      <TouchableOpacity onPress={() => setForm((p) => ({ ...p, imagenes_nuevas: p.imagenes_nuevas.filter((x) => x.url !== img.url) }))}>
+                        <Text style={styles.imagNuevaQuitar}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
+              <Input label="Nueva URL de imagen" value={form.nueva_imagen_url} onChangeText={(v) => { set('nueva_imagen_url')(v); setErrores((p) => ({ ...p, nueva_imagen_url: '' })); }} placeholder="https://..." error={errores.nueva_imagen_url} />
+              <Input label="Descripcion de imagen (opcional)" value={form.nueva_imagen_desc} onChangeText={set('nueva_imagen_desc')} placeholder="Galeria principal" />
+              <Button title="Agregar imagen" onPress={agregarImagenUrl} variant="outline" style={{ marginBottom: 8 }} />
+              {errores.imagenes && <Text style={styles.errorText}>{errores.imagenes}</Text>}
+
+              {errores._global && <Text style={[styles.errorText, { marginBottom: 12 }]}>{errores._global}</Text>}
+
+              <Button title={editandoGuid ? 'Guardar cambios' : 'Crear atraccion'} onPress={onGuardar} loading={guardando} size="lg" />
+            </ScrollView>
+          )}
         </SafeAreaView>
       </Modal>
     </SafeAreaView>
@@ -136,4 +409,11 @@ const styles = StyleSheet.create({
   modalTitle: { color: Colors.text, fontSize: 18, fontWeight: '700' },
   cerrar: { color: Colors.textMuted, fontSize: 20, padding: 4 },
   modalScroll: { padding: 20 },
+  hint: { color: Colors.textMuted, fontSize: 12, marginBottom: 12, fontStyle: 'italic' },
+  seccionLabel: { color: Colors.text, fontWeight: '700', fontSize: 14, marginBottom: 8, marginTop: 4 },
+  imagNuevas: { marginBottom: 8 },
+  imagNuevaRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderRadius: 8, padding: 8, marginBottom: 4, borderWidth: 1, borderColor: Colors.primary },
+  imagNuevaUrl: { flex: 1, color: Colors.text, fontSize: 12 },
+  imagNuevaQuitar: { color: Colors.danger, fontSize: 16, paddingHorizontal: 8 },
+  errorText: { color: Colors.danger, fontSize: 13, marginBottom: 8 },
 });
