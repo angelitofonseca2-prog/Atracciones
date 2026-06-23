@@ -34,7 +34,7 @@ export default function RootLayout() {
             <Stack.Screen name="auth/registro" options={{ title: 'Crear cuenta', headerShown: false }} />
             <Stack.Screen name="atracciones/[guid]" options={{ title: '' }} />
             <Stack.Screen name="reservar/[guid]" options={{ title: 'Reservar' }} />
-            <Stack.Screen name="mis-reservas/index" options={{ title: 'Mis Reservas' }} />
+            <Stack.Screen name="mis-reservas" options={{ title: 'Mis Reservas' }} />
             <Stack.Screen name="mis-reservas/[guid]" options={{ title: 'Detalle de Reserva' }} />
             <Stack.Screen name="mis-facturas" options={{ title: 'Mis Facturas' }} />
             <Stack.Screen name="perfil" options={{ title: 'Mi Perfil' }} />

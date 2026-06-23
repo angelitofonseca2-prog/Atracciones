@@ -1,142 +1,192 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert, KeyboardAvoidingView, Platform, ScrollView,
+  StyleSheet, Text, TouchableOpacity, View,
+} from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
 import Spinner from '@/components/ui/Spinner';
 import CalendarioVisita from '@/components/reservas/CalendarioVisita';
-import { obtenerAtraccion, obtenerHorariosDisponibles, obtenerTicketsAtraccion } from '@/lib/api/atraccionesApi';
-import { crearReserva, confirmarPagoReserva } from '@/lib/api/reservasApi';
+import {
+  obtenerAtraccion,
+  obtenerHorariosDisponibles,
+  obtenerTicketsPorHorario,
+} from '@/lib/api/atraccionesApi';
+import { crearReserva, confirmarPagoReserva, DatosReceptor } from '@/lib/api/reservasApi';
 import { useAuth } from '@/lib/context/AuthContext';
 import { Colors } from '@/constants/Colors';
 
-const TIPOS_ID = [
-  { label: 'Cédula', value: 'CEDULA' },
-  { label: 'Pasaporte', value: 'PASAPORTE' },
-  { label: 'RUC', value: 'RUC' },
-  { label: 'Otro', value: 'OTRO' },
-];
+type Paso = 'horario' | 'tickets' | 'facturacion' | 'confirmacion';
 
-type Paso = 'horario' | 'tickets' | 'cliente' | 'pago' | 'confirmacion';
-
-interface Ticket { tck_guid?: string; Id?: string; tipo?: string; nombre?: string; Nombre?: string; precio?: number; Precio?: number; }
-interface Horario { hor_guid?: string; Id?: string; fecha?: string; Fecha?: string; fecha_fin?: string; hora_inicio?: string; HoraInicio?: string; cupos?: number; cupos_disponibles?: number; capacidad?: number; Capacidad?: number; }
+interface Ticket { tck_guid: string; titulo?: string; tipo?: string; precio: number }
+interface Horario {
+  hor_guid: string; fecha: string; fecha_fin?: string;
+  hora_inicio?: string; hora_fin?: string;
+  cupos?: number; cupos_disponibles?: number;
+}
 
 export default function ReservarScreen() {
   const { guid } = useLocalSearchParams<{ guid: string }>();
   const { user } = useAuth();
 
-  // Data
   const [atraccion, setAtraccion] = useState<Record<string, unknown> | null>(null);
   const [horarios, setHorarios] = useState<Horario[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [cargando, setCargando] = useState(true);
+  const [cargandoTickets, setCargandoTickets] = useState(false);
 
-  // Selecciones
   const [horarioSel, setHorarioSel] = useState<Horario | null>(null);
   const [fechaSel, setFechaSel] = useState('');
   const [cantidades, setCantidades] = useState<Record<string, number>>({});
 
-  // Datos cliente invitado
-  const [datosCliente, setDatosCliente] = useState({
-    nombres: '', apellidos: '', correo: '', telefono: '',
-    tipo_identificacion: 'CEDULA', numero_identificacion: '',
+  const [form, setForm] = useState({
+    nombre_receptor: '',
+    apellido_receptor: '',
+    correo_receptor: '',
+    telefono_receptor: '',
+    observacion: '',
   });
+  const [formErrores, setFormErrores] = useState<Record<string, string>>({});
 
-  // Estado flujo
   const [paso, setPaso] = useState<Paso>('horario');
   const [enviando, setEnviando] = useState(false);
   const [reservaCreada, setReservaCreada] = useState<Record<string, unknown> | null>(null);
+  const [factura, setFactura] = useState<Record<string, unknown> | null>(null);
 
-  const cargar = useCallback(async () => {
+  // Requerir login
+  useEffect(() => {
+    if (!user) {
+      Alert.alert(
+        'Inicio de sesión requerido',
+        'Debes iniciar sesión para hacer una reserva.',
+        [
+          { text: 'Ir al login', onPress: () => router.replace('/auth/login') },
+          { text: 'Cancelar', onPress: () => router.back() },
+        ],
+      );
+    }
+  }, [user]);
+
+  const cargarDatos = useCallback(async () => {
     if (!guid) return;
     try {
-      const [aRes, hRes, tRes] = await Promise.allSettled([
+      const [aRes, hRes] = await Promise.allSettled([
         obtenerAtraccion(guid),
         obtenerHorariosDisponibles(guid),
-        obtenerTicketsAtraccion(guid),
       ]);
       if (aRes.status === 'fulfilled') {
-        // API: { status, message, data: {...atraccion...} }
         const raw = aRes.value as Record<string, unknown>;
         setAtraccion((raw?.data as Record<string, unknown>) ?? raw);
       }
       if (hRes.status === 'fulfilled') {
-        // API: { status, data: [{hor_guid, fecha, cupos_disponibles, ...}] }
         const raw = hRes.value as Record<string, unknown>;
         const d = raw?.data ?? raw;
-        setHorarios(Array.isArray(d) ? d : []);
+        setHorarios((Array.isArray(d) ? d : []).map((h: Horario) => ({
+          ...h,
+          cupos_disponibles: h.cupos_disponibles ?? h.cupos,
+          fecha_fin: h.fecha_fin ?? h.fecha,
+        })));
       }
-      if (tRes.status === 'fulfilled') {
-        // API: { status, data: [{tck_guid, tipo, precio, ...}] }
-        const raw = tRes.value as Record<string, unknown>;
-        const d = raw?.data ?? raw;
-        setTickets(Array.isArray(d) ? d : []);
-      }
-    } catch {}
-    finally { setCargando(false); }
+    } finally {
+      setCargando(false);
+    }
   }, [guid]);
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => { cargarDatos(); }, [cargarDatos]);
 
-  const horarioId = (h: Horario) => String(h.hor_guid ?? h.Id ?? '');
-  const ticketId = (t: Ticket) => String(t.tck_guid ?? t.Id ?? '');
-  const totalCant = Object.values(cantidades).reduce((a, b) => a + b, 0);
-  const totalPrecio = tickets.reduce((sum, t) => {
-    const qty = cantidades[ticketId(t)] ?? 0;
-    return sum + qty * Number(t.precio ?? t.Precio ?? 0);
-  }, 0);
+  // Precargar nombre/correo desde perfil del usuario
+  useEffect(() => {
+    if (user) {
+      setForm((p) => ({
+        ...p,
+        nombre_receptor: p.nombre_receptor || user.nombre || '',
+        correo_receptor: p.correo_receptor || user.correo || '',
+      }));
+    }
+  }, [user]);
 
-  const lineas = tickets
-    .filter((t) => (cantidades[ticketId(t)] ?? 0) > 0)
-    .map((t) => ({ tck_guid: ticketId(t), cantidad: cantidades[ticketId(t)] }));
-
-  const confirmarHorario = () => {
-    if (!horarioSel) { Alert.alert('Selecciona un horario'); return; }
-    if (!fechaSel) { Alert.alert('Selecciona una fecha de visita'); return; }
-    setPaso('tickets');
+  const onSeleccionarHorario = async (h: Horario) => {
+    setHorarioSel(h);
+    setFechaSel('');
+    setCantidades({});
+    setTickets([]);
+    if (!guid) return;
+    setCargandoTickets(true);
+    try {
+      const arr = await obtenerTicketsPorHorario(guid, h.hor_guid);
+      setTickets(Array.isArray(arr) ? arr : []);
+    } catch {
+      // Fallback a tickets generales de la atraccion
+      try {
+        const raw = await (await import('@/lib/api/atraccionesApi')).obtenerTicketsAtraccion(guid);
+        const d = (raw as Record<string, unknown>)?.data ?? raw;
+        setTickets(Array.isArray(d) ? d : []);
+      } catch { setTickets([]); }
+    } finally {
+      setCargandoTickets(false);
+    }
   };
 
-  const confirmarTickets = () => {
-    if (totalCant === 0) { Alert.alert('Selecciona al menos un ticket'); return; }
-    setPaso(user ? 'pago' : 'cliente');
+  const cuposMax = horarioSel?.cupos_disponibles ?? horarioSel?.cupos ?? 999;
+  const lineas = Object.entries(cantidades)
+    .filter(([, c]) => c > 0)
+    .map(([tck_guid, cantidad]) => ({ tck_guid, cantidad }));
+  const subtotal = tickets.reduce((s, t) => s + (cantidades[t.tck_guid] ?? 0) * t.precio, 0);
+  const iva = subtotal * 0.15;
+  const total = subtotal + iva;
+  const totalEntradas = lineas.reduce((s, l) => s + l.cantidad, 0);
+
+  const ticketLabel = (t: Ticket) => t.titulo || t.tipo || 'Entrada';
+
+  const validarForm = () => {
+    const e: Record<string, string> = {};
+    if (!form.nombre_receptor.trim()) e.nombre_receptor = 'El nombre es obligatorio';
+    if (!form.correo_receptor.trim()) e.correo_receptor = 'El correo es obligatorio';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo_receptor)) e.correo_receptor = 'Correo inválido';
+    return e;
   };
 
-  const crearYConfirmar = async () => {
+  const onConfirmarFacturacion = async () => {
+    const e = validarForm();
+    if (Object.keys(e).length) { setFormErrores(e); return; }
     setEnviando(true);
     try {
-      const payload = {
+      const reservaRes = await crearReserva({
         at_guid: String(guid),
-        hor_guid: horarioId(horarioSel!),
+        hor_guid: horarioSel!.hor_guid,
         lineas,
-        fecha_visita: fechaSel,
+        fecha_visita: fechaSel || undefined,
         origen_canal: 'MOBILE',
-        ...(!user ? {
-          cliente_invitado: {
-            tipo_identificacion: datosCliente.tipo_identificacion,
-            numero_identificacion: datosCliente.numero_identificacion,
-            nombres: datosCliente.nombres,
-            apellidos: datosCliente.apellidos,
-            correo: datosCliente.correo,
-            telefono: datosCliente.telefono || undefined,
-          },
-        } : {}),
-      };
-      const res = await crearReserva(payload);
-      const rev = res?.data ?? res;
+      });
+      const reservaRaw = (reservaRes as Record<string, unknown>)?.data ?? reservaRes;
+      const rev = reservaRaw as Record<string, unknown>;
       setReservaCreada(rev);
 
-      // Confirmar pago simulado
-      const revGuid = String(rev?.rev_guid ?? rev?.RevGuid ?? '');
-      if (revGuid) {
-        await confirmarPagoReserva(revGuid);
-      }
+      const revGuid = String(rev?.rev_guid ?? '');
+      if (!revGuid) throw new Error('No se recibió identificador de reserva.');
+
+      const datos: DatosReceptor = {
+        nombre_receptor: form.nombre_receptor.trim(),
+        correo_receptor: form.correo_receptor.trim(),
+        ...(form.apellido_receptor.trim() ? { apellido_receptor: form.apellido_receptor.trim() } : {}),
+        ...(form.telefono_receptor.trim() ? { telefono_receptor: form.telefono_receptor.trim() } : {}),
+        ...(form.observacion.trim() ? { observacion: form.observacion.trim() } : {}),
+      };
+      const pagoRes = await confirmarPagoReserva(revGuid, datos);
+      const facturaData = (pagoRes as Record<string, unknown>)?.data ?? pagoRes;
+      setFactura(facturaData as Record<string, unknown>);
       setPaso('confirmacion');
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
-        ?? 'No se pudo completar la reserva. Inténtalo de nuevo.';
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      let msg = (err as { response?: { data?: { message?: string; details?: string[] } } })
+        ?.response?.data?.message
+        ?? (err as Error)?.message
+        ?? 'No se pudo completar la reserva.';
+      if (status === 409 || /cupo|capacidad|sin lugar|agotad/i.test(msg)) {
+        msg = 'No quedan cupos disponibles para este horario. Por favor elige otro.';
+      }
       Alert.alert('Error', msg);
     } finally {
       setEnviando(false);
@@ -144,19 +194,24 @@ export default function ReservarScreen() {
   };
 
   if (cargando) return <Spinner texto="Cargando información..." />;
+  if (!user) return null;
 
-  const nombre = String(atraccion?.nombre ?? atraccion?.Nombre ?? 'Atracción');
+  const nombre = String(atraccion?.nombre ?? 'Atracción');
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        {/* Indicador de paso */}
-        <View style={styles.pasos}>
-          {(['horario', 'tickets', 'pago', 'confirmacion'] as Paso[]).map((p, i) => (
+        {/* Barra de pasos */}
+        <View style={styles.pasosBar}>
+          {(['horario', 'tickets', 'facturacion', 'confirmacion'] as Paso[]).map((p, i) => (
             <View key={p} style={styles.pasoItem}>
-              <View style={[styles.pasoCirculo, paso === p && styles.pasoActivo]}>
+              <View style={[styles.pasoCirculo, paso === p && styles.pasoActivo,
+                (['horario', 'tickets', 'facturacion', 'confirmacion'] as Paso[]).indexOf(paso) > i && styles.pasoHecho]}>
                 <Text style={styles.pasoNum}>{i + 1}</Text>
               </View>
+              <Text style={[styles.pasoLabel, paso === p && styles.pasoLabelActivo]}>
+                {['Horario', 'Tickets', 'Pago', 'Listo'][i]}
+              </Text>
             </View>
           ))}
         </View>
@@ -164,26 +219,32 @@ export default function ReservarScreen() {
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <Text style={styles.titulo}>{nombre}</Text>
 
-          {/* PASO 1 — Horario */}
+          {/* ── PASO 1: Horario ── */}
           {paso === 'horario' && (
             <View>
               <Text style={styles.seccion}>Selecciona un horario</Text>
               {horarios.length === 0 ? (
-                <Text style={styles.sinHorarios}>No hay horarios disponibles</Text>
+                <View style={styles.emptyBox}>
+                  <Text style={styles.emptyText}>No hay horarios disponibles en este momento.</Text>
+                </View>
               ) : (
                 horarios.map((h) => {
-                  const id = horarioId(h);
-                  const activo = horarioSel && horarioId(horarioSel) === id;
+                  const activo = horarioSel?.hor_guid === h.hor_guid;
+                  const cupos = h.cupos_disponibles ?? h.cupos ?? 0;
+                  const sinCupos = cupos <= 0;
                   return (
-                    <TouchableOpacity key={id} style={[styles.horarioCard, activo && styles.horarioActivo]}
-                      onPress={() => { setHorarioSel(h); setFechaSel(''); }} activeOpacity={0.8}>
-                      <Text style={styles.horarioHora}>🕐 {String(h.hora_inicio ?? h.HoraInicio ?? 'Sin hora')}</Text>
+                    <TouchableOpacity
+                      key={h.hor_guid}
+                      style={[styles.horarioCard, activo && styles.horarioActivo, sinCupos && styles.horarioSinCupos]}
+                      onPress={() => !sinCupos && onSeleccionarHorario(h)}
+                      activeOpacity={sinCupos ? 1 : 0.8}
+                    >
+                      <Text style={styles.horarioHora}>🕐 {h.hora_inicio ?? '—'}{h.hora_fin ? ` – ${h.hora_fin}` : ''}</Text>
                       <Text style={styles.horarioFecha}>
-                        {String(h.fecha ?? h.Fecha ?? '').slice(0, 10)}
-                        {h.fecha_fin ? ` — ${String(h.fecha_fin).slice(0, 10)}` : ''}
+                        {h.fecha?.slice(0, 10)}{h.fecha_fin && h.fecha_fin !== h.fecha ? ` → ${h.fecha_fin.slice(0, 10)}` : ''}
                       </Text>
-                      <Text style={styles.horarioCupo}>
-                        Disponibles: {h.cupos_disponibles ?? h.cupos ?? h.capacidad ?? '?'}
+                      <Text style={[styles.horarioCupo, sinCupos && { color: Colors.danger }]}>
+                        {sinCupos ? '❌ Sin cupos' : `✅ ${cupos} cupos disponibles`}
                       </Text>
                     </TouchableOpacity>
                   );
@@ -192,43 +253,68 @@ export default function ReservarScreen() {
 
               {horarioSel && (
                 <>
-                  <Text style={styles.seccion}>Selecciona fecha de visita</Text>
+                  <Text style={[styles.seccion, { marginTop: 20 }]}>Elige el día de tu visita</Text>
+                  <Text style={styles.rangoTexto}>
+                    Rango del horario: {horarioSel.fecha?.slice(0, 10)} → {(horarioSel.fecha_fin ?? horarioSel.fecha)?.slice(0, 10)}
+                  </Text>
                   <CalendarioVisita
-                    fechaInicio={String(horarioSel.fecha ?? horarioSel.Fecha ?? '')}
-                    fechaFin={String(horarioSel.fecha_fin ?? horarioSel.fecha ?? horarioSel.Fecha ?? '')}
+                    fechaInicio={horarioSel.fecha}
+                    fechaFin={horarioSel.fecha_fin ?? horarioSel.fecha}
                     seleccionado={fechaSel}
                     onSeleccionar={setFechaSel}
                   />
                 </>
               )}
 
-              <Button title="Siguiente →" onPress={confirmarHorario} size="lg" disabled={!horarioSel || !fechaSel} />
+              <Button
+                title="Siguiente →"
+                onPress={() => {
+                  if (!horarioSel) { Alert.alert('Selecciona un horario'); return; }
+                  if (!fechaSel) { Alert.alert('Selecciona el día de tu visita'); return; }
+                  setPaso('tickets');
+                }}
+                size="lg"
+                disabled={!horarioSel || !fechaSel}
+                style={{ marginTop: 16 }}
+              />
             </View>
           )}
 
-          {/* PASO 2 — Tickets */}
+          {/* ── PASO 2: Tickets ── */}
           {paso === 'tickets' && (
             <View>
-              <Text style={styles.seccion}>Elige tus tickets</Text>
-              {tickets.length === 0 ? (
-                <Text style={styles.sinHorarios}>No hay tickets disponibles</Text>
+              <Text style={styles.seccion}>Elige tus entradas</Text>
+              <Text style={styles.rangoTexto}>Visita: {fechaSel} · Horario: {horarioSel?.hora_inicio}</Text>
+
+              {cargandoTickets ? (
+                <Spinner texto="Cargando entradas..." />
+              ) : tickets.length === 0 ? (
+                <Text style={styles.emptyText}>No hay información de tarifas disponible.</Text>
               ) : (
                 tickets.map((t) => {
-                  const id = ticketId(t);
-                  const cant = cantidades[id] ?? 0;
-                  const max = Number(horarioSel?.cupos_disponibles ?? horarioSel?.cupos ?? horarioSel?.capacidad ?? 99);
+                  const cant = cantidades[t.tck_guid] ?? 0;
+                  const otrasEntradas = lineas.filter((l) => l.tck_guid !== t.tck_guid).reduce((s, l) => s + l.cantidad, 0);
+                  const maxPerm = Math.max(0, cuposMax - otrasEntradas);
                   return (
-                    <View key={id} style={styles.ticketCard}>
+                    <View key={t.tck_guid} style={styles.ticketCard}>
                       <View style={styles.ticketInfo}>
-                        <Text style={styles.ticketNombre}>{String(t.tipo ?? t.nombre ?? t.Nombre ?? 'Ticket')}</Text>
-                        <Text style={styles.ticketPrecio}>${Number(t.precio ?? t.Precio ?? 0).toFixed(2)}</Text>
+                        <Text style={styles.ticketNombre}>{ticketLabel(t)}</Text>
+                        <Text style={styles.ticketPrecio}>${Number(t.precio).toFixed(2)} / persona</Text>
                       </View>
                       <View style={styles.counter}>
-                        <TouchableOpacity style={styles.counterBtn} onPress={() => setCantidades((p) => ({ ...p, [id]: Math.max(0, (p[id] ?? 0) - 1) }))} disabled={cant === 0}>
+                        <TouchableOpacity
+                          style={[styles.counterBtn, cant === 0 && styles.counterBtnDisabled]}
+                          onPress={() => setCantidades((p) => ({ ...p, [t.tck_guid]: Math.max(0, cant - 1) }))}
+                          disabled={cant === 0}
+                        >
                           <Text style={styles.counterBtnText}>−</Text>
                         </TouchableOpacity>
                         <Text style={styles.counterVal}>{cant}</Text>
-                        <TouchableOpacity style={styles.counterBtn} onPress={() => setCantidades((p) => ({ ...p, [id]: Math.min(max, (p[id] ?? 0) + 1) }))} disabled={cant >= max}>
+                        <TouchableOpacity
+                          style={[styles.counterBtn, cant >= maxPerm && styles.counterBtnDisabled]}
+                          onPress={() => setCantidades((p) => ({ ...p, [t.tck_guid]: Math.min(maxPerm, cant + 1) }))}
+                          disabled={cant >= maxPerm}
+                        >
                           <Text style={styles.counterBtnText}>+</Text>
                         </TouchableOpacity>
                       </View>
@@ -237,79 +323,151 @@ export default function ReservarScreen() {
                 })
               )}
 
-              {totalCant > 0 && (
+              {totalEntradas > 0 && (
                 <View style={styles.totalBox}>
-                  <Text style={styles.totalLabel}>Total ({totalCant} tickets)</Text>
-                  <Text style={styles.totalValor}>${totalPrecio.toFixed(2)}</Text>
+                  <View style={styles.totalRow}>
+                    <Text style={styles.totalLabel}>Subtotal ({totalEntradas} entradas)</Text>
+                    <Text style={styles.totalVal}>${subtotal.toFixed(2)}</Text>
+                  </View>
+                  <View style={styles.totalRow}>
+                    <Text style={styles.totalLabel}>IVA 15%</Text>
+                    <Text style={styles.totalVal}>${iva.toFixed(2)}</Text>
+                  </View>
+                  <View style={[styles.totalRow, { marginTop: 4 }]}>
+                    <Text style={[styles.totalLabel, { fontWeight: '700', color: Colors.text }]}>Total</Text>
+                    <Text style={[styles.totalVal, { fontWeight: '700', fontSize: 18, color: Colors.primary }]}>${total.toFixed(2)}</Text>
+                  </View>
                 </View>
               )}
 
               <View style={styles.botonesRow}>
                 <Button title="← Volver" onPress={() => setPaso('horario')} variant="ghost" style={{ flex: 1 }} />
-                <Button title="Siguiente →" onPress={confirmarTickets} disabled={totalCant === 0} style={{ flex: 2 }} />
+                <Button
+                  title="Continuar →"
+                  onPress={() => {
+                    if (lineas.length === 0) { Alert.alert('Selecciona al menos una entrada'); return; }
+                    setPaso('facturacion');
+                  }}
+                  disabled={lineas.length === 0}
+                  style={{ flex: 2 }}
+                />
               </View>
             </View>
           )}
 
-          {/* PASO 2.5 — Datos cliente invitado */}
-          {paso === 'cliente' && !user && (
+          {/* ── PASO 3: Datos facturación + pago simulado ── */}
+          {paso === 'facturacion' && (
             <View>
-              <Text style={styles.seccion}>Tus datos de contacto</Text>
-              <Input label="Nombres *" value={datosCliente.nombres} onChangeText={(v) => setDatosCliente((p) => ({ ...p, nombres: v }))} placeholder="Ej. Juan" />
-              <Input label="Apellidos *" value={datosCliente.apellidos} onChangeText={(v) => setDatosCliente((p) => ({ ...p, apellidos: v }))} placeholder="Ej. Pérez" />
-              <Input label="Correo *" value={datosCliente.correo} onChangeText={(v) => setDatosCliente((p) => ({ ...p, correo: v }))} keyboardType="email-address" autoCapitalize="none" />
-              <Select label="Tipo ID *" value={datosCliente.tipo_identificacion} onChange={(v) => setDatosCliente((p) => ({ ...p, tipo_identificacion: v }))} options={TIPOS_ID} />
-              <Input label="Número ID *" value={datosCliente.numero_identificacion} onChangeText={(v) => setDatosCliente((p) => ({ ...p, numero_identificacion: v }))} keyboardType="numeric" />
-              <Input label="Teléfono" value={datosCliente.telefono} onChangeText={(v) => setDatosCliente((p) => ({ ...p, telefono: v }))} keyboardType="phone-pad" />
-              <View style={styles.botonesRow}>
-                <Button title="← Volver" onPress={() => setPaso('tickets')} variant="ghost" style={{ flex: 1 }} />
-                <Button title="Continuar →" onPress={() => setPaso('pago')} style={{ flex: 2 }} />
-              </View>
-            </View>
-          )}
+              <Text style={styles.seccion}>Resumen y datos de pago</Text>
 
-          {/* PASO 3 — Resumen y pago */}
-          {paso === 'pago' && (
-            <View>
-              <Text style={styles.seccion}>Resumen de tu reserva</Text>
+              {/* Resumen */}
               <View style={styles.resumenCard}>
                 <InfoRow label="Atracción" valor={nombre} />
-                <InfoRow label="Fecha" valor={fechaSel} />
-                <InfoRow label="Horario" valor={String(horarioSel?.hora_inicio ?? horarioSel?.HoraInicio ?? '')} />
+                <InfoRow label="Fecha de visita" valor={fechaSel} />
+                <InfoRow label="Horario" valor={horarioSel?.hora_inicio ?? ''} />
                 {lineas.map((l) => {
-                  const t = tickets.find((t) => ticketId(t) === l.tck_guid);
-                  return <InfoRow key={l.tck_guid} label={String(t?.tipo ?? t?.nombre ?? t?.Nombre ?? l.tck_guid)} valor={`${l.cantidad} × $${Number(t?.precio ?? t?.Precio ?? 0).toFixed(2)}`} />;
+                  const t = tickets.find((t) => t.tck_guid === l.tck_guid);
+                  return (
+                    <InfoRow
+                      key={l.tck_guid}
+                      label={ticketLabel(t ?? { tck_guid: l.tck_guid, precio: 0 })}
+                      valor={`${l.cantidad} × $${Number(t?.precio ?? 0).toFixed(2)}`}
+                    />
+                  );
                 })}
                 <View style={styles.separador} />
-                <InfoRow label="TOTAL" valor={`$${totalPrecio.toFixed(2)}`} importante />
+                <InfoRow label="Subtotal" valor={`$${subtotal.toFixed(2)}`} />
+                <InfoRow label="IVA 15%" valor={`$${iva.toFixed(2)}`} />
+                <InfoRow label="TOTAL" valor={`$${total.toFixed(2)}`} importante />
               </View>
 
+              {/* Datos de facturación */}
+              <Text style={[styles.seccion, { marginTop: 8 }]}>Datos de facturación</Text>
               <View style={styles.simuladoBox}>
                 <Text style={styles.simuladoTitle}>💳 Pago simulado</Text>
-                <Text style={styles.simuladoText}>Esta es una demostración. El pago se confirma automáticamente sin procesar dinero real.</Text>
+                <Text style={styles.simuladoText}>
+                  Esta es una demostración. El pago se confirma automáticamente sin procesar dinero real.
+                </Text>
               </View>
 
+              <Input
+                label="Nombre *"
+                value={form.nombre_receptor}
+                onChangeText={(v) => { setForm((p) => ({ ...p, nombre_receptor: v })); setFormErrores((p) => ({ ...p, nombre_receptor: '' })); }}
+                placeholder="Tu nombre"
+                error={formErrores.nombre_receptor}
+              />
+              <Input
+                label="Apellido"
+                value={form.apellido_receptor}
+                onChangeText={(v) => setForm((p) => ({ ...p, apellido_receptor: v }))}
+                placeholder="Tu apellido"
+              />
+              <Input
+                label="Correo electrónico *"
+                value={form.correo_receptor}
+                onChangeText={(v) => { setForm((p) => ({ ...p, correo_receptor: v })); setFormErrores((p) => ({ ...p, correo_receptor: '' })); }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                placeholder="correo@ejemplo.com"
+                error={formErrores.correo_receptor}
+              />
+              <Input
+                label="Teléfono"
+                value={form.telefono_receptor}
+                onChangeText={(v) => setForm((p) => ({ ...p, telefono_receptor: v }))}
+                keyboardType="phone-pad"
+                placeholder="0991234567"
+              />
+
               <View style={styles.botonesRow}>
-                <Button title="← Volver" onPress={() => setPaso(user ? 'tickets' : 'cliente')} variant="ghost" style={{ flex: 1 }} />
-                <Button title="✓ Confirmar y pagar" onPress={crearYConfirmar} loading={enviando} style={{ flex: 2 }} />
+                <Button title="← Volver" onPress={() => setPaso('tickets')} variant="ghost" style={{ flex: 1 }} />
+                <Button
+                  title="✓ Confirmar y pagar"
+                  onPress={onConfirmarFacturacion}
+                  loading={enviando}
+                  style={{ flex: 2 }}
+                />
               </View>
             </View>
           )}
 
-          {/* PASO 4 — Confirmación */}
+          {/* ── PASO 4: Confirmación ── */}
           {paso === 'confirmacion' && (
             <View style={styles.confirmBox}>
               <Text style={styles.confirmIcon}>🎉</Text>
-              <Text style={styles.confirmTitle}>¡Reserva confirmada!</Text>
+              <Text style={styles.confirmTitle}>¡Pago confirmado!</Text>
               <Text style={styles.confirmSub}>Tu reserva fue procesada exitosamente</Text>
-              {reservaCreada?.rev_codigo && (
-                <View style={styles.codigoBox}>
-                  <Text style={styles.codigoLabel}>Código de reserva</Text>
-                  <Text style={styles.codigo}>{String(reservaCreada.rev_codigo)}</Text>
-                </View>
-              )}
-              <Button title="Ver mis reservas" onPress={() => router.replace('/mis-reservas')} size="lg" style={{ marginTop: 24 }} />
-              <Button title="Ir al inicio" onPress={() => router.replace('/(tabs)')} variant="ghost" style={{ marginTop: 12 }} />
+
+              <View style={styles.resumenCard}>
+                {factura?.fac_numero && <InfoRow label="N° Factura" valor={String(factura.fac_numero)} />}
+                {(reservaCreada?.rev_codigo ?? factura?.rev_codigo) && (
+                  <InfoRow label="Código reserva" valor={String(reservaCreada?.rev_codigo ?? factura?.rev_codigo)} />
+                )}
+                {factura?.total != null && (
+                  <InfoRow label="Total pagado" valor={`$${Number(factura.total).toFixed(2)} USD`} importante />
+                )}
+                {factura?.estado && <InfoRow label="Estado" valor={String(factura.estado)} />}
+              </View>
+
+              <Button
+                title="Ver mis reservas"
+                onPress={() => router.replace('/mis-reservas')}
+                size="lg"
+                style={{ marginTop: 20 }}
+              />
+              <Button
+                title="Ver mis facturas"
+                onPress={() => router.replace('/mis-facturas')}
+                variant="outline"
+                style={{ marginTop: 10 }}
+              />
+              <Button
+                title="Ir al inicio"
+                onPress={() => router.replace('/(tabs)')}
+                variant="ghost"
+                style={{ marginTop: 8 }}
+              />
             </View>
           )}
         </ScrollView>
@@ -322,56 +480,61 @@ function InfoRow({ label, valor, importante }: { label: string; valor: string; i
   return (
     <View style={rowStyles.row}>
       <Text style={rowStyles.label}>{label}</Text>
-      <Text style={[rowStyles.valor, importante && rowStyles.valorImportante]}>{valor}</Text>
+      <Text style={[rowStyles.valor, importante && rowStyles.importante]}>{valor}</Text>
     </View>
   );
 }
 
 const rowStyles = StyleSheet.create({
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  label: { color: Colors.textMuted, fontSize: 14 },
-  valor: { color: Colors.text, fontSize: 14, fontWeight: '500', maxWidth: '60%', textAlign: 'right' },
-  valorImportante: { color: Colors.primary, fontSize: 16, fontWeight: '700' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 4 },
+  label: { color: Colors.textMuted, fontSize: 14, flex: 1 },
+  valor: { color: Colors.text, fontSize: 14, fontWeight: '500', maxWidth: '55%', textAlign: 'right' },
+  importante: { color: Colors.primary, fontSize: 16, fontWeight: '700' },
 });
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  scroll: { padding: 20 },
-  pasos: { flexDirection: 'row', justifyContent: 'center', gap: 16, padding: 12, backgroundColor: Colors.surface },
-  pasoItem: { alignItems: 'center' },
+  pasosBar: { flexDirection: 'row', justifyContent: 'center', paddingVertical: 12, gap: 16, backgroundColor: Colors.surface, borderBottomWidth: 1, borderBottomColor: Colors.border },
+  pasoItem: { alignItems: 'center', gap: 4 },
   pasoCirculo: { width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.border, alignItems: 'center', justifyContent: 'center' },
   pasoActivo: { backgroundColor: Colors.primary },
+  pasoHecho: { backgroundColor: Colors.success },
   pasoNum: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  pasoLabel: { color: Colors.textMuted, fontSize: 10 },
+  pasoLabelActivo: { color: Colors.primary, fontWeight: '700' },
+  scroll: { padding: 20 },
   titulo: { color: Colors.text, fontSize: 20, fontWeight: '700', marginBottom: 20 },
   seccion: { color: Colors.text, fontSize: 17, fontWeight: '700', marginBottom: 14, borderBottomWidth: 1, borderBottomColor: Colors.border, paddingBottom: 6 },
-  sinHorarios: { color: Colors.textMuted, textAlign: 'center', marginVertical: 20 },
+  emptyBox: { backgroundColor: Colors.surface, borderRadius: 12, padding: 20, alignItems: 'center', marginBottom: 16 },
+  emptyText: { color: Colors.textMuted, textAlign: 'center' },
   horarioCard: { backgroundColor: Colors.surface, borderRadius: 12, padding: 16, marginBottom: 10, borderWidth: 1.5, borderColor: Colors.border },
   horarioActivo: { borderColor: Colors.primary, backgroundColor: `${Colors.primary}18` },
+  horarioSinCupos: { opacity: 0.5 },
   horarioHora: { color: Colors.text, fontWeight: '700', fontSize: 16, marginBottom: 4 },
   horarioFecha: { color: Colors.textMuted, fontSize: 13, marginBottom: 4 },
-  horarioCupo: { color: Colors.success, fontSize: 12 },
+  horarioCupo: { color: Colors.success, fontSize: 13 },
+  rangoTexto: { color: Colors.textMuted, fontSize: 13, marginBottom: 12 },
   ticketCard: { backgroundColor: Colors.surface, borderRadius: 12, padding: 14, marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   ticketInfo: { flex: 1 },
   ticketNombre: { color: Colors.text, fontWeight: '600', fontSize: 15 },
-  ticketPrecio: { color: Colors.primary, fontSize: 14, marginTop: 2 },
-  counter: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  counterBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.border, alignItems: 'center', justifyContent: 'center' },
-  counterBtnText: { color: Colors.text, fontSize: 20, fontWeight: '700', lineHeight: 24 },
+  ticketPrecio: { color: Colors.primary, fontSize: 13, marginTop: 2 },
+  counter: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  counterBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center' },
+  counterBtnDisabled: { backgroundColor: Colors.border },
+  counterBtnText: { color: '#fff', fontSize: 20, fontWeight: '700', lineHeight: 24 },
   counterVal: { color: Colors.text, fontSize: 18, fontWeight: '700', minWidth: 24, textAlign: 'center' },
-  totalBox: { flexDirection: 'row', justifyContent: 'space-between', backgroundColor: `${Colors.primary}22`, borderRadius: 12, padding: 16, marginVertical: 12 },
-  totalLabel: { color: Colors.text, fontWeight: '700' },
-  totalValor: { color: Colors.primary, fontWeight: '700', fontSize: 18 },
-  botonesRow: { flexDirection: 'row', gap: 10, marginTop: 8 },
+  totalBox: { backgroundColor: Colors.surface, borderRadius: 12, padding: 16, marginVertical: 12 },
+  totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  totalLabel: { color: Colors.textMuted, fontSize: 14 },
+  totalVal: { color: Colors.text, fontSize: 14 },
   resumenCard: { backgroundColor: Colors.surface, borderRadius: 16, padding: 18, marginBottom: 16 },
   separador: { height: 1, backgroundColor: Colors.border, marginVertical: 10 },
-  simuladoBox: { backgroundColor: `${Colors.warning}22`, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: Colors.warning },
-  simuladoTitle: { color: Colors.warning, fontWeight: '700', marginBottom: 6 },
+  simuladoBox: { backgroundColor: `${Colors.warning}22`, borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: Colors.warning },
+  simuladoTitle: { color: Colors.warning, fontWeight: '700', marginBottom: 4 },
   simuladoText: { color: Colors.textMuted, fontSize: 13, lineHeight: 20 },
-  confirmBox: { alignItems: 'center', paddingTop: 40 },
-  confirmIcon: { fontSize: 72, marginBottom: 20 },
-  confirmTitle: { color: Colors.text, fontSize: 26, fontWeight: '700', marginBottom: 10 },
+  botonesRow: { flexDirection: 'row', gap: 10, marginTop: 12 },
+  confirmBox: { alignItems: 'center', paddingTop: 24 },
+  confirmIcon: { fontSize: 72, marginBottom: 16 },
+  confirmTitle: { color: Colors.text, fontSize: 24, fontWeight: '700', marginBottom: 8 },
   confirmSub: { color: Colors.textMuted, fontSize: 15, marginBottom: 24 },
-  codigoBox: { backgroundColor: Colors.surface, borderRadius: 16, padding: 20, alignItems: 'center', width: '100%' },
-  codigoLabel: { color: Colors.textMuted, fontSize: 13, marginBottom: 6 },
-  codigo: { color: Colors.primary, fontSize: 22, fontWeight: '700', letterSpacing: 2 },
 });

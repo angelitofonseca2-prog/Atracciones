@@ -18,17 +18,17 @@ export default function DetalleReservaScreen() {
   const [cargando, setCargando] = useState(true);
   const [cancelando, setCancelando] = useState(false);
   const [enviandoResenia, setEnviandoResenia] = useState(false);
-
-  // Reseña
-  const [calificacion, setCalificacion] = useState(5);
-  const [comentario, setComentario] = useState('');
   const [reseniaEnviada, setReseniaEnviada] = useState(false);
+
+  const [rating, setRating] = useState(5);
+  const [comentario, setComentario] = useState('');
 
   const cargar = useCallback(async () => {
     if (!guid) return;
     try {
       const res = await obtenerReserva(guid);
-      setReserva(res?.data ?? res);
+      const raw = res as Record<string, unknown>;
+      setReserva((raw?.data as Record<string, unknown>) ?? raw);
     } catch {
       Alert.alert('Error', 'No se pudo cargar la reserva');
     } finally {
@@ -38,36 +38,46 @@ export default function DetalleReservaScreen() {
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  const onCancelar = async () => {
-    Alert.alert('Cancelar reserva', '¿Estás seguro que deseas cancelar esta reserva?', [
-      { text: 'No', style: 'cancel' },
-      {
-        text: 'Sí, cancelar', style: 'destructive', onPress: async () => {
-          setCancelando(true);
-          try {
-            await cancelarReserva(String(guid));
-            await cargar();
-            Alert.alert('Reserva cancelada');
-          } catch {
-            Alert.alert('Error', 'No se pudo cancelar la reserva');
-          } finally {
-            setCancelando(false);
-          }
+  const onCancelar = () => {
+    Alert.alert(
+      'Cancelar reserva',
+      '¿Estás seguro que deseas cancelar esta reserva?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Sí, cancelar', style: 'destructive', onPress: async () => {
+            setCancelando(true);
+            try {
+              await cancelarReserva(String(guid), 'Cancelado por el cliente desde app móvil');
+              await cargar();
+              Alert.alert('Reserva cancelada correctamente');
+            } catch (err: unknown) {
+              const msg = (err as { response?: { data?: { message?: string } } })
+                ?.response?.data?.message ?? 'No se pudo cancelar';
+              Alert.alert('Error', msg);
+            } finally {
+              setCancelando(false);
+            }
+          },
         },
-      },
-    ]);
+      ],
+    );
   };
 
   const onResenia = async () => {
     if (!comentario.trim()) { Alert.alert('Escribe un comentario'); return; }
+    const atGuid = String(reserva?.at_guid ?? reserva?.atraccion_guid ?? '');
+    const revGuid = String(reserva?.rev_guid ?? guid ?? '');
+    if (!atGuid) { Alert.alert('No se puede identificar la atracción para dejar la reseña'); return; }
     setEnviandoResenia(true);
     try {
-      const atGuid = String(reserva?.at_guid ?? reserva?.atraccion_guid ?? '');
-      await crearResenia(atGuid, { calificacion, comentario });
+      await crearResenia(atGuid, { rev_guid: revGuid, rating, comentario });
       setReseniaEnviada(true);
       Alert.alert('¡Gracias por tu reseña!');
-    } catch {
-      Alert.alert('Error', 'No se pudo enviar la reseña');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })
+        ?.response?.data?.message ?? 'No se pudo enviar la reseña';
+      Alert.alert('Error', msg);
     } finally {
       setEnviandoResenia(false);
     }
@@ -85,7 +95,6 @@ export default function DetalleReservaScreen() {
   const cancelable = esReservaCancelable(estado);
   const confirmada = esReservaConfirmada(estado);
   const atGuid = String(reserva.at_guid ?? reserva.atraccion_guid ?? '');
-
   const detalles = (reserva.detalles ?? reserva.lineas ?? []) as Record<string, unknown>[];
 
   return (
@@ -93,42 +102,59 @@ export default function DetalleReservaScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Encabezado */}
         <View style={styles.encabezado}>
-          <Text style={styles.codigo}>{String(reserva.rev_codigo ?? '—')}</Text>
+          <Text style={styles.codigo}>{String(reserva.rev_codigo ?? reserva.codigo ?? '—')}</Text>
           <Badge estado={estado} />
         </View>
 
-        {reserva.atraccion_nombre && (
-          <Text style={styles.nombre}>{String(reserva.atraccion_nombre)}</Text>
+        {(reserva.atraccion_nombre ?? reserva.nombre_atraccion) && (
+          <Text style={styles.nombreAtraccion}>
+            {String(reserva.atraccion_nombre ?? reserva.nombre_atraccion)}
+          </Text>
         )}
 
-        {/* Datos */}
+        {/* Datos principales */}
         <View style={styles.card}>
           <InfoRow label="Fecha de visita" valor={formatearFechaCorta(String(reserva.fecha_visita ?? ''))} />
-          <InfoRow label="Fecha de reserva" valor={formatearFechaCorta(String(reserva.fecha_creacion ?? reserva.created_at ?? ''))} />
+          <InfoRow
+            label="Fecha de reserva"
+            valor={formatearFechaCorta(String(reserva.fecha_creacion ?? reserva.created_at ?? ''))}
+          />
           {reserva.canal_venta && <InfoRow label="Canal" valor={String(reserva.canal_venta)} />}
         </View>
 
-        {/* Detalles */}
+        {/* Detalles de tickets */}
         {detalles.length > 0 && (
           <View style={styles.card}>
-            <Text style={styles.seccion}>Tickets</Text>
+            <Text style={styles.seccion}>Entradas</Text>
             {detalles.map((d, i) => (
               <View key={i} style={styles.detalleRow}>
-                <Text style={styles.detalleName}>{String(d.ticket_nombre ?? d.nombre ?? 'Ticket')}</Text>
-                <Text style={styles.detalleCant}>{String(d.cantidad ?? 1)} × ${Number(d.precio_unitario ?? d.precio ?? 0).toFixed(2)}</Text>
+                <Text style={styles.detalleName}>
+                  {String(d.ticket_titulo ?? d.ticket_nombre ?? d.titulo ?? d.nombre ?? 'Entrada')}
+                </Text>
+                <Text style={styles.detalleCant}>
+                  {String(d.cantidad ?? 1)} × ${Number(d.precio_unitario ?? d.precio ?? 0).toFixed(2)}
+                </Text>
               </View>
             ))}
             <View style={styles.separador} />
             <View style={styles.detalleRow}>
               <Text style={[styles.detalleName, { fontWeight: '700' }]}>Total</Text>
-              <Text style={[styles.detalleCant, { color: Colors.primary, fontWeight: '700' }]}>${Number(reserva.total ?? 0).toFixed(2)}</Text>
+              <Text style={[styles.detalleCant, { color: Colors.primary, fontWeight: '700' }]}>
+                ${Number(reserva.total ?? reserva.total_pagar ?? 0).toFixed(2)}
+              </Text>
             </View>
           </View>
         )}
 
-        {/* Acciones */}
+        {/* Cancelar */}
         {cancelable && (
-          <Button title="Cancelar reserva" onPress={onCancelar} loading={cancelando} variant="danger" style={{ marginBottom: 12 }} />
+          <Button
+            title="Cancelar reserva"
+            onPress={onCancelar}
+            loading={cancelando}
+            variant="danger"
+            style={{ marginBottom: 12 }}
+          />
         )}
 
         {/* Reseña */}
@@ -137,8 +163,11 @@ export default function DetalleReservaScreen() {
             <Text style={styles.seccion}>Deja tu reseña</Text>
             <View style={styles.estrellas}>
               {[1, 2, 3, 4, 5].map((n) => (
-                <Text key={n} style={[styles.estrella, n <= calificacion && styles.estrellaActiva]}
-                  onPress={() => setCalificacion(n)}>★</Text>
+                <Text
+                  key={n}
+                  style={[styles.estrella, n <= rating && styles.estrellaActiva]}
+                  onPress={() => setRating(n)}
+                >★</Text>
               ))}
             </View>
             <Input
@@ -184,7 +213,7 @@ const styles = StyleSheet.create({
   scroll: { padding: 20 },
   encabezado: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   codigo: { color: Colors.text, fontSize: 20, fontWeight: '700' },
-  nombre: { color: Colors.textMuted, fontSize: 15, marginBottom: 20 },
+  nombreAtraccion: { color: Colors.textMuted, fontSize: 15, marginBottom: 20 },
   card: { backgroundColor: Colors.surface, borderRadius: 16, padding: 16, marginBottom: 16 },
   seccion: { color: Colors.text, fontWeight: '700', fontSize: 16, marginBottom: 12 },
   detalleRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
@@ -193,7 +222,7 @@ const styles = StyleSheet.create({
   separador: { height: 1, backgroundColor: Colors.border, marginVertical: 8 },
   estrellas: { flexDirection: 'row', gap: 8, marginBottom: 14 },
   estrella: { fontSize: 32, color: Colors.border },
-  estrellaActiva: { color: Colors.warning },
+  estrellaActiva: { color: '#f5c518' },
   reseniaOk: { backgroundColor: `${Colors.success}22`, borderRadius: 12, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: Colors.success },
   reseniaOkText: { color: Colors.success, fontWeight: '600' },
   errorBox: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, backgroundColor: Colors.background },

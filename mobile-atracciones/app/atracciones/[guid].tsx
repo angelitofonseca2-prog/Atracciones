@@ -131,10 +131,21 @@ export default function DetalleAtraccionScreen() {
               <Text style={styles.sectionTitle}>Reseñas</Text>
               {resenias.slice(0, 3).map((r, i) => {
                 const rev = r as Record<string, unknown>;
+                const rating = Number(rev.rating ?? rev.calificacion ?? 0);
+                const key = String(rev.rsn_guid ?? i);
                 return (
-                  <View key={i} style={styles.resenia}>
-                    <Text style={styles.reseniaCalif}>{'⭐'.repeat(Number(rev.calificacion ?? rev.Calificacion ?? 0))}</Text>
-                    <Text style={styles.reseniaComent}>{String(rev.comentario ?? rev.Comentario ?? '')}</Text>
+                  <View key={key} style={styles.resenia}>
+                    <View style={{ flexDirection: 'row', marginBottom: 4 }}>
+                      {[1,2,3,4,5].map((n) => (
+                        <Text key={n} style={{ color: n <= rating ? '#f5c518' : Colors.border, fontSize: 14 }}>★</Text>
+                      ))}
+                      {rev.fecha_creacion && (
+                        <Text style={{ color: Colors.textMuted, fontSize: 12, marginLeft: 8 }}>
+                          {String(rev.fecha_creacion).slice(0, 10)}
+                        </Text>
+                      )}
+                    </View>
+                    <Text style={styles.reseniaComent}>{String(rev.comentario ?? '')}</Text>
                   </View>
                 );
               })}

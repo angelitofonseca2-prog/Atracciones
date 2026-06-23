@@ -16,6 +16,11 @@ export async function obtenerAtraccion(guid: string) {
   return res.data;
 }
 
+export async function obtenerFiltros() {
+  const res = await apiClient.get('/atracciones/filtros');
+  return res.data;
+}
+
 export async function obtenerHorariosDisponibles(atGuid: string) {
   const res = await apiClient.get(`/atracciones/${atGuid}/horarios`, {
     params: { disponibles: true },
@@ -28,10 +33,16 @@ export async function obtenerTicketsAtraccion(atGuid: string) {
   return res.data;
 }
 
-export async function obtenerFiltros(ciudad?: string) {
-  const params = ciudad ? { ciudad } : {};
-  const res = await apiClient.get('/atracciones/filtros', { params });
-  return res.data;
+/** GET /atracciones/{atGuid}/horarios/{horGuid}/tickets — tickets exactos para ese horario */
+export async function obtenerTicketsPorHorario(atGuid: string, horGuid: string) {
+  const res = await apiClient.get(`/atracciones/${atGuid}/horarios/${horGuid}/tickets`);
+  const raw = res.data as Record<string, unknown>;
+  const d = raw?.data ?? raw;
+  // El API puede devolver array directo, { items }, etc.
+  if (Array.isArray(d)) return d;
+  const dd = d as Record<string, unknown>;
+  if (Array.isArray(dd?.items)) return dd.items;
+  return [];
 }
 
 export async function listarResenias(atGuid: string) {
@@ -39,7 +50,8 @@ export async function listarResenias(atGuid: string) {
   return res.data;
 }
 
-export async function crearResenia(atGuid: string, data: { calificacion: number; comentario: string }) {
+/** POST /atracciones/{atGuid}/resenias — body: { rev_guid, rating, comentario } */
+export async function crearResenia(atGuid: string, data: { rev_guid: string; rating: number; comentario: string }) {
   const res = await apiClient.post(`/atracciones/${atGuid}/resenias`, data);
   return res.data;
 }

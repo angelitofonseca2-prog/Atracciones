@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
-import { registro } from '@/lib/api/authApi';
+import { useAuth } from '@/lib/context/AuthContext';
 import { esEmailValido, esIdentificacionValida, esNombreValido, esTelefonoValido, mensajeIdentificacion, mensajeNombre, mensajeTelefono } from '@/lib/utils/validaciones';
 import { Colors } from '@/constants/Colors';
 
@@ -17,6 +17,7 @@ const TIPOS_ID = [
 ];
 
 export default function RegistroScreen() {
+  const { registrar } = useAuth();
   const [form, setForm] = useState({
     nombres: '', apellidos: '', correo: '', contrasena: '', confirmar: '',
     tipo_identificacion: 'CEDULA', numero_identificacion: '', telefono: '',
@@ -47,21 +48,22 @@ export default function RegistroScreen() {
     if (Object.keys(e).length) { setErrores(e); return; }
     setCargando(true);
     try {
-      await registro({
-        login: form.correo.trim(), password: form.contrasena,
-        nombres: form.nombres.trim(), apellidos: form.apellidos.trim(),
+      await registrar({
+        login: form.correo.trim(),
+        password: form.contrasena,
+        nombres: form.nombres.trim(),
+        apellidos: form.apellidos.trim(),
         correo: form.correo.trim(),
         tipo_identificacion: form.tipo_identificacion,
         numero_identificacion: form.numero_identificacion.trim(),
         ...(form.telefono ? { telefono: form.telefono.trim() } : {}),
       });
-      Alert.alert('¡Cuenta creada!', 'Tu cuenta fue creada. Inicia sesión.', [
-        { text: 'Ir al login', onPress: () => router.replace('/auth/login') },
-      ]);
+      // registrar() hace auto-login con el token devuelto por el backend
+      router.replace('/(tabs)');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
         ?? 'No se pudo crear la cuenta. Inténtalo de nuevo.';
-      Alert.alert('Error', msg);
+      Alert.alert('Error al registrar', msg);
     } finally {
       setCargando(false);
     }

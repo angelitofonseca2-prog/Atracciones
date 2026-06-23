@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
-import { login as apiLogin, LoginRequest } from '../api/authApi';
+import { login as apiLogin, registro as apiRegistro, LoginRequest, RegistroRequest } from '../api/authApi';
 import { setUnauthorizedHandler, TOKEN_KEY } from '../api/client';
 
 interface User {
@@ -17,6 +17,7 @@ interface AuthContextValue {
   cargando: boolean;
   esAdmin: boolean;
   iniciarSesion: (data: LoginRequest) => Promise<void>;
+  registrar: (data: RegistroRequest) => Promise<void>;
   cerrarSesion: () => void;
 }
 
@@ -88,16 +89,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUnauthorizedHandler(cerrarSesion);
   }, [cerrarSesion]);
 
-  const iniciarSesion = async (data: LoginRequest) => {
-    const res = await apiLogin(data);
-    const authData = res?.data ?? res;
-    const jwt: string = authData?.token ?? '';
+  const _guardarSesion = async (res: unknown) => {
+    const authData = (res as Record<string, unknown>)?.data ?? res as Record<string, unknown>;
+    const jwt: string = String(authData?.token ?? '');
     if (!jwt) throw new Error('No se recibió token');
     await SecureStore.setItemAsync(TOKEN_KEY, jwt);
     const payload = decodeJwtPayload(jwt);
-    const rolesResp: string[] = Array.isArray(authData?.roles) ? authData.roles.map(String) : [];
+    const rolesResp: string[] = Array.isArray(authData?.roles)
+      ? (authData.roles as unknown[]).map(String)
+      : [];
     setToken(jwt);
     setUser(payloadToUser(payload, rolesResp));
+  };
+
+  const iniciarSesion = async (data: LoginRequest) => {
+    const res = await apiLogin(data);
+    await _guardarSesion(res);
+  };
+
+  const registrar = async (data: RegistroRequest) => {
+    const res = await apiRegistro(data);
+    // El backend devuelve { data: { token, login, roles } } → auto-login
+    await _guardarSesion(res);
   };
 
   const esAdmin = user?.roles.some((r) =>
@@ -105,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ) ?? false;
 
   return (
-    <AuthContext.Provider value={{ user, token, cargando, esAdmin, iniciarSesion, cerrarSesion }}>
+    <AuthContext.Provider value={{ user, token, cargando, esAdmin, iniciarSesion, registrar, cerrarSesion }}>
       {children}
     </AuthContext.Provider>
   );
