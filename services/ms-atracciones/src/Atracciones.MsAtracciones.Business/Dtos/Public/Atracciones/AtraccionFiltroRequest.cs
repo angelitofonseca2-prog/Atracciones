@@ -13,7 +13,7 @@ public class AtraccionFiltroRequest
     public string? Horario { get; set; }
     public bool? Disponible { get; set; }
 
-    [RegularExpression("trending|lowest_price|highest_weighted_rating")]
+    [RegularExpression("trending|lowest_price|highest_weighted_rating|newest")]
     public string OrdenarPor { get; set; } = "trending";
 
     [Range(1, int.MaxValue)]

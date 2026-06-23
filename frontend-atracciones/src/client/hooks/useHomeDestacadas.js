@@ -14,15 +14,16 @@ export function useHomeDestacadas() {
     setError('')
     try {
       let data
+      const params = { page: 1, limit: 8, OrdenarPor: 'newest' }
       if (graphqlOn) {
         try {
-          data = await graphqlListarAtracciones({ page: 1, limit: 6 })
+          data = await graphqlListarAtracciones(params)
         } catch {
           // GraphQL no disponible → fallback REST
-          data = await listarAtracciones({ page: 1, limit: 6 })
+          data = await listarAtracciones(params)
         }
       } else {
-        data = await listarAtracciones({ page: 1, limit: 6 })
+        data = await listarAtracciones(params)
       }
       setDestacadas(data.data || [])
     } catch (err) {

@@ -175,6 +175,7 @@ function FiltrosBusqueda({ filtrosDisponibles, filtrosActivos, onFiltroChange })
           onChange={set('ordenar_por')}
         >
           <option value="trending">Relevancia</option>
+          <option value="newest">Más recientes</option>
           <option value="lowest_price">Menor precio</option>
           <option value="highest_weighted_rating">Mejor calificación</option>
         </select>

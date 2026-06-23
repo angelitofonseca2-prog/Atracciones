@@ -83,7 +83,8 @@ public sealed class InventarioRepository : IInventarioRepository
                 a.Tickets.Where(t => t.TckEstado == 'A').Min(t => (decimal?)t.TckPrecio) ?? decimal.MaxValue),
             "highest_weighted_rating" => query.OrderByDescending(a =>
                 a.Resenias.Where(r => r.RsnEstado == 'A').Average(r => (double?)r.RsnRating) ?? 0),
-            _ => query.OrderByDescending(a => a.AtTotalResenias),
+            "newest" => query.OrderByDescending(a => a.AtFechaIngreso),
+            _ => query.OrderByDescending(a => a.AtTotalResenias).ThenByDescending(a => a.AtFechaIngreso),
         };
 
         var page = filtro.Page < 1 ? 1 : filtro.Page;
