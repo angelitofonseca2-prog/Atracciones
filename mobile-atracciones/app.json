@@ -47,10 +47,7 @@
     "extra": {
       "apiUrl": "https://api-gateway-production-0afd.up.railway.app/api/v2",
       "graphqlUrl": "https://marketplace-gateway-production.up.railway.app/graphql",
-      "useGraphql": true,
-      "eas": {
-        "projectId": "atracciones-mobile"
-      }
+      "useGraphql": true
     }
   }
 }
