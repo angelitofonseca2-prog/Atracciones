@@ -10,7 +10,12 @@ import { useAuth } from '@/lib/context/AuthContext';
 import { formatearFechaCorta } from '@/lib/utils/formatFechas';
 import { Colors } from '@/constants/Colors';
 
-interface Reserva { rev_guid?: string; rev_codigo?: string; estado?: string; fecha_visita?: string; total?: number; atraccion_nombre?: string; }
+interface Reserva {
+  rev_guid?: string; rev_codigo?: string; codigo?: string;
+  estado?: string; fecha_visita?: string;
+  total?: number; total_pagar?: number;
+  atraccion_nombre?: string; nombre_atraccion?: string;
+}
 
 export default function MisReservasScreen() {
   const { user } = useAuth();
@@ -22,11 +27,13 @@ export default function MisReservasScreen() {
   const cargar = useCallback(async () => {
     try {
       setError('');
-      const res = await listarMisReservas();
+      const res = await listarMisReservas() as Record<string, unknown>;
+      // API devuelve: { status: 200, message: "...", data: [...reservas...] }
       const d = res?.data ?? res;
-      setReservas(Array.isArray(d) ? d : d?.items ?? d?.reservas ?? []);
-    } catch {
-      setError('No se pudo cargar tus reservas');
+      setReservas(Array.isArray(d) ? d : []);
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(msg ?? 'No se pudo cargar tus reservas');
     } finally {
       setCargando(false);
       setRefrescando(false);
@@ -45,19 +52,23 @@ export default function MisReservasScreen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <FlatList
         data={reservas}
-        keyExtractor={(r) => String(r.rev_guid ?? Math.random())}
+        keyExtractor={(r) => String(r.rev_guid ?? r.rev_codigo ?? Math.random())}
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={refrescando} onRefresh={() => { setRefrescando(true); cargar(); }} tintColor={Colors.primary} />}
         renderItem={({ item: r }) => (
           <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => router.push(`/mis-reservas/${r.rev_guid}`)}>
             <View style={styles.cardHeader}>
-              <Text style={styles.codigo}>{r.rev_codigo ?? '—'}</Text>
+              <Text style={styles.codigo}>{r.rev_codigo ?? r.codigo ?? '—'}</Text>
               <Badge estado={r.estado ?? 'P'} />
             </View>
-            {r.atraccion_nombre && <Text style={styles.nombre}>{r.atraccion_nombre}</Text>}
+            {(r.atraccion_nombre ?? r.nombre_atraccion) && (
+              <Text style={styles.nombre}>{r.atraccion_nombre ?? r.nombre_atraccion}</Text>
+            )}
             <View style={styles.cardFooter}>
               <Text style={styles.fecha}>📅 {formatearFechaCorta(r.fecha_visita ?? '')}</Text>
-              {r.total != null && <Text style={styles.total}>${Number(r.total).toFixed(2)}</Text>}
+              {(r.total ?? r.total_pagar) != null && (
+                <Text style={styles.total}>${Number(r.total ?? r.total_pagar).toFixed(2)}</Text>
+              )}
             </View>
           </TouchableOpacity>
         )}

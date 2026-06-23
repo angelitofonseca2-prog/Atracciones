@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import TarjetaAtraccion, { Atraccion } from '@/components/atracciones/TarjetaAtraccion';
+import TarjetaAtraccion, { Atraccion, getAtGuid } from '@/components/atracciones/TarjetaAtraccion';
 import Spinner from '@/components/ui/Spinner';
 import { listarAtracciones, obtenerFiltros } from '@/lib/api/atraccionesApi';
 import { Colors } from '@/constants/Colors';
@@ -84,7 +84,7 @@ export default function CatalogoScreen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <FlatList
         data={items}
-        keyExtractor={(i) => String(i.at_guid ?? i.Id ?? Math.random())}
+        keyExtractor={(i) => getAtGuid(i) || String(Math.random())}
         renderItem={({ item }) => <TarjetaAtraccion item={item} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}

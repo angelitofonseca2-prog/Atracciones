@@ -24,15 +24,19 @@ export default function DetalleAtraccionScreen() {
         listarResenias(guid),
       ]);
       if (aRes.status === 'fulfilled') {
-        const d = aRes.value?.data ?? aRes.value;
+        // API: { status, message, data: {...atraccion...} }
+        const raw = aRes.value as Record<string, unknown>;
+        const d = (raw?.data as Record<string, unknown>) ?? raw;
         setAtraccion(d);
         navigation.setOptions({ title: String(d?.nombre ?? d?.Nombre ?? 'Detalle') });
       } else {
         setError('No se pudo cargar la atracción');
       }
       if (rRes.status === 'fulfilled') {
-        const arr = rRes.value?.data ?? rRes.value;
-        setResenias(Array.isArray(arr) ? arr : arr?.items ?? []);
+        // API: { status, data: [...] }
+        const raw = rRes.value as Record<string, unknown>;
+        const arr = raw?.data ?? raw;
+        setResenias(Array.isArray(arr) ? arr : []);
       }
     } catch {
       setError('Error al cargar');
@@ -61,7 +65,7 @@ export default function DetalleAtraccionScreen() {
   const calificacion = Number(atraccion['calificacion'] ?? atraccion['Calificacion'] ?? 0);
   const precioDesde = Number(atraccion['precio_desde'] ?? atraccion['PrecioDesde'] ?? 0);
   const incluye = (atraccion['incluye'] ?? atraccion['Incluye'] ?? []) as string[];
-  const idiomas = (atraccion['idiomas'] ?? atraccion['Idiomas'] ?? []) as string[];
+  const idiomas = (atraccion['idiomas_disponibles'] ?? atraccion['idiomas'] ?? atraccion['Idiomas'] ?? []) as string[];
 
   return (
     <SafeAreaView style={styles.safe} edges={['bottom']}>

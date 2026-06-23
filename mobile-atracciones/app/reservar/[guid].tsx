@@ -21,8 +21,8 @@ const TIPOS_ID = [
 
 type Paso = 'horario' | 'tickets' | 'cliente' | 'pago' | 'confirmacion';
 
-interface Ticket { tck_guid?: string; Id?: string; nombre?: string; Nombre?: string; precio?: number; Precio?: number; capacidad_disponible?: number; }
-interface Horario { hor_guid?: string; Id?: string; fecha?: string; Fecha?: string; fecha_fin?: string; hora_inicio?: string; HoraInicio?: string; capacidad?: number; Capacidad?: number; capacidad_disponible?: number; }
+interface Ticket { tck_guid?: string; Id?: string; tipo?: string; nombre?: string; Nombre?: string; precio?: number; Precio?: number; }
+interface Horario { hor_guid?: string; Id?: string; fecha?: string; Fecha?: string; fecha_fin?: string; hora_inicio?: string; HoraInicio?: string; cupos?: number; cupos_disponibles?: number; capacidad?: number; Capacidad?: number; }
 
 export default function ReservarScreen() {
   const { guid } = useLocalSearchParams<{ guid: string }>();
@@ -58,14 +58,22 @@ export default function ReservarScreen() {
         obtenerHorariosDisponibles(guid),
         obtenerTicketsAtraccion(guid),
       ]);
-      if (aRes.status === 'fulfilled') setAtraccion(aRes.value?.data ?? aRes.value);
+      if (aRes.status === 'fulfilled') {
+        // API: { status, message, data: {...atraccion...} }
+        const raw = aRes.value as Record<string, unknown>;
+        setAtraccion((raw?.data as Record<string, unknown>) ?? raw);
+      }
       if (hRes.status === 'fulfilled') {
-        const d = hRes.value?.data ?? hRes.value;
-        setHorarios(Array.isArray(d) ? d : d?.items ?? d?.horarios ?? []);
+        // API: { status, data: [{hor_guid, fecha, cupos_disponibles, ...}] }
+        const raw = hRes.value as Record<string, unknown>;
+        const d = raw?.data ?? raw;
+        setHorarios(Array.isArray(d) ? d : []);
       }
       if (tRes.status === 'fulfilled') {
-        const d = tRes.value?.data ?? tRes.value;
-        setTickets(Array.isArray(d) ? d : d?.items ?? d?.tickets ?? []);
+        // API: { status, data: [{tck_guid, tipo, precio, ...}] }
+        const raw = tRes.value as Record<string, unknown>;
+        const d = raw?.data ?? raw;
+        setTickets(Array.isArray(d) ? d : []);
       }
     } catch {}
     finally { setCargando(false); }
@@ -175,7 +183,7 @@ export default function ReservarScreen() {
                         {h.fecha_fin ? ` — ${String(h.fecha_fin).slice(0, 10)}` : ''}
                       </Text>
                       <Text style={styles.horarioCupo}>
-                        Disponibles: {h.capacidad_disponible ?? h.capacidad ?? h.Capacidad ?? '?'}
+                        Disponibles: {h.cupos_disponibles ?? h.cupos ?? h.capacidad ?? '?'}
                       </Text>
                     </TouchableOpacity>
                   );
@@ -208,11 +216,11 @@ export default function ReservarScreen() {
                 tickets.map((t) => {
                   const id = ticketId(t);
                   const cant = cantidades[id] ?? 0;
-                  const max = Number(t.capacidad_disponible ?? horarioSel?.capacidad_disponible ?? horarioSel?.capacidad ?? 99);
+                  const max = Number(horarioSel?.cupos_disponibles ?? horarioSel?.cupos ?? horarioSel?.capacidad ?? 99);
                   return (
                     <View key={id} style={styles.ticketCard}>
                       <View style={styles.ticketInfo}>
-                        <Text style={styles.ticketNombre}>{String(t.nombre ?? t.Nombre ?? 'Ticket')}</Text>
+                        <Text style={styles.ticketNombre}>{String(t.tipo ?? t.nombre ?? t.Nombre ?? 'Ticket')}</Text>
                         <Text style={styles.ticketPrecio}>${Number(t.precio ?? t.Precio ?? 0).toFixed(2)}</Text>
                       </View>
                       <View style={styles.counter}>
@@ -270,7 +278,7 @@ export default function ReservarScreen() {
                 <InfoRow label="Horario" valor={String(horarioSel?.hora_inicio ?? horarioSel?.HoraInicio ?? '')} />
                 {lineas.map((l) => {
                   const t = tickets.find((t) => ticketId(t) === l.tck_guid);
-                  return <InfoRow key={l.tck_guid} label={String(t?.nombre ?? t?.Nombre ?? l.tck_guid)} valor={`${l.cantidad} × $${Number(t?.precio ?? t?.Precio ?? 0).toFixed(2)}`} />;
+                  return <InfoRow key={l.tck_guid} label={String(t?.tipo ?? t?.nombre ?? t?.Nombre ?? l.tck_guid)} valor={`${l.cantidad} × $${Number(t?.precio ?? t?.Precio ?? 0).toFixed(2)}`} />;
                 })}
                 <View style={styles.separador} />
                 <InfoRow label="TOTAL" valor={`$${totalPrecio.toFixed(2)}`} importante />

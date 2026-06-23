@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import TarjetaAtraccion, { Atraccion } from '@/components/atracciones/TarjetaAtraccion';
+import TarjetaAtraccion, { Atraccion, getAtGuid } from '@/components/atracciones/TarjetaAtraccion';
 import Spinner from '@/components/ui/Spinner';
 import { listarAtracciones } from '@/lib/api/atraccionesApi';
 import { Colors } from '@/constants/Colors';
@@ -51,7 +51,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safe} edges={['bottom']}>
       <FlatList
         data={recientes}
-        keyExtractor={(i) => String(i.at_guid ?? i.Id ?? Math.random())}
+        keyExtractor={(i) => getAtGuid(i) || String(Math.random())}
         renderItem={({ item }) => <TarjetaAtraccion item={item} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
@@ -74,7 +74,7 @@ export default function HomeScreen() {
             {destacadas.length > 0 && (
               <>
                 <Text style={styles.sectionTitle}>⭐ Destacadas</Text>
-                {destacadas.map((a) => <TarjetaAtraccion key={String(a.at_guid ?? a.Id)} item={a} />)}
+                {destacadas.map((a) => <TarjetaAtraccion key={getAtGuid(a) || String(Math.random())} item={a} />)}
               </>
             )}
 

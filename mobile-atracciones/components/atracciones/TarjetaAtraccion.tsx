@@ -5,7 +5,8 @@ import { router } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 
 export interface Atraccion {
-  at_guid?: string; Id?: string; Nombre?: string; nombre?: string;
+  id?: string; at_guid?: string; Id?: string;
+  Nombre?: string; nombre?: string;
   ciudad?: string; Ciudad?: string; pais?: string; Pais?: string;
   precio_desde?: number; PrecioDesde?: number;
   calificacion?: number; Calificacion?: number;
@@ -18,8 +19,13 @@ function campo<T>(a: Atraccion, k1: keyof Atraccion, k2: keyof Atraccion): T {
   return (a[k1] ?? a[k2]) as T;
 }
 
+/** Extrae el GUID de atracción en cualquier formato que devuelva el API */
+export function getAtGuid(item: Atraccion): string {
+  return String(item.id ?? item.at_guid ?? item.Id ?? '');
+}
+
 export default function TarjetaAtraccion({ item }: { item: Atraccion }) {
-  const guid = campo<string>(item, 'at_guid', 'Id');
+  const guid = getAtGuid(item);
   const nombre = campo<string>(item, 'nombre', 'Nombre');
   const ciudad = campo<string>(item, 'ciudad', 'Ciudad');
   const precio = campo<number>(item, 'precio_desde', 'PrecioDesde');
