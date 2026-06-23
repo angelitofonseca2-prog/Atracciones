@@ -1,0 +1,21 @@
+node_modules/
+.expo/
+dist/
+web-build/
+.expo-check/
+
+# Android
+android/
+ios/
+
+# EAS
+.easignore
+
+# Env
+.env
+.env.local
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
