@@ -48,8 +48,9 @@ export default function RegistroScreen() {
     setCargando(true);
     try {
       await registro({
+        login: form.correo.trim(), password: form.contrasena,
         nombres: form.nombres.trim(), apellidos: form.apellidos.trim(),
-        correo: form.correo.trim(), contrasena: form.contrasena,
+        correo: form.correo.trim(),
         tipo_identificacion: form.tipo_identificacion,
         numero_identificacion: form.numero_identificacion.trim(),
         ...(form.telefono ? { telefono: form.telefono.trim() } : {}),

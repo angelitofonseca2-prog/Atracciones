@@ -17,10 +17,6 @@ export default function HomeScreen() {
   const cargar = useCallback(async () => {
     try {
       setError('');
-      const [dest, rec] = await Promise.all([
-        listarAtracciones({ ordenar_por: 'calificacion', limit: 6 }),
-        listarAtracciones({ ordenar_por: 'reciente', limit: 8 }),
-      ]);
       const toArr = (r: unknown): Atraccion[] => {
         if (Array.isArray(r)) return r;
         const d = (r as Record<string, unknown>)?.data;
@@ -28,8 +24,17 @@ export default function HomeScreen() {
         const i = (d as Record<string, unknown>)?.items ?? (d as Record<string, unknown>)?.atracciones;
         return Array.isArray(i) ? i : [];
       };
-      setDestacadas(toArr(dest));
-      setRecientes(toArr(rec));
+      const [dest, rec] = await Promise.allSettled([
+        listarAtracciones({ ordenar_por: 'highest_weighted_rating', limit: 6 }),
+        listarAtracciones({ ordenar_por: 'trending', limit: 8 }),
+      ]);
+      const destArr = dest.status === 'fulfilled' ? toArr(dest.value) : [];
+      const recArr = rec.status === 'fulfilled' ? toArr(rec.value) : [];
+      setDestacadas(destArr);
+      setRecientes(recArr);
+      if (destArr.length === 0 && recArr.length === 0) {
+        setError('No se pudo cargar el catálogo. Verifica tu conexión.');
+      }
     } catch {
       setError('No se pudo cargar el catálogo. Verifica tu conexión.');
     } finally {

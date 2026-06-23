@@ -33,15 +33,22 @@ function decodeJwtPayload(token: string): Record<string, unknown> {
   }
 }
 
-function payloadToUser(payload: Record<string, unknown>): User {
+const ROLE_CLAIM = 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role';
+
+function rolesFromPayload(payload: Record<string, unknown>): string[] {
   const roles: string[] = [];
-  const r = payload['roles'] ?? payload['role'];
+  const r = payload['roles'] ?? payload['role'] ?? payload[ROLE_CLAIM];
   if (Array.isArray(r)) roles.push(...r.map(String));
   else if (r) roles.push(String(r));
+  return roles;
+}
+
+function payloadToUser(payload: Record<string, unknown>, rolesOverride?: string[]): User {
+  const roles = rolesOverride && rolesOverride.length ? rolesOverride : rolesFromPayload(payload);
   return {
-    guid: String(payload['sub'] ?? payload['usu_guid'] ?? ''),
-    nombre: String(payload['nombre'] ?? payload['name'] ?? payload['correo'] ?? ''),
-    correo: String(payload['correo'] ?? payload['email'] ?? ''),
+    guid: String(payload['usu_guid'] ?? payload['sub'] ?? ''),
+    nombre: String(payload['login'] ?? payload['nombre'] ?? payload['name'] ?? payload['correo'] ?? ''),
+    correo: String(payload['login'] ?? payload['correo'] ?? payload['email'] ?? ''),
     roles,
   };
 }
@@ -83,12 +90,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const iniciarSesion = async (data: LoginRequest) => {
     const res = await apiLogin(data);
-    const jwt: string = res?.data?.token ?? res?.token ?? '';
+    const authData = res?.data ?? res;
+    const jwt: string = authData?.token ?? '';
     if (!jwt) throw new Error('No se recibió token');
     await SecureStore.setItemAsync(TOKEN_KEY, jwt);
     const payload = decodeJwtPayload(jwt);
+    const rolesResp: string[] = Array.isArray(authData?.roles) ? authData.roles.map(String) : [];
     setToken(jwt);
-    setUser(payloadToUser(payload));
+    setUser(payloadToUser(payload, rolesResp));
   };
 
   const esAdmin = user?.roles.some((r) =>

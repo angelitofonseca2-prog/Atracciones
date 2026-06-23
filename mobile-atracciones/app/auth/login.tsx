@@ -27,7 +27,7 @@ export default function LoginScreen() {
     if (Object.keys(e).length) { setErrores(e); return; }
     setCargando(true);
     try {
-      await iniciarSesion({ correo: correo.trim(), contrasena });
+      await iniciarSesion({ login: correo.trim(), password: contrasena });
       router.replace('/(tabs)');
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message
